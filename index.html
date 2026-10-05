@@ -65,6 +65,46 @@
       <div><span>Engine latency</span><strong id="engineLatency">—</strong></div>
     </section>
 
+
+    <section class="room control-room">
+      <div class="room-head">
+        <div>
+          <p class="eyebrow">LIVE RISK & EXECUTION CONTROL</p>
+          <h2>اللوت والخطورة والتنفيذ الافتراضي</h2>
+        </div>
+        <span class="room-badge good">L2 LIVE · PAPER ONLY</span>
+      </div>
+      <p class="room-desc">عدّل رأس المال، نسبة الخطر، مسافة الوقف أو حجم الصفقة يدويًا. النظام يعيد حساب الحجم ويقرأ Order Book الحالي ويعرض VWAP وSlippage والرسوم فورًا.</p>
+
+      <form id="riskForm" class="risk-form">
+        <label>رأس المال USD
+          <input id="capitalInput" type="number" min="100" max="10000000" step="100" value="10000" />
+        </label>
+        <label>الخطر لكل صفقة %
+          <input id="riskInput" type="number" min="0.05" max="25" step="0.05" value="1" />
+        </label>
+        <label>Stop Distance %
+          <input id="stopInput" type="number" min="0.1" max="50" step="0.1" value="2" />
+        </label>
+        <label>أقصى حجم من الحساب %
+          <input id="maxPositionInput" type="number" min="1" max="100" step="1" value="25" />
+        </label>
+        <label>Lot / Notional يدوي USD
+          <input id="notionalInput" type="number" min="0" max="10000000" step="10" value="0" />
+          <small>0 = حساب تلقائي حسب الخطر</small>
+        </label>
+        <label>رسوم Taker bps
+          <input id="feeInput" type="number" min="0" max="200" step="1" value="80" />
+        </label>
+        <button id="simulateBtn" type="submit">احسب التنفيذ Live</button>
+      </form>
+
+      <div id="riskSummary" class="risk-summary">
+        <div class="loading">جاري حساب الحجم والتنفيذ من Order Book…</div>
+      </div>
+      <div id="executionCards" class="execution-grid"></div>
+    </section>
+
     <section class="floor">
       <article class="room market-room">
         <div class="room-head">
@@ -107,10 +147,60 @@
       </article>
 
 
-      <article class="room evolution-room">
+
+      <article class="room broker-room">
         <div class="room-head">
           <div>
             <p class="eyebrow">ROOM 04</p>
+            <h2>Real Paper Broker Account</h2>
+          </div>
+          <span id="brokerBadge" class="room-badge warn">DISCONNECTED</span>
+        </div>
+        <p class="room-desc">موصل Paper-only منفصل كليًا عن الأموال الحقيقية. الـBackend مقفول على <strong>paper-api.alpaca.markets</strong> ولا يملك مسارًا للـLive API.</p>
+
+        <div class="broker-unlock">
+          <input id="controlTokenInput" type="password" autocomplete="off" placeholder="Control token (يبقى داخل هذه الصفحة فقط)" />
+          <button id="brokerUnlockBtn" type="button">فتح حساب Paper</button>
+        </div>
+
+        <div id="brokerStatus" class="broker-status">
+          <div class="loading">فحص إعداد حساب الـPaper…</div>
+        </div>
+
+        <div id="paperBrokerOrder" class="broker-order hidden">
+          <div class="broker-order-controls">
+            <select id="brokerSymbol">
+              <option value="BTC/USD">BTC/USD</option>
+              <option value="ETH/USD">ETH/USD</option>
+            </select>
+            <select id="brokerSide">
+              <option value="buy">BUY</option>
+              <option value="sell">SELL</option>
+            </select>
+            <input id="brokerNotional" type="number" min="1" step="1" value="100" />
+            <button id="brokerOrderBtn" type="button">إرسال Paper Order</button>
+          </div>
+          <p class="room-desc">الأمر يذهب فقط إلى حساب Alpaca Paper بعد الضغط اليدوي، ويخضع لسقف AEGIS_PAPER_MAX_ORDER_USD.</p>
+        </div>
+      </article>
+
+      <article class="room brain-room">
+        <div class="room-head">
+          <div>
+            <p class="eyebrow">ROOM 05</p>
+            <h2>Evidence Brain</h2>
+          </div>
+          <span class="room-badge">LEARNING · NO EXECUTION</span>
+        </div>
+        <p class="room-desc">العقل يتغذى من الـResearch والـForward Paper والـDrawdown والـfees/slippage. يستطيع خفض الثقة والخطر فقط؛ لا يستطيع زيادة Base Risk أو تعديل قواعد الأمان أو إرسال أوامر.</p>
+        <div id="brainSummary" class="brain-summary"></div>
+        <div id="brainAgents" class="brain-grid"><div class="loading">تحميل Evidence Brain…</div></div>
+      </article>
+
+      <article class="room evolution-room">
+        <div class="room-head">
+          <div>
+            <p class="eyebrow">ROOM 06</p>
             <h2>Evolution Lab</h2>
           </div>
           <span class="room-badge good">SELF-IMPROVING · GATED</span>
@@ -136,7 +226,7 @@
       <article class="room probation-room">
         <div class="room-head">
           <div>
-            <p class="eyebrow">ROOM 05</p>
+            <p class="eyebrow">ROOM 07</p>
             <h2>Probation Room</h2>
           </div>
           <span class="room-badge warn">UNDER PRESSURE</span>
@@ -148,7 +238,7 @@
       <article class="room red-room">
         <div class="room-head">
           <div>
-            <p class="eyebrow">ROOM 06</p>
+            <p class="eyebrow">ROOM 08</p>
             <h2>Red Team Chamber</h2>
           </div>
           <span class="room-badge danger">ATTACK MODE</span>
@@ -160,7 +250,7 @@
       <article class="room graveyard-room">
         <div class="room-head">
           <div>
-            <p class="eyebrow">ROOM 07</p>
+            <p class="eyebrow">ROOM 09</p>
             <h2>Elimination Vault</h2>
           </div>
           <span class="room-badge danger">REMOVED</span>
@@ -171,7 +261,7 @@
       <article class="room replacement-room">
         <div class="room-head">
           <div>
-            <p class="eyebrow">ROOM 08</p>
+            <p class="eyebrow">ROOM 10</p>
             <h2>Replacement Lab</h2>
           </div>
           <span class="room-badge">QUARANTINE</span>
@@ -180,10 +270,24 @@
         <div id="replacements" class="replacement-grid"></div>
       </article>
 
+
+      <article class="room tests-room">
+        <div class="room-head">
+          <div>
+            <p class="eyebrow">ROOM 11</p>
+            <h2>Live Test Lab</h2>
+          </div>
+          <span id="testsBadge" class="room-badge">CHECKING</span>
+        </div>
+        <p class="room-desc">يعرض آخر CI، اختبار السوق الحقيقي، Evolution، وPaper worker. Live Verification يفحص Kraken OHLC والـL2 Order Book كل 15 دقيقة تقريبًا.</p>
+        <div id="testSummary" class="test-summary"></div>
+        <div id="testRuns" class="test-grid"><div class="loading">جاري قراءة آخر نتائج الاختبارات…</div></div>
+      </article>
+
       <article class="room evidence-room">
         <div class="room-head">
           <div>
-            <p class="eyebrow">ROOM 09</p>
+            <p class="eyebrow">ROOM 12</p>
             <h2>Evidence & Method</h2>
           </div>
           <span class="room-badge">AUDIT</span>
