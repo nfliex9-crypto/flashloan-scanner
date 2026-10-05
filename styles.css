@@ -309,3 +309,243 @@ footer{display:flex;justify-content:space-between;gap:20px;color:var(--muted);fo
   .paper-summary,
   .evolution-summary{grid-template-columns:1fr}
 }
+
+
+/* AEGIS v4: live risk controls, test lab, broker paper account, evidence brain */
+.hidden{display:none!important}
+.control-room{
+  margin-bottom:16px;
+  min-height:auto;
+  border-color:rgba(85,230,255,.24);
+}
+.risk-form{
+  display:grid;
+  grid-template-columns:repeat(6,minmax(0,1fr));
+  gap:10px;
+  margin:12px 0;
+}
+.risk-form label{
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+  color:var(--muted);
+  font-size:10px;
+}
+.risk-form input,
+.broker-unlock input,
+.broker-order-controls input,
+.broker-order-controls select{
+  width:100%;
+  min-width:0;
+  border:1px solid var(--line);
+  background:rgba(5,9,15,.85);
+  color:var(--text);
+  border-radius:10px;
+  padding:10px 11px;
+  font:inherit;
+}
+.risk-form input:focus,
+.broker-unlock input:focus,
+.broker-order-controls input:focus,
+.broker-order-controls select:focus{
+  outline:1px solid var(--cyan);
+}
+.risk-form small{font-size:8px;color:var(--muted)}
+.risk-form button{
+  align-self:end;
+  min-height:39px;
+  border:1px solid rgba(85,230,255,.32);
+  background:rgba(85,230,255,.08);
+  color:var(--cyan);
+  border-radius:10px;
+  font-weight:800;
+}
+.risk-summary,
+.brain-summary,
+.test-summary,
+.broker-kpis{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:9px;
+  margin:10px 0 12px;
+}
+.execution-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+}
+.execution-card{
+  border:1px solid var(--line);
+  background:rgba(5,9,15,.78);
+  border-radius:14px;
+  padding:12px;
+}
+.execution-notional{
+  font-size:24px;
+  font-weight:900;
+  direction:ltr;
+  margin:10px 0;
+}
+.tests-room{
+  grid-column:span 12;
+  border-color:rgba(85,230,255,.18);
+}
+.test-grid{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:10px;
+}
+.test-card{
+  border:1px solid var(--line);
+  background:rgba(5,9,15,.72);
+  border-radius:12px;
+  padding:11px;
+}
+.test-card a{
+  display:inline-block;
+  color:var(--cyan);
+  font-size:10px;
+  margin-top:8px;
+  text-decoration:none;
+}
+.test-meta{
+  display:grid;
+  gap:4px;
+  color:var(--muted);
+  font-size:9px;
+  margin-top:8px;
+}
+.broker-room{
+  grid-column:span 12;
+  border-color:rgba(244,201,93,.18);
+}
+.broker-unlock{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto;
+  gap:9px;
+  margin:10px 0;
+}
+.broker-unlock button,
+.broker-order-controls button{
+  border:1px solid rgba(85,230,255,.3);
+  background:rgba(85,230,255,.08);
+  color:var(--cyan);
+  border-radius:10px;
+  padding:10px 13px;
+  font-weight:800;
+}
+.broker-message,
+.error-box{
+  border:1px solid var(--line);
+  background:rgba(5,9,15,.7);
+  border-radius:11px;
+  padding:11px;
+  color:var(--muted);
+  font-size:11px;
+  line-height:1.5;
+}
+.error-box{
+  border-color:rgba(255,107,120,.3);
+  color:var(--red);
+  margin-bottom:8px;
+}
+.broker-split{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:12px;
+}
+.broker-split h3{
+  font-size:12px;
+  color:var(--muted);
+  margin:0 0 6px;
+}
+.broker-line{
+  display:flex;
+  justify-content:space-between;
+  gap:8px;
+  border-top:1px solid rgba(255,255,255,.05);
+  padding:7px 0;
+  font-size:10px;
+}
+.broker-order{
+  margin-top:12px;
+}
+.broker-order-controls{
+  display:grid;
+  grid-template-columns:1fr 1fr 1fr auto;
+  gap:8px;
+}
+.brain-room{
+  grid-column:span 12;
+  border-color:rgba(156,136,255,.24);
+}
+.brain-grid{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:10px;
+}
+.brain-card{
+  border:1px solid var(--line);
+  background:rgba(5,9,15,.78);
+  border-radius:14px;
+  padding:12px;
+}
+.brain-trust{
+  font-size:24px;
+  font-weight:900;
+  margin:10px 0;
+  direction:ltr;
+}
+.brain-trust small{
+  color:var(--muted);
+  font-size:10px;
+  font-weight:600;
+}
+.brain-reasons{
+  display:flex;
+  flex-wrap:wrap;
+  gap:5px;
+  margin-top:9px;
+}
+.brain-reasons span{
+  border:1px solid rgba(255,255,255,.06);
+  border-radius:999px;
+  padding:4px 6px;
+  color:var(--muted);
+  font-size:8px;
+}
+@media(max-width:1100px){
+  .risk-form{grid-template-columns:repeat(3,1fr)}
+  .test-grid{grid-template-columns:repeat(2,1fr)}
+}
+@media(max-width:760px){
+  .risk-form,
+  .risk-summary,
+  .brain-summary,
+  .test-summary,
+  .broker-kpis,
+  .execution-grid,
+  .brain-grid,
+  .test-grid,
+  .broker-split{
+    grid-template-columns:1fr 1fr;
+  }
+  .broker-order-controls{
+    grid-template-columns:1fr 1fr;
+  }
+}
+@media(max-width:520px){
+  .risk-form,
+  .risk-summary,
+  .brain-summary,
+  .test-summary,
+  .broker-kpis,
+  .execution-grid,
+  .brain-grid,
+  .test-grid,
+  .broker-split,
+  .broker-unlock,
+  .broker-order-controls{
+    grid-template-columns:1fr;
+  }
+}
