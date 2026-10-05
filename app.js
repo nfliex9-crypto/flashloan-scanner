@@ -415,15 +415,328 @@ async function loadEvolution(){
   }
 }
 
+
+const controlState = {
+  token: "",
+  riskTimer: null,
+};
+
+function riskParams(){
+  return {
+    capital: Number($("capitalInput")?.value || 10000),
+    risk_pct: Number($("riskInput")?.value || 1),
+    stop_pct: Number($("stopInput")?.value || 2),
+    max_position_pct: Number($("maxPositionInput")?.value || 25),
+    notional: Number($("notionalInput")?.value || 0),
+    fee_bps: Number($("feeInput")?.value || 80),
+  };
+}
+
+function saveRiskParams(){
+  try{
+    localStorage.setItem("aegis-risk-controls", JSON.stringify(riskParams()));
+  }catch{}
+}
+
+function restoreRiskParams(){
+  try{
+    const saved = JSON.parse(localStorage.getItem("aegis-risk-controls") || "{}");
+    const map = {
+      capital:"capitalInput",
+      risk_pct:"riskInput",
+      stop_pct:"stopInput",
+      max_position_pct:"maxPositionInput",
+      notional:"notionalInput",
+      fee_bps:"feeInput",
+    };
+    for(const [key,id] of Object.entries(map)){
+      if(saved[key] != null && $(id)) $(id).value = saved[key];
+    }
+  }catch{}
+}
+
+function executionCard(a){
+  const buy = a.buy || {};
+  return `
+    <article class="execution-card">
+      <div class="agent-top">
+        <strong>${a.symbol}/USD</strong>
+        <span class="status ${a.fully_fillable ? "ACTIVE" : "PROBATION"}">${a.fully_fillable ? "FILLABLE" : "PARTIAL"}</span>
+      </div>
+      <div class="execution-notional">${money(a.notional_usd)}</div>
+      <div class="agent-metrics">
+        <div><span>Base qty / Lot</span><strong>${num(a.base_quantity,8)}</strong></div>
+        <div><span>Spread</span><strong>${num(a.spread_bps,2)} bps</strong></div>
+        <div><span>Buy VWAP</span><strong>${money(buy.vwap || 0)}</strong></div>
+        <div><span>Buy Slippage</span><strong>${num(buy.slippage_bps || 0,2)} bps</strong></div>
+        <div><span>Buy Fee</span><strong>${money(buy.fee_quote || 0)}</strong></div>
+        <div><span>Levels Used</span><strong>${buy.levels_used ?? 0}</strong></div>
+        <div><span>Roundtrip Drag</span><strong class="fail">${num(a.roundtrip_drag_bps,2)} bps</strong></div>
+        <div><span>Roundtrip PnL</span><strong class="${a.roundtrip_pnl_usd >= 0 ? "pass":"fail"}">${money(a.roundtrip_pnl_usd)}</strong></div>
+      </div>
+    </article>`;
+}
+
+function renderExecution(data){
+  const z = data.sizing || {};
+  $("riskSummary").innerHTML = `
+    <div class="paper-kpi"><span>Risk budget</span><strong>${money(z.risk_budget_usd || 0)}</strong></div>
+    <div class="paper-kpi"><span>Risk-sized notional</span><strong>${money(z.risk_sized_notional_usd || 0)}</strong></div>
+    <div class="paper-kpi"><span>Max position</span><strong>${money(z.max_position_usd || 0)}</strong></div>
+    <div class="paper-kpi"><span>Effective Lot / Notional</span><strong>${money(z.effective_notional_usd || 0)}</strong></div>
+  `;
+  $("executionCards").innerHTML = Object.values(data.assets || {}).map(executionCard).join("");
+}
+
+async function loadExecution(){
+  if(!$("riskForm")) return;
+  saveRiskParams();
+  $("simulateBtn").disabled = true;
+  $("simulateBtn").textContent = "جاري الحساب…";
+  try{
+    const p = riskParams();
+    const q = new URLSearchParams();
+    for(const [k,v] of Object.entries(p)) q.set(k,String(v));
+    const res = await fetch("/api/execution?"+q.toString(),{cache:"no-store"});
+    const data = await res.json();
+    if(!res.ok || !data.ok) throw new Error(data.error || "execution api");
+    renderExecution(data);
+  }catch(err){
+    console.error(err);
+    $("riskSummary").innerHTML = empty("تعذر حساب التنفيذ من Order Book الآن.");
+    $("executionCards").innerHTML = "";
+  }finally{
+    $("simulateBtn").disabled = false;
+    $("simulateBtn").textContent = "احسب التنفيذ Live";
+  }
+}
+
+function scheduleExecution(){
+  clearTimeout(controlState.riskTimer);
+  controlState.riskTimer = setTimeout(loadExecution,450);
+}
+
+function testRunCard(run){
+  const running = run.status !== "completed";
+  const ok = run.conclusion === "success";
+  const state = running ? "RUNNING" : (ok ? "PASS" : (run.conclusion || "UNKNOWN").toUpperCase());
+  const cls = running ? "warn" : (ok ? "pass" : "fail");
+  return `
+    <article class="test-card">
+      <div class="agent-top">
+        <strong>${run.name}</strong>
+        <span class="${cls}">${state}</span>
+      </div>
+      <div class="agent-id">${run.sha || "—"}</div>
+      <div class="test-meta">
+        <span>${run.title || ""}</span>
+        <span>${run.updated_at ? new Date(run.updated_at).toLocaleString("en-GB") : "—"}</span>
+      </div>
+      ${run.html_url ? `<a href="${run.html_url}" target="_blank" rel="noreferrer">فتح نتيجة الاختبار</a>` : ""}
+    </article>`;
+}
+
+function renderTests(data){
+  const failing = data.failing || 0;
+  const running = data.running || 0;
+  $("testsBadge").textContent = failing ? "FAILURES" : (running ? "RUNNING" : "ALL GREEN");
+  $("testsBadge").className = "room-badge "+(failing ? "danger" : (running ? "warn" : "good"));
+  $("testSummary").innerHTML = `
+    <div class="paper-kpi"><span>Passing</span><strong class="pass">${data.passing || 0}</strong></div>
+    <div class="paper-kpi"><span>Running</span><strong>${running}</strong></div>
+    <div class="paper-kpi"><span>Failing</span><strong class="${failing ? "fail":"pass"}">${failing}</strong></div>
+  `;
+  $("testRuns").innerHTML = (data.runs || []).length ? data.runs.map(testRunCard).join("") : empty("لا توجد نتائج اختبارات متاحة.");
+}
+
+async function loadTests(){
+  try{
+    const res = await fetch("/api/tests");
+    const data = await res.json();
+    if(!res.ok || !data.ok) throw new Error(data.error || "tests api");
+    renderTests(data);
+  }catch(err){
+    console.error(err);
+    $("testsBadge").textContent = "ERROR";
+    $("testsBadge").className = "room-badge danger";
+    $("testRuns").innerHTML = empty("تعذر قراءة حالة الاختبارات.");
+  }
+}
+
+function brainCard(a){
+  const cls = a.action === "PAPER_ELIGIBLE" ? "ACTIVE" : a.action === "QUARANTINE" ? "ELIMINATED" : "PROBATION";
+  return `
+    <article class="brain-card">
+      <div class="agent-top">
+        <div>
+          <strong>${a.family}</strong>
+          <div class="agent-id">${a.agent_id}</div>
+        </div>
+        <span class="status ${cls}">${a.action}</span>
+      </div>
+      <div class="brain-trust">${num(a.trust_score,0)}<small>/100 Trust</small></div>
+      <div class="agent-metrics">
+        <div><span>Research</span><strong>${num(a.research_score,0)}</strong></div>
+        <div><span>Paper PnL</span><strong class="${a.paper_return >= 0 ? "pass":"fail"}">${pct(a.paper_return)}</strong></div>
+        <div><span>Paper DD</span><strong>${pct(a.paper_drawdown)}</strong></div>
+        <div><span>Closed trades</span><strong>${a.closed_trades}</strong></div>
+        <div><span>TF Confirm</span><strong>${a.timeframe_confirmations}/3</strong></div>
+        <div><span>Risk cap</span><strong>${num(a.max_risk_multiplier*100,0)}% of base</strong></div>
+      </div>
+      <div class="brain-reasons">${(a.reasons || []).map(r=>`<span>${r}</span>`).join("") || "<span>waiting for more evidence</span>"}</div>
+    </article>`;
+}
+
+function renderBrain(data){
+  const x=data.summary || {};
+  $("brainSummary").innerHTML = `
+    <div class="paper-kpi"><span>Paper eligible</span><strong class="pass">${x.paper_eligible || 0}</strong></div>
+    <div class="paper-kpi"><span>Shadow only</span><strong>${x.shadow_only || 0}</strong></div>
+    <div class="paper-kpi"><span>Probation</span><strong>${x.probation || 0}</strong></div>
+    <div class="paper-kpi"><span>Quarantine</span><strong class="${x.quarantine ? "fail":"pass"}">${x.quarantine || 0}</strong></div>
+  `;
+  $("brainAgents").innerHTML = (data.agents || []).length ? data.agents.map(brainCard).join("") : empty("العقل ينتظر Evidence كافي.");
+}
+
+async function loadBrain(){
+  try{
+    const res = await fetch("/api/brain");
+    const data = await res.json();
+    if(!res.ok || !data.ok) throw new Error(data.error || "brain api");
+    renderBrain(data);
+  }catch(err){
+    console.error(err);
+    $("brainAgents").innerHTML = empty("تعذر تغذية Evidence Brain الآن.");
+  }
+}
+
+function brokerAccountView(data){
+  if(!data.configured){
+    $("brokerBadge").textContent = "NEEDS PAPER KEYS";
+    $("brokerBadge").className = "room-badge warn";
+    $("brokerStatus").innerHTML = `
+      <div class="broker-message">
+        الموصل جاهز لكن مفاتيح Alpaca Paper غير موجودة على السيرفر بعد.
+        بمجرد إضافتها سيظهر Equity وCash والمراكز والأوامر هنا.
+      </div>`;
+    $("paperBrokerOrder").classList.add("hidden");
+    return;
+  }
+
+  if(data.locked || !data.connected){
+    $("brokerBadge").textContent = "CONFIGURED · LOCKED";
+    $("brokerBadge").className = "room-badge warn";
+    $("brokerStatus").innerHTML = '<div class="broker-message">الحساب مهيأ. أدخل Control Token لعرضه والتحكم بحساب الـPaper.</div>';
+    $("paperBrokerOrder").classList.add("hidden");
+    return;
+  }
+
+  $("brokerBadge").textContent = "ALPACA PAPER · CONNECTED";
+  $("brokerBadge").className = "room-badge good";
+  const a=data.account || {};
+  const positions=data.positions || [];
+  const orders=data.orders || [];
+  $("brokerStatus").innerHTML = `
+    <div class="broker-kpis">
+      <div class="paper-kpi"><span>Equity</span><strong>${money(a.equity || 0)}</strong></div>
+      <div class="paper-kpi"><span>Cash</span><strong>${money(a.cash || 0)}</strong></div>
+      <div class="paper-kpi"><span>Buying power</span><strong>${money(a.buying_power || 0)}</strong></div>
+      <div class="paper-kpi"><span>Max order</span><strong>${money(data.max_order_usd || 0)}</strong></div>
+    </div>
+    <div class="broker-split">
+      <div>
+        <h3>Positions</h3>
+        ${positions.length ? positions.map(p=>`<div class="broker-line"><span>${p.symbol} · qty ${num(p.qty,6)}</span><strong class="${p.unrealized_pl>=0?'pass':'fail'}">${money(p.unrealized_pl)}</strong></div>`).join("") : '<div class="broker-line"><span>No positions</span></div>'}
+      </div>
+      <div>
+        <h3>Recent orders</h3>
+        ${orders.slice(0,6).map(o=>`<div class="broker-line"><span>${o.side?.toUpperCase()} ${o.symbol}</span><strong>${o.status}</strong></div>`).join("") || '<div class="broker-line"><span>No orders</span></div>'}
+      </div>
+    </div>`;
+  $("paperBrokerOrder").classList.remove("hidden");
+}
+
+async function loadBroker(){
+  try{
+    const headers = {};
+    if(controlState.token) headers["X-Aegis-Control-Token"] = controlState.token;
+    const res = await fetch("/api/broker",{headers,cache:"no-store"});
+    const data = await res.json();
+    brokerAccountView(data);
+  }catch(err){
+    console.error(err);
+    $("brokerBadge").textContent = "BROKER ERROR";
+    $("brokerBadge").className = "room-badge danger";
+    $("brokerStatus").innerHTML = empty("تعذر الاتصال بموصل الـPaper.");
+  }
+}
+
+async function unlockBroker(){
+  controlState.token = ($("controlTokenInput").value || "").trim();
+  await loadBroker();
+}
+
+async function sendPaperOrder(){
+  if(!controlState.token){
+    $("brokerStatus").insertAdjacentHTML("afterbegin",'<div class="error-box">أدخل Control Token أولًا.</div>');
+    return;
+  }
+  const btn=$("brokerOrderBtn");
+  btn.disabled=true;
+  btn.textContent="إرسال…";
+  try{
+    const body={
+      action:"place_market_order",
+      symbol:$("brokerSymbol").value,
+      side:$("brokerSide").value,
+      notional_usd:Number($("brokerNotional").value || 0),
+    };
+    const res=await fetch("/api/broker",{
+      method:"POST",
+      headers:{
+        "Content-Type":"application/json",
+        "X-Aegis-Control-Token":controlState.token,
+      },
+      body:JSON.stringify(body),
+    });
+    const data=await res.json();
+    if(!res.ok || !data.ok) throw new Error(data.error || "paper order failed");
+    await loadBroker();
+  }catch(err){
+    console.error(err);
+    $("brokerStatus").insertAdjacentHTML("afterbegin",`<div class="error-box">${String(err.message || err)}</div>`);
+  }finally{
+    btn.disabled=false;
+    btn.textContent="إرسال Paper Order";
+  }
+}
+
+
 function refreshAll(){
   loadMarket();
   loadPaper();
   loadEvolution();
+  loadExecution();
+  loadTests();
+  loadBrain();
+  loadBroker();
 }
 
 $("refreshBtn").addEventListener("click",refreshAll);
+
+restoreRiskParams();
+$("riskForm")?.addEventListener("submit",(event)=>{event.preventDefault();loadExecution();});
+for(const id of ["capitalInput","riskInput","stopInput","maxPositionInput","notionalInput","feeInput"]){
+  $(id)?.addEventListener("input",scheduleExecution);
+}
+$("brokerUnlockBtn")?.addEventListener("click",unlockBroker);
+$("brokerOrderBtn")?.addEventListener("click",sendPaperOrder);
+
 startTickerStream();
 refreshAll();
 setInterval(loadMarket,60000);
 setInterval(loadPaper,60000);
 setInterval(loadEvolution,300000);
+setInterval(loadTests,60000);
+setInterval(loadBrain,60000);
+setInterval(loadBroker,60000);
