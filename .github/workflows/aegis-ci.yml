@@ -6,6 +6,11 @@ on:
     paths:
       - "aegis/**"
       - "tests/test_aegis.py"
+      - "tests/test_arena.py"
+      - "tests/test_live_lab.py"
+      - "tests/test_paper_worker.py"
+      - "tests/test_execution.py"
+      - "tests/test_evolution.py"
       - "requirements-aegis.txt"
       - ".github/workflows/aegis-ci.yml"
   workflow_dispatch:
@@ -22,6 +27,6 @@ jobs:
         with:
           python-version: "3.12"
       - run: pip install -r requirements-aegis.txt
-      - run: PYTHONPATH=. pytest -q tests/test_aegis.py tests/test_arena.py tests/test_live_lab.py tests/test_paper_worker.py
+      - run: PYTHONPATH=. pytest -q tests/test_aegis.py tests/test_arena.py tests/test_live_lab.py tests/test_paper_worker.py tests/test_execution.py tests/test_evolution.py
       - run: PYTHONPATH=. python -m aegis.demo
       - run: PYTHONPATH=. python -m aegis.arena_demo
