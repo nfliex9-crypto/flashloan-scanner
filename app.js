@@ -7,6 +7,7 @@ const state = {
   timer: null,
   loading: false,
   optimizing: false,
+  preflighting: false,
   minProfit: 1,
   history: loadHistory(),
 };
@@ -317,6 +318,73 @@ async function optimizeSize() {
   }
 }
 
+
+function renderPreflight(data) {
+  $("preflightEmpty").classList.add("hidden");
+  $("preflightResult").classList.remove("hidden");
+
+  const execute = data.status === "WOULD_EXECUTE";
+  $("preflightBadge").textContent = execute ? "WOULD EXECUTE" : "WOULD REVERT";
+  $("preflightBadge").className = "pill " + (execute ? "success-pill" : "danger-pill");
+  $("preflightStatus").textContent = data.status.replace("_", " ");
+  $("preflightStatus").className = execute ? "good" : "bad";
+  $("preflightRoute").textContent = data.route?.name || "—";
+  $("preflightNet").textContent = money(data.route?.net_pnl_usdc || 0);
+  $("preflightNet").className =
+    (data.route?.net_pnl_usdc || 0) > 0 ? "good" : "bad";
+  $("preflightShortfall").textContent = money(data.profit_shortfall_usdc || 0);
+  $("preflightReason").textContent = data.reason || "";
+
+  $("preflightChecks").innerHTML = (data.checks || [])
+    .map(
+      (check) => `
+        <div class="check-card ${check.ok ? "check-ok" : "check-fail"}">
+          <div class="check-icon">${check.ok ? "✓" : "×"}</div>
+          <div>
+            <strong>${check.name}</strong>
+            <span>${check.detail}</span>
+          </div>
+        </div>
+      `
+    )
+    .join("");
+}
+
+async function runPreflight() {
+  if (state.preflighting) return;
+
+  const size = Number($("tradeSize").value || 1000);
+  if (!Number.isFinite(size) || size <= 0) {
+    setStatus("bad", "حجم غير صالح");
+    return;
+  }
+
+  state.preflighting = true;
+  $("preflightBtn").disabled = true;
+  $("preflightBtn").textContent = "جاري المحاكاة...";
+
+  try {
+    const res = await fetch(
+      `/api/scan?mode=preflight&size=${encodeURIComponent(size)}&t=${Date.now()}`,
+      { cache: "no-store" }
+    );
+    const data = await res.json();
+    if (!res.ok || !data.ok) throw new Error(data.error || "Preflight error");
+    renderPreflight(data);
+  } catch (err) {
+    console.error(err);
+    $("preflightEmpty").classList.remove("hidden");
+    $("preflightResult").classList.add("hidden");
+    $("preflightBadge").textContent = "فشل الفحص";
+    $("preflightBadge").className = "pill danger-pill";
+    $("preflightEmpty").textContent = "تعذر تشغيل محاكاة التنفيذ الآن. جرّب مرة ثانية.";
+  } finally {
+    state.preflighting = false;
+    $("preflightBtn").disabled = false;
+    $("preflightBtn").textContent = "محاكاة التنفيذ";
+  }
+}
+
 function startTimer() {
   clearInterval(state.timer);
   state.timer = setInterval(() => {
@@ -331,6 +399,7 @@ function startTimer() {
 
 $("refreshBtn").addEventListener("click", refresh);
 $("optimizeBtn").addEventListener("click", optimizeSize);
+$("preflightBtn").addEventListener("click", runPreflight);
 $("tradeSize").addEventListener("change", refresh);
 $("clearHistoryBtn").addEventListener("click", () => {
   state.history = [];
