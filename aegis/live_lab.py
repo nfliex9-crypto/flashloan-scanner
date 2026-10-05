@@ -225,18 +225,30 @@ def win_rate(returns: list[float]) -> float:
     return sum(1 for x in active if x > 0) / len(active)
 
 
-def market_snapshot(symbol: str, candles: list[Candle]) -> dict:
+def market_snapshot(symbol: str, candles: list[Candle], interval_minutes: int = 60) -> dict:
     closes = [c.close for c in candles]
     price = closes[-1]
-    ret24 = price / closes[-25] - 1 if len(closes) >= 25 else 0.0
-    ret7d = price / closes[-169] - 1 if len(closes) >= 169 else 0.0
+    bars_24h = max(1, int(24 * 60 / interval_minutes))
+    bars_7d = max(1, int(7 * 24 * 60 / interval_minutes))
+    ret24 = (
+        price / closes[-1 - bars_24h] - 1
+        if len(closes) > bars_24h
+        else 0.0
+    )
+    ret7d = (
+        price / closes[-1 - bars_7d] - 1
+        if len(closes) > bars_7d
+        else 0.0
+    )
 
-    hourly = [
+    bar_returns = [
         closes[i] / closes[i - 1] - 1.0
         for i in range(1, len(closes))
     ]
-    recent = hourly[-168:] if len(hourly) >= 168 else hourly
-    vol = stddev(recent) * math.sqrt(24 * 365)
+    recent_count = min(len(bar_returns), bars_7d)
+    recent = bar_returns[-recent_count:]
+    bars_per_year = (60.0 / interval_minutes) * 24.0 * 365.0
+    vol = stddev(recent) * math.sqrt(bars_per_year)
 
     ma50 = sum(closes[-50:]) / 50
     ma200 = sum(closes[-200:]) / 200 if len(closes) >= 200 else ma50
@@ -443,7 +455,7 @@ def build_live_floor() -> dict:
     fetched = time.perf_counter()
 
     markets = [
-        market_snapshot(symbol, matrix[(symbol, "15m")])
+        market_snapshot(symbol, matrix[(symbol, "15m")], TIMEFRAMES["15m"])
         for symbol in ASSETS
     ]
 
