@@ -5,6 +5,8 @@ on:
     branches: [Bot]
     paths:
       - ".github/workflows/paper-trading.yml"
+      - "aegis/paper_worker.py"
+      - "aegis/execution.py"
   schedule:
     # 15m Kraken bars close at :00/:15/:30/:45. Run ~3 minutes later.
     - cron: "3,18,33,48 * * * *"
