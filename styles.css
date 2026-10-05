@@ -37,3 +37,110 @@ h1,h2,p{margin:0}.eyebrow{font-size:11px;letter-spacing:.18em;color:var(--cyan);
 footer{display:flex;justify-content:space-between;gap:20px;color:var(--muted);font-size:11px;padding:18px 4px 0}
 @media(max-width:1050px){.market-room,.strategy-room,.probation-room,.red-room,.graveyard-room,.replacement-room{grid-column:span 12}}
 @media(max-width:720px){.shell{width:min(94vw,700px);padding-top:14px}.topbar{flex-direction:column}.live-box{width:100%}.firewall{grid-template-columns:1fr;text-align:right}.firewall p{text-align:right}.metrics{grid-template-columns:1fr 1fr}.market-grid,.agent-grid,.stress-grid,.replacement-grid,.evidence-grid{grid-template-columns:1fr}.room{padding:13px}.brand{gap:10px}.logo{width:44px;height:44px}.topbar h1{font-size:29px}.agent-metrics{grid-template-columns:1fr 1fr}footer{flex-direction:column}}
+
+
+/* AEGIS v2: speed telemetry, multi-timeframe evidence, forward paper room */
+.speed-strip{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:8px;
+  margin-bottom:16px;
+}
+.speed-strip>div{
+  border:1px solid var(--line);
+  background:rgba(7,11,18,.78);
+  border-radius:12px;
+  padding:9px 12px;
+}
+.speed-strip span{
+  display:block;
+  color:var(--muted);
+  font-size:9px;
+  text-transform:uppercase;
+}
+.speed-strip strong{
+  font-size:12px;
+  direction:ltr;
+}
+.paper-room{grid-column:span 12}
+.tf-row{
+  display:flex;
+  gap:6px;
+  flex-wrap:wrap;
+  margin:0 0 10px;
+}
+.tf-badge{
+  font-size:9px;
+  padding:4px 6px;
+  border-radius:999px;
+  border:1px solid var(--line);
+  direction:ltr;
+}
+.tf-pass{
+  color:var(--green);
+  border-color:rgba(71,230,158,.25);
+}
+.tf-fail{
+  color:var(--red);
+  border-color:rgba(255,107,120,.2);
+}
+.paper-summary{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:9px;
+  margin-bottom:12px;
+}
+.paper-kpi{
+  border:1px solid var(--line);
+  background:rgba(5,9,15,.65);
+  border-radius:12px;
+  padding:11px;
+}
+.paper-kpi span{
+  display:block;
+  color:var(--muted);
+  font-size:10px;
+}
+.paper-kpi strong{
+  display:block;
+  margin-top:4px;
+  font-size:12px;
+  direction:ltr;
+}
+.paper-grid{
+  display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:10px;
+}
+.paper-card{
+  border:1px solid var(--line);
+  background:rgba(5,9,15,.74);
+  border-radius:14px;
+  padding:12px;
+}
+.paper-equity{
+  font-size:21px;
+  font-weight:900;
+  direction:ltr;
+  margin:10px 0;
+}
+.paper-equity small{
+  font-size:11px;
+  margin-inline-start:5px;
+}
+@media(max-width:1200px){
+  .paper-grid{grid-template-columns:repeat(2,1fr)}
+}
+@media(max-width:720px){
+  .speed-strip,
+  .paper-grid,
+  .paper-summary{
+    grid-template-columns:1fr 1fr;
+  }
+}
+@media(max-width:500px){
+  .paper-grid,
+  .paper-summary{
+    grid-template-columns:1fr;
+  }
+}
