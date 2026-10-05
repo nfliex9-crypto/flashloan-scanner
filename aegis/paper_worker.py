@@ -199,30 +199,32 @@ def run_tick() -> dict:
                     or changed
                 )
 
-    state["last_run_utc"] = datetime.now(timezone.utc).isoformat()
-    state["agent_count"] = len(state["agents"])
+    if changed:
+        state["last_run_utc"] = datetime.now(timezone.utc).isoformat()
+        state["agent_count"] = len(state["agents"])
 
-    equities = [float(a["equity"]) for a in state["agents"].values()]
-    state["summary"] = {
-        "average_equity": (
-            sum(equities) / len(equities) if equities else INITIAL_EQUITY
-        ),
-        "best_equity": max(equities) if equities else INITIAL_EQUITY,
-        "worst_equity": min(equities) if equities else INITIAL_EQUITY,
-        "total_closed_trades": sum(
-            int(a["closed_trades"]) for a in state["agents"].values()
-        ),
-        "max_observed_drawdown": max(
-            (float(a["max_drawdown"]) for a in state["agents"].values()),
-            default=0.0,
-        ),
-    }
+        equities = [float(a["equity"]) for a in state["agents"].values()]
+        state["summary"] = {
+            "average_equity": (
+                sum(equities) / len(equities) if equities else INITIAL_EQUITY
+            ),
+            "best_equity": max(equities) if equities else INITIAL_EQUITY,
+            "worst_equity": min(equities) if equities else INITIAL_EQUITY,
+            "total_closed_trades": sum(
+                int(a["closed_trades"]) for a in state["agents"].values()
+            ),
+            "max_observed_drawdown": max(
+                (float(a["max_drawdown"]) for a in state["agents"].values()),
+                default=0.0,
+            ),
+        }
 
-    STATE_PATH.parent.mkdir(parents=True, exist_ok=True)
-    STATE_PATH.write_text(
-        json.dumps(state, indent=2, sort_keys=True),
-        encoding="utf-8",
-    )
+        STATE_PATH.parent.mkdir(parents=True, exist_ok=True)
+        STATE_PATH.write_text(
+            json.dumps(state, indent=2, sort_keys=True),
+            encoding="utf-8",
+        )
+
     return {"changed": changed, "state": state}
 
 
