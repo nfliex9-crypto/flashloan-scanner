@@ -394,7 +394,7 @@ def should_promote(incumbent: dict, challenger: dict) -> tuple[bool, str]:
 
 
 def _load_state() -> dict:
-    if not STATE_PATH.exists():
+    if not STATE_PATH.exists() or STATE_PATH.stat().st_size == 0:
         return {
             "version": STATE_VERSION,
             "cycle": 0,
