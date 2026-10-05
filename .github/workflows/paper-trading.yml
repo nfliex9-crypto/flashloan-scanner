@@ -47,6 +47,7 @@ jobs:
         shell: bash
         run: |
           cp data/paper_state.json /tmp/paper_state.json
+          rm -f data/paper_state.json
           git switch paper-state
           git reset --hard origin/paper-state
           mkdir -p data
