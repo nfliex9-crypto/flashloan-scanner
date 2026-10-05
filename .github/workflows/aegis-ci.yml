@@ -1,0 +1,27 @@
+name: AEGIS CI
+
+on:
+  push:
+    branches: [Aegis]
+    paths:
+      - "aegis/**"
+      - "tests/test_aegis.py"
+      - "requirements-aegis.txt"
+      - ".github/workflows/aegis-ci.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r requirements-aegis.txt
+      - run: PYTHONPATH=. pytest -q tests/test_aegis.py tests/test_arena.py tests/test_live_lab.py
+      - run: PYTHONPATH=. python -m aegis.demo
+      - run: PYTHONPATH=. python -m aegis.arena_demo

@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="theme-color" content="#07111f" />
-  <title>Flashloan Scanner</title>
+  <meta name="theme-color" content="#05070d" />
+  <title>AEGIS Control Room</title>
   <link rel="stylesheet" href="/styles.css" />
 </head>
 <body>
@@ -12,316 +12,144 @@
 
   <main class="shell">
     <header class="topbar">
-      <div>
-        <p class="eyebrow">ARBITRUM · STAGE 3 PREFLIGHT</p>
-        <h1>Flashloan Arbitrage Scanner</h1>
-        <p class="sub">مراقبة مباشرة وتحليل أحجام الصفقات لـ WETH/USDC بين Uniswap V3 و Camelot V3</p>
+      <div class="brand">
+        <div class="logo">A</div>
+        <div>
+          <p class="eyebrow">ZERO-TRUST QUANT LAB</p>
+          <h1>AEGIS Control Room</h1>
+          <p class="sub">كل Agent يعمل داخل غرفة حقيقية الوظيفة، ويُقيَّم على بيانات سوق حية. لا يوجد تداول حقيقي أو رأس مال متصل.</p>
+        </div>
       </div>
 
-      <div class="status-wrap">
-        <span id="statusDot" class="dot loading"></span>
-        <span id="statusText">جاري الاتصال...</span>
+      <div class="live-box">
+        <span class="pulse"></span>
+        <div>
+          <small>DATA FEED</small>
+          <strong id="feedStatus">Connecting…</strong>
+        </div>
       </div>
     </header>
 
-    <section class="controls card">
-      <label>
-        حجم الفحص USDC
-        <input id="tradeSize" inputmode="decimal" type="number" min="1" step="100" value="1000" />
-      </label>
-      <button id="refreshBtn">تحديث الآن</button>
-      <button id="optimizeBtn" class="secondary-btn">أفضل حجم الآن</button>
-      <button id="preflightBtn" class="secondary-btn">محاكاة التنفيذ</button>
-      <div class="countdown">تحديث تلقائي خلال <strong id="countdown">20</strong>ث</div>
+    <section class="firewall">
+      <div>
+        <span>CAPITAL FIREWALL</span>
+        <strong id="firewallStatus">LOCKED</strong>
+      </div>
+      <p>Broker: OFF · Wallet: OFF · Private Key: NONE · Auto Execution: OFF</p>
+      <button id="refreshBtn">تحديث البيانات</button>
     </section>
 
-    <section class="metrics metrics-six">
-      <article class="metric card">
-        <span>البلوك</span>
-        <strong id="block">—</strong>
+    <section class="metrics">
+      <article class="metric">
+        <span>Agents</span>
+        <strong id="agentCount">—</strong>
       </article>
-      <article class="metric card">
-        <span>فرق السعر</span>
-        <strong id="spread">—</strong>
+      <article class="metric">
+        <span>Active</span>
+        <strong id="activeCount">—</strong>
       </article>
-      <article class="metric card">
-        <span>Gas تقديري</span>
-        <strong id="gas">—</strong>
+      <article class="metric warning">
+        <span>Probation</span>
+        <strong id="probationCount">—</strong>
       </article>
-      <article class="metric card">
-        <span>Aave Flash Fee</span>
-        <strong id="aaveFee">—</strong>
-      </article>
-      <article class="metric card">
-        <span>أفضل صافي ربح</span>
-        <strong id="bestNet">—</strong>
-      </article>
-      <article class="metric card">
-        <span>عدد الفحوصات</span>
-        <strong id="scanCount">0</strong>
+      <article class="metric danger">
+        <span>Eliminated</span>
+        <strong id="eliminatedCount">—</strong>
       </article>
     </section>
 
-
-
-    <section class="card section radar-section">
-      <div class="section-title">
-        <div>
-          <p class="eyebrow">MULTI-ASSET OPPORTUNITY RADAR</p>
-          <h2>البحث الموسع عن الفرص</h2>
-          <p class="sub radar-sub">يفحص WETH و WBTC و ARB و USDT و GHO و weETH عبر Uniswap V3 و Camelot V3 و PancakeSwap V3، ويرتب المسارات حسب Net PnL.</p>
-        </div>
-        <div class="radar-actions">
-          <button id="radarBtn" class="secondary-btn">بحث موسع الآن</button>
-          <button id="deepBtn" class="secondary-btn">Deep Scan للأحجام</button>
-        </div>
-      </div>
-
-      <div class="radar-stats">
-        <div><span>الأصول</span><strong id="radarAssets">—</strong></div>
-        <div><span>المسارات المقروءة</span><strong id="radarRoutes">—</strong></div>
-        <div><span>Net موجب</span><strong id="radarPositive">—</strong></div>
-        <div><span>فوق حد التنفيذ</span><strong id="radarProfitable">—</strong></div>
-      </div>
-
-      <div id="radarEmpty" class="optimizer-empty">
-        البحث الموسع يرتب النتائج حسب <strong>Net PnL الحقيقي المتوقع</strong> بعد رسوم Aave وGas.
-      </div>
-
-
-      <div id="deepEmpty" class="optimizer-empty deep-empty">
-        <strong>Deep Scan</strong> يفحص أفضل المسارات المكتشفة على أحجام متعددة من 100 إلى 25,000 USDC ويختار أعلى Net PnL.
-      </div>
-
-      <div id="deepResult" class="deep-result hidden">
-        <div class="optimizer-hero">
+    <section class="floor">
+      <article class="room market-room">
+        <div class="room-head">
           <div>
-            <span>أفضل أصل</span>
-            <strong id="deepToken">—</strong>
+            <p class="eyebrow">ROOM 01</p>
+            <h2>Market Intelligence</h2>
           </div>
-          <div>
-            <span>أفضل حجم</span>
-            <strong id="deepSize">—</strong>
-          </div>
-          <div>
-            <span>أفضل مسار</span>
-            <strong id="deepRoute">—</strong>
-          </div>
-          <div>
-            <span>أفضل Net PnL</span>
-            <strong id="deepNet">—</strong>
-          </div>
+          <span class="room-badge">LIVE</span>
         </div>
-
-        <div class="table-wrap compact-table">
-          <table>
-            <thead>
-              <tr>
-                <th>الأصل</th>
-                <th>الحجم الأفضل</th>
-                <th>المسار</th>
-                <th>Gross</th>
-                <th>Flash fee</th>
-                <th>Net</th>
-              </tr>
-            </thead>
-            <tbody id="deepRows"></tbody>
-          </table>
-        </div>
-      </div>
-
-      <div id="radarResult" class="table-wrap hidden">
-        <table class="radar-table">
-          <thead>
-            <tr>
-              <th>الأصل</th>
-              <th>المسار</th>
-              <th>Gross edge</th>
-              <th>Flash fee</th>
-              <th>Gas</th>
-              <th>Net PnL</th>
-              <th>الحالة</th>
-            </tr>
-          </thead>
-          <tbody id="radarRows"></tbody>
-        </table>
-      </div>
-    </section>
-
-    <section class="card section preflight-section">
-      <div class="section-title">
-        <div>
-          <p class="eyebrow">TRANSACTION PREFLIGHT</p>
-          <h2>هل العقد سينفّذ أم يعمل Revert؟</h2>
-        </div>
-        <span id="preflightBadge" class="pill neutral-pill">لم يتم الفحص</span>
-      </div>
-
-      <div id="preflightEmpty" class="optimizer-empty">
-        اضغط <strong>محاكاة التنفيذ</strong> لفحص الصفقة الحالية بنفس منطق حماية العقد قبل أي تنفيذ حقيقي.
-      </div>
-
-      <div id="preflightResult" class="preflight-result hidden">
-        <div class="preflight-hero">
-          <div>
-            <span>النتيجة</span>
-            <strong id="preflightStatus">—</strong>
-          </div>
-          <div>
-            <span>المسار</span>
-            <strong id="preflightRoute">—</strong>
-          </div>
-          <div>
-            <span>Net PnL</span>
-            <strong id="preflightNet">—</strong>
-          </div>
-          <div>
-            <span>النقص عن حد التنفيذ</span>
-            <strong id="preflightShortfall">—</strong>
-          </div>
-        </div>
-
-        <p id="preflightReason" class="preflight-reason"></p>
-        <div id="preflightChecks" class="checks-grid"></div>
-        <p class="muted small-note">العقد الخاص بـ Stage 3 موجود في المشروع ويُختبر على Arbitrum fork عبر Foundry. لا يتم إرسال أي معاملة Mainnet من هذه الصفحة.</p>
-      </div>
-    </section>
-
-    <section class="card section optimizer-section">
-      <div class="section-title">
-        <div>
-          <p class="eyebrow">SMART SIZE ANALYZER</p>
-          <h2>أفضل حجم Flash Loan حاليًا</h2>
-        </div>
-        <span class="pill">محاكاة فقط</span>
-      </div>
-
-      <div id="optimizerEmpty" class="optimizer-empty">
-        اضغط <strong>أفضل حجم الآن</strong> لفحص عدة أحجام واختيار أعلى Net PnL.
-      </div>
-
-      <div id="optimizerResult" class="optimizer-result hidden">
-        <div class="optimizer-hero">
-          <div>
-            <span>الحجم الأفضل</span>
-            <strong id="bestSize">—</strong>
-          </div>
-          <div>
-            <span>المسار</span>
-            <strong id="bestRoute">—</strong>
-          </div>
-          <div>
-            <span>Net PnL</span>
-            <strong id="optimizedNet">—</strong>
-          </div>
-        </div>
-        <div class="table-wrap compact-table">
-          <table>
-            <thead>
-              <tr>
-                <th>الحجم</th>
-                <th>المسار</th>
-                <th>Gross</th>
-                <th>Flash fee</th>
-                <th>Net</th>
-              </tr>
-            </thead>
-            <tbody id="optimizerCandidates"></tbody>
-          </table>
-        </div>
-      </div>
-    </section>
-
-    <section class="card section">
-      <div class="section-title">
-        <div>
-          <p class="eyebrow">LIVE PRICES</p>
-          <h2>الأسعار الحالية</h2>
-        </div>
-        <span id="updatedAt" class="muted">—</span>
-      </div>
-
-      <div id="prices" class="price-grid">
-        <div class="skeleton"></div>
-        <div class="skeleton"></div>
-      </div>
-    </section>
-
-    <section class="card section">
-      <div class="section-title">
-        <div>
-          <p class="eyebrow">ROUTE SIMULATION</p>
-          <h2>مسارات الأربيتراج</h2>
-        </div>
-        <span class="pill">بدون تنفيذ صفقات</span>
-      </div>
-
-      <div class="table-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th>المسار</th>
-              <th>النهاية</th>
-              <th>Gross PnL</th>
-              <th>Impact</th>
-              <th>Aave fee</th>
-              <th>Gas</th>
-              <th>Net PnL</th>
-              <th>الحالة</th>
-            </tr>
-          </thead>
-          <tbody id="routes">
-            <tr><td colspan="8" class="loading-row">جاري تحميل البيانات...</td></tr>
-          </tbody>
-        </table>
-      </div>
-    </section>
-
-    <section class="analytics-grid">
-      <article class="card section">
-        <div class="section-title">
-          <div>
-            <p class="eyebrow">LOCAL ANALYTICS</p>
-            <h2>تطور أفضل Net PnL</h2>
-          </div>
-          <span class="muted">محفوظ على هذا الجهاز</span>
-        </div>
-        <div class="chart-wrap">
-          <canvas id="historyChart"></canvas>
-        </div>
-        <div class="history-stats">
-          <div><span>فرص مربحة</span><strong id="opportunityCount">0</strong></div>
-          <div><span>أفضل نتيجة مسجلة</span><strong id="bestEver">—</strong></div>
+        <div id="markets" class="market-grid">
+          <div class="loading">جاري تحميل بيانات السوق…</div>
         </div>
       </article>
 
-      <article class="card section">
-        <div class="section-title">
+      <article class="room strategy-room">
+        <div class="room-head">
           <div>
-            <p class="eyebrow">RECENT SCANS</p>
-            <h2>آخر الفحوصات</h2>
+            <p class="eyebrow">ROOM 02</p>
+            <h2>Strategy Arena</h2>
           </div>
-          <button id="clearHistoryBtn" class="tiny-btn">مسح السجل</button>
+          <span class="room-badge good">SURVIVORS</span>
         </div>
-        <div class="table-wrap compact-table">
-          <table>
-            <thead>
-              <tr>
-                <th>الوقت</th>
-                <th>الحجم</th>
-                <th>Spread</th>
-                <th>Net</th>
-              </tr>
-            </thead>
-            <tbody id="historyRows"></tbody>
-          </table>
+        <div id="strategyAgents" class="agent-grid"></div>
+      </article>
+
+      <article class="room probation-room">
+        <div class="room-head">
+          <div>
+            <p class="eyebrow">ROOM 03</p>
+            <h2>Probation Room</h2>
+          </div>
+          <span class="room-badge warn">UNDER PRESSURE</span>
+        </div>
+        <p class="room-desc">هؤلاء لم يثبتوا المتانة الكافية. أي تدهور إضافي يبقيهم خارج رأس المال.</p>
+        <div id="probationAgents" class="agent-grid"></div>
+      </article>
+
+      <article class="room red-room">
+        <div class="room-head">
+          <div>
+            <p class="eyebrow">ROOM 04</p>
+            <h2>Red Team Chamber</h2>
+          </div>
+          <span class="room-badge danger">ATTACK MODE</span>
+        </div>
+        <p class="room-desc">اختبارات Out-of-Sample وتكاليف مضاعفة ×2 و×3. الهدف هنا تدمير الاستراتيجية لا تلميعها.</p>
+        <div id="redTeam" class="stress-grid"></div>
+      </article>
+
+      <article class="room graveyard-room">
+        <div class="room-head">
+          <div>
+            <p class="eyebrow">ROOM 05</p>
+            <h2>Elimination Vault</h2>
+          </div>
+          <span class="room-badge danger">REMOVED</span>
+        </div>
+        <div id="graveyard" class="agent-grid"></div>
+      </article>
+
+      <article class="room replacement-room">
+        <div class="room-head">
+          <div>
+            <p class="eyebrow">ROOM 06</p>
+            <h2>Replacement Lab</h2>
+          </div>
+          <span class="room-badge">QUARANTINE</span>
+        </div>
+        <p class="room-desc">أي Agent جديد يبدأ من الصفر ويحتاج Evidence جديد قبل أن يُسمح له بالصعود.</p>
+        <div id="replacements" class="replacement-grid"></div>
+      </article>
+
+      <article class="room evidence-room">
+        <div class="room-head">
+          <div>
+            <p class="eyebrow">ROOM 07</p>
+            <h2>Evidence & Method</h2>
+          </div>
+          <span class="room-badge">AUDIT</span>
+        </div>
+        <div class="evidence-grid">
+          <div><span>المصدر</span><strong id="source">—</strong></div>
+          <div><span>آخر تحديث UTC</span><strong id="updated">—</strong></div>
+          <div><span>Out-of-Sample</span><strong id="oos">—</strong></div>
+          <div><span>Cost Model</span><strong id="costModel">—</strong></div>
         </div>
       </article>
     </section>
 
     <footer>
-      <span>Stage 3 · Preflight + fork contract + analytics</span>
-      <span>لا محفظة · لا Private Key · لا اقتراض · لا تنفيذ</span>
+      <span>AEGIS · Personal Research System</span>
+      <span>النتائج أبحاث تاريخية/حالية وليست ضمانًا لأداء مستقبلي.</span>
     </footer>
   </main>
 
