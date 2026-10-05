@@ -12,6 +12,7 @@ from .live_lab import (
     STRATEGIES,
     TIMEFRAMES,
     annualized_sharpe,
+    closed_trade_outcomes,
     compounded_return,
     fetch_market_matrix,
     max_drawdown,
@@ -266,9 +267,10 @@ def evaluate_genome(symbol: str, genome: Genome, matrix: dict) -> dict:
         total = compounded_return(returns)
         oos = compounded_return(oos_returns)
         dd = max_drawdown(returns)
-        pf = profit_factor(returns)
+        closed_trades = closed_trade_outcomes(returns, positions)
+        pf = profit_factor(closed_trades)
         sharpe = annualized_sharpe(returns, interval)
-        trades = trade_count(positions)
+        trades = len(closed_trades)
 
         stress_passes = sum(
             (
