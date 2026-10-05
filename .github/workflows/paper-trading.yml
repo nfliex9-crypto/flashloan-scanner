@@ -1,0 +1,47 @@
+name: AEGIS Forward Paper Trading
+
+on:
+  schedule:
+    # 15m Kraken bars close at :00/:15/:30/:45. Run a few minutes later.
+    - cron: "7,22,37,52 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: aegis-paper-state
+  cancel-in-progress: false
+
+jobs:
+  tick:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout paper-state branch
+        uses: actions/checkout@v4
+        with:
+          ref: paper-state
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Run forward paper tick
+        run: PYTHONPATH=. python -m aegis.paper_worker
+
+      - name: Persist state only when it changed
+        shell: bash
+        run: |
+          if git diff --quiet -- data/paper_state.json; then
+            echo "No new closed candle. Nothing to commit."
+            exit 0
+          fi
+
+          git config user.name "aegis-paper-bot"
+          git config user.email "aegis-paper-bot@users.noreply.github.com"
+          git add data/paper_state.json
+          git commit -m "paper: forward tick [skip ci]"
+          git push origin HEAD:paper-state
