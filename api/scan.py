@@ -179,19 +179,70 @@ def build_optimizer() -> dict:
     }
 
 
+def build_preflight(size: Decimal) -> dict:
+    snapshot = build_snapshot(size)
+    best = snapshot["routes"][0]
+    min_profit = Decimal(str(snapshot["min_net_profit_usdc"]))
+    net = Decimal(str(best["net_pnl_usdc"]))
+    shortfall = max(Decimal("0"), min_profit - net)
+    improvement_pct = (shortfall / size * Decimal("100")) if size > 0 else Decimal("0")
+
+    return {
+        "ok": True,
+        "mode": "preflight",
+        "network": snapshot["network"],
+        "chain_id": snapshot["chain_id"],
+        "block": snapshot["block"],
+        "status": "WOULD_EXECUTE" if best["opportunity"] else "WOULD_REVERT",
+        "reason": (
+            "Net profit clears the configured safety threshold."
+            if best["opportunity"]
+            else "Net profit is below the configured minimum; contract safety guard would revert."
+        ),
+        "trade_size_usdc": snapshot["trade_size_usdc"],
+        "route": best,
+        "min_net_profit_usdc": snapshot["min_net_profit_usdc"],
+        "profit_shortfall_usdc": dec(shortfall),
+        "required_improvement_pct": dec(improvement_pct),
+        "flashloan_fee_pct": snapshot["flashloan_fee_pct"],
+        "gas_est_usdc": snapshot["gas_est_usdc"],
+        "fork_contract": "contracts/FlashloanArbSimulator.sol",
+        "checks": [
+            {
+                "name": "Aave flash-loan premium",
+                "ok": snapshot["flashloan_fee_source"] == "aave-live",
+                "detail": f'{snapshot["flashloan_fee_pct"]:.3f}% live on-chain',
+            },
+            {
+                "name": "Net profit guard",
+                "ok": best["opportunity"],
+                "detail": f'Net {best["net_pnl_usdc"]:.4f} USDC vs minimum {snapshot["min_net_profit_usdc"]:.4f}',
+            },
+            {
+                "name": "Wallet / private key",
+                "ok": True,
+                "detail": "Not used in Stage 3 simulation",
+            },
+        ],
+    }
+
+
 class handler(BaseHTTPRequestHandler):
     def do_GET(self):
         try:
             params = parse_qs(urlparse(self.path).query)
             mode = params.get("mode", ["snapshot"])[0]
 
+            raw_size = params.get("size", ["1000"])[0]
+            size = Decimal(raw_size)
+            if size <= 0 or size > Decimal("10000000"):
+                raise ValueError("size must be between 0 and 10,000,000 USDC")
+
             if mode == "optimize":
                 body = build_optimizer()
+            elif mode == "preflight":
+                body = build_preflight(size)
             else:
-                raw_size = params.get("size", ["1000"])[0]
-                size = Decimal(raw_size)
-                if size <= 0 or size > Decimal("10000000"):
-                    raise ValueError("size must be between 0 and 10,000,000 USDC")
                 body = build_snapshot(size)
 
             status = 200
