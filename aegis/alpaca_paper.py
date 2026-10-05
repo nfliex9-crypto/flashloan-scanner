@@ -143,7 +143,7 @@ def place_market_order(
     if side not in {"buy", "sell"}:
         raise ValueError("side must be buy or sell")
 
-    max_order = float(os.getenv("AEGIS_PAPER_MAX_ORDER_USD", "1000"))
+    max_order = float(os.getenv("AEGIS_PAPER_MAX_ORDER_USD", "1000") or "1000")
     notional_usd = float(notional_usd)
 
     if notional_usd <= 0:
