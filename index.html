@@ -13,9 +13,9 @@
   <main class="shell">
     <header class="topbar">
       <div>
-        <p class="eyebrow">ARBITRUM · READ ONLY</p>
+        <p class="eyebrow">ARBITRUM · STAGE 2 ANALYTICS</p>
         <h1>Flashloan Arbitrage Scanner</h1>
-        <p class="sub">مراقبة مباشرة لـ WETH/USDC بين Uniswap V3 و Camelot V3</p>
+        <p class="sub">مراقبة مباشرة وتحليل أحجام الصفقات لـ WETH/USDC بين Uniswap V3 و Camelot V3</p>
       </div>
 
       <div class="status-wrap">
@@ -30,10 +30,11 @@
         <input id="tradeSize" inputmode="decimal" type="number" min="1" step="100" value="1000" />
       </label>
       <button id="refreshBtn">تحديث الآن</button>
+      <button id="optimizeBtn" class="secondary-btn">أفضل حجم الآن</button>
       <div class="countdown">تحديث تلقائي خلال <strong id="countdown">20</strong>ث</div>
     </section>
 
-    <section class="metrics">
+    <section class="metrics metrics-six">
       <article class="metric card">
         <span>البلوك</span>
         <strong id="block">—</strong>
@@ -47,9 +48,62 @@
         <strong id="gas">—</strong>
       </article>
       <article class="metric card">
+        <span>Aave Flash Fee</span>
+        <strong id="aaveFee">—</strong>
+      </article>
+      <article class="metric card">
         <span>أفضل صافي ربح</span>
         <strong id="bestNet">—</strong>
       </article>
+      <article class="metric card">
+        <span>عدد الفحوصات</span>
+        <strong id="scanCount">0</strong>
+      </article>
+    </section>
+
+    <section class="card section optimizer-section">
+      <div class="section-title">
+        <div>
+          <p class="eyebrow">SMART SIZE ANALYZER</p>
+          <h2>أفضل حجم Flash Loan حاليًا</h2>
+        </div>
+        <span class="pill">محاكاة فقط</span>
+      </div>
+
+      <div id="optimizerEmpty" class="optimizer-empty">
+        اضغط <strong>أفضل حجم الآن</strong> لفحص عدة أحجام واختيار أعلى Net PnL.
+      </div>
+
+      <div id="optimizerResult" class="optimizer-result hidden">
+        <div class="optimizer-hero">
+          <div>
+            <span>الحجم الأفضل</span>
+            <strong id="bestSize">—</strong>
+          </div>
+          <div>
+            <span>المسار</span>
+            <strong id="bestRoute">—</strong>
+          </div>
+          <div>
+            <span>Net PnL</span>
+            <strong id="optimizedNet">—</strong>
+          </div>
+        </div>
+        <div class="table-wrap compact-table">
+          <table>
+            <thead>
+              <tr>
+                <th>الحجم</th>
+                <th>المسار</th>
+                <th>Gross</th>
+                <th>Flash fee</th>
+                <th>Net</th>
+              </tr>
+            </thead>
+            <tbody id="optimizerCandidates"></tbody>
+          </table>
+        </div>
+      </div>
     </section>
 
     <section class="card section">
@@ -84,20 +138,63 @@
               <th>النهاية</th>
               <th>Gross PnL</th>
               <th>Impact</th>
+              <th>Aave fee</th>
               <th>Gas</th>
               <th>Net PnL</th>
               <th>الحالة</th>
             </tr>
           </thead>
           <tbody id="routes">
-            <tr><td colspan="7" class="loading-row">جاري تحميل البيانات...</td></tr>
+            <tr><td colspan="8" class="loading-row">جاري تحميل البيانات...</td></tr>
           </tbody>
         </table>
       </div>
     </section>
 
+    <section class="analytics-grid">
+      <article class="card section">
+        <div class="section-title">
+          <div>
+            <p class="eyebrow">LOCAL ANALYTICS</p>
+            <h2>تطور أفضل Net PnL</h2>
+          </div>
+          <span class="muted">محفوظ على هذا الجهاز</span>
+        </div>
+        <div class="chart-wrap">
+          <canvas id="historyChart"></canvas>
+        </div>
+        <div class="history-stats">
+          <div><span>فرص مربحة</span><strong id="opportunityCount">0</strong></div>
+          <div><span>أفضل نتيجة مسجلة</span><strong id="bestEver">—</strong></div>
+        </div>
+      </article>
+
+      <article class="card section">
+        <div class="section-title">
+          <div>
+            <p class="eyebrow">RECENT SCANS</p>
+            <h2>آخر الفحوصات</h2>
+          </div>
+          <button id="clearHistoryBtn" class="tiny-btn">مسح السجل</button>
+        </div>
+        <div class="table-wrap compact-table">
+          <table>
+            <thead>
+              <tr>
+                <th>الوقت</th>
+                <th>الحجم</th>
+                <th>Spread</th>
+                <th>Net</th>
+              </tr>
+            </thead>
+            <tbody id="historyRows"></tbody>
+          </table>
+        </div>
+      </article>
+    </section>
+
     <footer>
-      <span>Stage 1 · Scanner فقط</span>
+      <span>Stage 2 · Live analytics + Aave fee + size optimizer</span>
       <span>لا محفظة · لا Private Key · لا اقتراض · لا تنفيذ</span>
     </footer>
   </main>
