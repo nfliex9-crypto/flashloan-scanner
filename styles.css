@@ -230,3 +230,124 @@ footer {
   .section-title { align-items: flex-start; flex-direction: column; }
   footer { flex-direction: column; }
 }
+
+
+/* Stage 2 analytics */
+.metrics-six {
+  grid-template-columns: repeat(6, 1fr);
+}
+
+.secondary-btn {
+  background: rgba(77, 231, 255, .08);
+  border-color: rgba(77, 231, 255, .28);
+  color: var(--cyan);
+}
+
+.optimizer-empty {
+  padding: 22px;
+  border: 1px dashed var(--line);
+  border-radius: 16px;
+  color: var(--muted);
+  text-align: center;
+  background: rgba(3, 10, 20, .32);
+}
+
+.hidden {
+  display: none !important;
+}
+
+.optimizer-result {
+  display: grid;
+  gap: 16px;
+}
+
+.optimizer-hero {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+.optimizer-hero > div,
+.history-stats > div {
+  background: var(--panel-2);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 16px;
+}
+
+.optimizer-hero span,
+.history-stats span {
+  display: block;
+  color: var(--muted);
+  font-size: 12px;
+  margin-bottom: 8px;
+}
+
+.optimizer-hero strong {
+  display: block;
+  font-size: 20px;
+  direction: ltr;
+}
+
+.analytics-grid {
+  display: grid;
+  grid-template-columns: 1.25fr .75fr;
+  gap: 16px;
+}
+
+.chart-wrap {
+  width: 100%;
+  min-height: 220px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: rgba(3, 10, 20, .34);
+  padding: 8px;
+  overflow: hidden;
+}
+
+.history-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.history-stats strong {
+  font-size: 20px;
+}
+
+.compact-table table {
+  min-width: 560px;
+}
+
+.tiny-btn {
+  height: 34px;
+  padding: 0 12px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, .04);
+  color: var(--muted);
+}
+
+@media (max-width: 1000px) {
+  .metrics-six {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .analytics-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 760px) {
+  .metrics-six {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .optimizer-hero {
+    grid-template-columns: 1fr;
+  }
+
+  .controls .secondary-btn {
+    flex-basis: 100%;
+  }
+}
