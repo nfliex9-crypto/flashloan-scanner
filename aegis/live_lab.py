@@ -3,8 +3,10 @@ from __future__ import annotations
 import json
 import math
 import statistics
+import time
 import urllib.parse
 import urllib.request
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import dataclass
 from datetime import datetime, timezone
 
@@ -28,12 +30,20 @@ ASSETS = {
     "ETH": "ETHUSD",
 }
 
+TIMEFRAMES = {
+    "15m": 15,
+    "1h": 60,
+    "4h": 240,
+}
 
-def fetch_ohlc(pair: str, interval: int = 60) -> list[Candle]:
-    query = urllib.parse.urlencode({"pair": pair, "interval": interval})
+STRATEGIES = ("Trend", "Momentum", "Mean Reversion", "Breakout")
+
+
+def fetch_ohlc(pair: str, interval: int = 60, *, closed_only: bool = True) -> list[Candle]:
+    query = urllib.parse.urlencode({"pair": pair, "interval": interval, "assetVersion": 1})
     request = urllib.request.Request(
         f"{KRAKEN_URL}?{query}",
-        headers={"User-Agent": "AEGIS-Research-Lab/1.0"},
+        headers={"User-Agent": "AEGIS-Research-Lab/2.0"},
     )
     with urllib.request.urlopen(request, timeout=12) as response:
         payload = json.loads(response.read().decode("utf-8"))
@@ -56,8 +66,13 @@ def fetch_ohlc(pair: str, interval: int = 60) -> list[Candle]:
         )
         for row in rows
     ]
+    # Kraken documents the final row as the current, not-yet-committed candle.
+    # Drop it so research and paper decisions cannot repaint on an unfinished bar.
+    if closed_only and len(candles) > 1:
+        candles = candles[:-1]
+
     if len(candles) < 120:
-        raise RuntimeError("Not enough OHLC history returned by Kraken.")
+        raise RuntimeError("Not enough closed OHLC history returned by Kraken.")
     return candles
 
 
@@ -174,14 +189,15 @@ def max_drawdown(returns: list[float]) -> float:
     return worst
 
 
-def annualized_sharpe(returns: list[float]) -> float:
+def annualized_sharpe(returns: list[float], interval_minutes: int = 60) -> float:
     if len(returns) < 3:
         return 0.0
     mean = statistics.fmean(returns)
     sd = statistics.pstdev(returns)
     if sd == 0:
         return 0.0
-    return mean / sd * math.sqrt(24 * 365)
+    bars_per_year = (60.0 / interval_minutes) * 24.0 * 365.0
+    return mean / sd * math.sqrt(bars_per_year)
 
 
 def profit_factor(returns: list[float]) -> float:
@@ -251,6 +267,7 @@ def evaluate_agent(
     candles: list[Candle],
     *,
     variant: int = 0,
+    interval_minutes: int = 60,
 ) -> dict:
     closes = [c.close for c in candles]
     positions = strategy_positions(closes, strategy, variant)
@@ -272,7 +289,7 @@ def evaluate_agent(
     oos = compounded_return(oos_returns)
     dd = max_drawdown(returns)
     pf = profit_factor(returns)
-    sharpe = annualized_sharpe(returns)
+    sharpe = annualized_sharpe(returns, interval_minutes)
     trades = trade_count(positions)
 
     stress = {
@@ -321,30 +338,124 @@ def evaluate_agent(
         "stress": stress,
         "stress_passes": stress_passes,
         "cost_assumption_bps": COST_PER_POSITION_CHANGE * 10000,
+        "interval_minutes": interval_minutes,
     }
+
+
+
+def fetch_market_matrix() -> dict[tuple[str, str], list[Candle]]:
+    """Fetch every asset/timeframe concurrently instead of serial REST calls."""
+    output: dict[tuple[str, str], list[Candle]] = {}
+    tasks = {}
+
+    with ThreadPoolExecutor(max_workers=6) as pool:
+        for symbol, pair in ASSETS.items():
+            for tf_name, interval in TIMEFRAMES.items():
+                future = pool.submit(
+                    fetch_ohlc,
+                    pair,
+                    interval,
+                    closed_only=True,
+                )
+                tasks[future] = (symbol, tf_name)
+
+        for future in as_completed(tasks):
+            output[tasks[future]] = future.result()
+
+    return output
+
+
+def merge_timeframe_evidence(
+    symbol: str,
+    strategy: str,
+    variant: int,
+    matrix: dict[tuple[str, str], list[Candle]],
+) -> dict:
+    evidence = {
+        tf_name: evaluate_agent(
+            symbol,
+            strategy,
+            matrix[(symbol, tf_name)],
+            variant=variant,
+            interval_minutes=interval,
+        )
+        for tf_name, interval in TIMEFRAMES.items()
+    }
+
+    primary = dict(evidence["1h"])
+
+    confirmations = sum(
+        1
+        for result in evidence.values()
+        if (
+            result["total_return"] > 0
+            and result["oos_return"] > 0
+            and result["stress"]["cost_2x_positive"]
+        )
+    )
+
+    score = round(
+        0.25 * evidence["15m"]["survival_score"]
+        + 0.50 * evidence["1h"]["survival_score"]
+        + 0.25 * evidence["4h"]["survival_score"],
+        2,
+    )
+
+    hard_failure = any(
+        result["max_drawdown"] > 0.20
+        for result in evidence.values()
+    )
+
+    if hard_failure or score < 35:
+        status = "ELIMINATED"
+    elif (
+        score >= 68
+        and confirmations >= 2
+        and primary["oos_return"] > 0
+        and primary["stress"]["cost_2x_positive"]
+    ):
+        status = "ACTIVE"
+    else:
+        status = "PROBATION"
+
+    primary["status"] = status
+    primary["survival_score"] = score
+    primary["timeframe_confirmations"] = confirmations
+    primary["timeframe_total"] = len(TIMEFRAMES)
+    primary["timeframe_evidence"] = {
+        name: {
+            "return": result["total_return"],
+            "oos_return": result["oos_return"],
+            "max_drawdown": result["max_drawdown"],
+            "profit_factor": result["profit_factor"],
+            "sharpe": result["sharpe"],
+            "score": result["survival_score"],
+            "stress_passes": result["stress_passes"],
+        }
+        for name, result in evidence.items()
+    }
+    return primary
 
 
 def build_live_floor() -> dict:
-    candles_by_symbol = {
-        symbol: fetch_ohlc(pair)
-        for symbol, pair in ASSETS.items()
-    }
+    started = time.perf_counter()
+    matrix = fetch_market_matrix()
+    fetched = time.perf_counter()
 
     markets = [
-        market_snapshot(symbol, candles)
-        for symbol, candles in candles_by_symbol.items()
+        market_snapshot(symbol, matrix[(symbol, "15m")])
+        for symbol in ASSETS
     ]
 
-    strategies = ("Trend", "Momentum", "Mean Reversion", "Breakout")
     agents = []
-    for symbol, candles in candles_by_symbol.items():
-        for idx, strategy in enumerate(strategies):
+    for symbol in ASSETS:
+        for idx, strategy in enumerate(STRATEGIES):
             agents.append(
-                evaluate_agent(
+                merge_timeframe_evidence(
                     symbol,
                     strategy,
-                    candles,
-                    variant=idx % 2,
+                    idx % 2,
+                    matrix,
                 )
             )
 
@@ -364,31 +475,36 @@ def build_live_floor() -> dict:
         reverse=True,
     )
 
-    replacements = []
-    for dead in eliminated:
-        replacements.append(
-            {
-                "agent_id": dead["agent_id"].rsplit("-g", 1)[0]
-                + f"-g{dead['generation'] + 1}",
-                "parent": dead["agent_id"],
-                "asset": dead["asset"],
-                "strategy": dead["strategy"],
-                "generation": dead["generation"] + 1,
-                "status": "QUARANTINE",
-                "note": "Replacement spawned; must earn fresh evidence before promotion.",
-            }
-        )
+    replacements = [
+        {
+            "agent_id": dead["agent_id"].rsplit("-g", 1)[0]
+            + f"-g{dead['generation'] + 1}",
+            "parent": dead["agent_id"],
+            "asset": dead["asset"],
+            "strategy": dead["strategy"],
+            "generation": dead["generation"] + 1,
+            "status": "QUARANTINE",
+            "note": "Replacement spawned; fresh multi-timeframe evidence required.",
+        }
+        for dead in eliminated
+    ]
 
     red_team = sorted(
         agents,
-        key=lambda x: (x["stress_passes"], x["survival_score"]),
+        key=lambda x: (
+            x["timeframe_confirmations"],
+            x["stress_passes"],
+            x["survival_score"],
+        ),
     )[:4]
+
+    finished = time.perf_counter()
 
     return {
         "ok": True,
         "engine": "AEGIS Zero-Trust Quant Lab",
-        "mode": "LIVE_DATA_RESEARCH",
-        "source": "Kraken public OHLC · 1h candles",
+        "mode": "LIVE_MULTI_TIMEFRAME_RESEARCH",
+        "source": "Kraken public OHLC · closed candles only",
         "generated_at_utc": datetime.now(timezone.utc).isoformat(),
         "capital_firewall": "LOCKED",
         "live_execution_enabled": False,
@@ -407,11 +523,20 @@ def build_live_floor() -> dict:
             "eliminated": len(eliminated),
             "replacements": len(replacements),
         },
+        "performance": {
+            "fetch_ms": round((fetched - started) * 1000, 1),
+            "evaluation_ms": round((finished - fetched) * 1000, 1),
+            "total_ms": round((finished - started) * 1000, 1),
+            "parallel_market_requests": len(ASSETS) * len(TIMEFRAMES),
+        },
         "method": {
-            "history": "Latest hourly OHLC window returned by Kraken",
-            "oos_split": "Last 30% of bars",
+            "history": "Kraken rolling windows at 15m / 1h / 4h",
+            "timeframes": list(TIMEFRAMES.keys()),
+            "closed_candles_only": True,
+            "oos_split": "Last 30% of each timeframe",
             "cost_model": "6 bps per position change; stress at 2x and 3x",
-            "strategies": list(strategies),
+            "strategies": list(STRATEGIES),
+            "activation_rule": "Multi-timeframe confirmation + OOS + 2x cost survival",
             "rule": "Risk failures are penalized more heavily than missed return targets.",
         },
     }
