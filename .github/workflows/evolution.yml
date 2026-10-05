@@ -1,0 +1,61 @@
+name: AEGIS Evolution Lab
+
+on:
+  schedule:
+    # Slow evolution reduces overfitting to tiny market changes.
+    - cron: "17 2 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: aegis-evolution-state
+  cancel-in-progress: false
+
+jobs:
+  evolve:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout current production code
+        uses: actions/checkout@v4
+        with:
+          ref: Bot
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Load previous evolution memory
+        shell: bash
+        run: |
+          git fetch origin evolution-state
+          mkdir -p data
+          git show origin/evolution-state:data/evolution_state.json > data/evolution_state.json 2>/dev/null || true
+
+      - name: Run deterministic evolution tournament
+        run: PYTHONPATH=. python -m aegis.evolution
+
+      - name: Persist evolution memory
+        shell: bash
+        run: |
+          cp data/evolution_state.json /tmp/evolution_state.json
+          rm -f data/evolution_state.json
+          git switch evolution-state
+          git reset --hard origin/evolution-state
+          mkdir -p data
+          cp /tmp/evolution_state.json data/evolution_state.json
+
+          if [ -z "$(git status --porcelain -- data/evolution_state.json)" ]; then
+            echo "No evolution change."
+            exit 0
+          fi
+
+          git config user.name "aegis-evolution-bot"
+          git config user.email "aegis-evolution-bot@users.noreply.github.com"
+          git add data/evolution_state.json
+          git commit -m "evolution: cycle [skip ci]"
+          git push origin HEAD:evolution-state
