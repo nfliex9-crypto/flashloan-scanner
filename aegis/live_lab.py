@@ -10,6 +10,8 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import dataclass
 from datetime import datetime, timezone
 
+from .execution import book_microstructure, fetch_order_book
+
 
 KRAKEN_URL = "https://api.kraken.com/0/public/OHLC"
 COST_PER_POSITION_CHANGE = 0.0006  # 6 bps research assumption per position change.
@@ -355,6 +357,23 @@ def evaluate_agent(
 
 
 
+
+def fetch_microstructure_matrix() -> dict[str, dict]:
+    output: dict[str, dict] = {}
+    with ThreadPoolExecutor(max_workers=len(ASSETS)) as pool:
+        futures = {
+            pool.submit(fetch_order_book, pair, 100): symbol
+            for symbol, pair in ASSETS.items()
+        }
+        for future in as_completed(futures):
+            symbol = futures[future]
+            output[symbol] = book_microstructure(
+                future.result(),
+                notional_quote=10_000.0,
+            )
+    return output
+
+
 def fetch_market_matrix() -> dict[tuple[str, str], list[Candle]]:
     """Fetch every asset/timeframe concurrently instead of serial REST calls."""
     output: dict[tuple[str, str], list[Candle]] = {}
@@ -451,13 +470,22 @@ def merge_timeframe_evidence(
 
 def build_live_floor() -> dict:
     started = time.perf_counter()
-    matrix = fetch_market_matrix()
+    with ThreadPoolExecutor(max_workers=2) as pool:
+        matrix_future = pool.submit(fetch_market_matrix)
+        micro_future = pool.submit(fetch_microstructure_matrix)
+        matrix = matrix_future.result()
+        microstructure = micro_future.result()
     fetched = time.perf_counter()
 
-    markets = [
-        market_snapshot(symbol, matrix[(symbol, "15m")], TIMEFRAMES["15m"])
-        for symbol in ASSETS
-    ]
+    markets = []
+    for symbol in ASSETS:
+        snapshot = market_snapshot(
+            symbol,
+            matrix[(symbol, "15m")],
+            TIMEFRAMES["15m"],
+        )
+        snapshot["microstructure"] = microstructure.get(symbol, {})
+        markets.append(snapshot)
 
     agents = []
     for symbol in ASSETS:
@@ -539,14 +567,14 @@ def build_live_floor() -> dict:
             "fetch_ms": round((fetched - started) * 1000, 1),
             "evaluation_ms": round((finished - fetched) * 1000, 1),
             "total_ms": round((finished - started) * 1000, 1),
-            "parallel_market_requests": len(ASSETS) * len(TIMEFRAMES),
+            "parallel_market_requests": len(ASSETS) * len(TIMEFRAMES) + len(ASSETS),
         },
         "method": {
             "history": "Kraken rolling windows at 15m / 1h / 4h",
             "timeframes": list(TIMEFRAMES.keys()),
             "closed_candles_only": True,
             "oos_split": "Last 30% of each timeframe",
-            "cost_model": "6 bps per position change; stress at 2x and 3x",
+            "cost_model": "research stress uses 6 bps transitions; forward paper uses live L2 VWAP + configurable Kraken taker fee",
             "strategies": list(STRATEGIES),
             "activation_rule": "Multi-timeframe confirmation + OOS + 2x cost survival",
             "rule": "Risk failures are penalized more heavily than missed return targets.",
