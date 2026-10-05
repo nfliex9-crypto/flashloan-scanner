@@ -99,17 +99,44 @@
           </div>
           <span class="room-badge good">NO BACKFILL</span>
         </div>
-        <p class="room-desc">السجل يبدأ من لحظة تشغيله فقط. كل تحديث يستخدم شمعة 15 دقيقة مغلقة، ورسوم افتراضية 6 bps لكل تغيير مركز.</p>
+        <p class="room-desc">السجل يبدأ من لحظة تشغيله فقط. الدخول والخروج يُسعّران من Order Book حقيقي (VWAP + spread + slippage + taker fee)، ولا يوجد backfill لصفقات لم نرها لحظيًا.</p>
         <div id="paperSummary" class="paper-summary"></div>
         <div id="paperAgents" class="paper-grid">
           <div class="loading">تهيئة Forward Paper Ledger…</div>
         </div>
       </article>
 
-      <article class="room probation-room">
+
+      <article class="room evolution-room">
         <div class="room-head">
           <div>
             <p class="eyebrow">ROOM 04</p>
+            <h2>Evolution Lab</h2>
+          </div>
+          <span class="room-badge good">SELF-IMPROVING · GATED</span>
+        </div>
+        <p class="room-desc">Hunter يولّد Challengers، Prosecutor يحاول إسقاطهم، Red Team يضغطهم، وJudge حتمي فقط يقرر الترقية. الـAgent لا يستطيع ترقية نفسه أو تغيير حدود المخاطرة.</p>
+
+        <div id="evolutionSummary" class="evolution-summary">
+          <div class="loading">تهيئة Evolution Ledger…</div>
+        </div>
+
+        <div class="evolution-columns">
+          <div>
+            <h3>Hall of Fame</h3>
+            <div id="hallOfFame" class="evolution-grid"></div>
+          </div>
+          <div>
+            <h3>آخر قرارات التطوير</h3>
+            <div id="evolutionEvents" class="evolution-events"></div>
+          </div>
+        </div>
+      </article>
+
+      <article class="room probation-room">
+        <div class="room-head">
+          <div>
+            <p class="eyebrow">ROOM 05</p>
             <h2>Probation Room</h2>
           </div>
           <span class="room-badge warn">UNDER PRESSURE</span>
@@ -121,7 +148,7 @@
       <article class="room red-room">
         <div class="room-head">
           <div>
-            <p class="eyebrow">ROOM 05</p>
+            <p class="eyebrow">ROOM 06</p>
             <h2>Red Team Chamber</h2>
           </div>
           <span class="room-badge danger">ATTACK MODE</span>
@@ -133,7 +160,7 @@
       <article class="room graveyard-room">
         <div class="room-head">
           <div>
-            <p class="eyebrow">ROOM 06</p>
+            <p class="eyebrow">ROOM 07</p>
             <h2>Elimination Vault</h2>
           </div>
           <span class="room-badge danger">REMOVED</span>
@@ -144,7 +171,7 @@
       <article class="room replacement-room">
         <div class="room-head">
           <div>
-            <p class="eyebrow">ROOM 07</p>
+            <p class="eyebrow">ROOM 08</p>
             <h2>Replacement Lab</h2>
           </div>
           <span class="room-badge">QUARANTINE</span>
@@ -156,7 +183,7 @@
       <article class="room evidence-room">
         <div class="room-head">
           <div>
-            <p class="eyebrow">ROOM 08</p>
+            <p class="eyebrow">ROOM 09</p>
             <h2>Evidence & Method</h2>
           </div>
           <span class="room-badge">AUDIT</span>
