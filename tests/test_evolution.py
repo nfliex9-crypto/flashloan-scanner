@@ -1,6 +1,8 @@
 from aegis.evolution import (
     Genome,
     default_genome,
+    learned_parameter_votes,
+    memory_aware_challenger,
     mutate,
     positions_for_genome,
     prosecute,
@@ -69,3 +71,41 @@ def test_judge_can_promote_stronger_challenger():
     challenger = evaluation(score=74, dd=0.075)
     promote, _ = should_promote(incumbent, challenger)
     assert promote is True
+
+
+def test_memory_votes_learn_only_from_safe_improvements():
+    memory = [
+        {
+            "strategy": "Trend",
+            "changed": {"fast": {"from": 18, "to": 22}},
+            "score_delta": 4.0,
+            "drawdown_delta": -0.01,
+            "promoted": True,
+        },
+        {
+            "strategy": "Trend",
+            "changed": {"fast": {"from": 18, "to": 14}},
+            "score_delta": 1.0,
+            "drawdown_delta": 0.05,
+            "promoted": False,
+        },
+    ]
+    votes = learned_parameter_votes(memory, "Trend")
+    assert votes["fast"] > 0
+
+
+def test_memory_aware_challenger_preserves_risk_gate_separation():
+    parent = default_genome("Trend")
+    memory = [
+        {
+            "strategy": "Trend",
+            "changed": {"fast": {"from": 18, "to": 22}},
+            "score_delta": 3.0,
+            "drawdown_delta": 0.0,
+            "promoted": True,
+        }
+    ]
+    child = memory_aware_challenger(parent, memory, seed="memory-test")
+    assert child.generation == parent.generation + 1
+    assert child.parent_id == parent.genome_id
+    assert set(child.params) == set(parent.params)
