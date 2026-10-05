@@ -63,6 +63,46 @@
     </section>
 
 
+
+    <section class="card section radar-section">
+      <div class="section-title">
+        <div>
+          <p class="eyebrow">MULTI-ASSET OPPORTUNITY RADAR</p>
+          <h2>البحث الموسع عن الفرص</h2>
+          <p class="sub radar-sub">يفحص WETH و WBTC و ARB و USDT و GHO و weETH في الاتجاهين بين Uniswap V3 و Camelot V3.</p>
+        </div>
+        <button id="radarBtn" class="secondary-btn">بحث موسع الآن</button>
+      </div>
+
+      <div class="radar-stats">
+        <div><span>الأصول</span><strong id="radarAssets">—</strong></div>
+        <div><span>المسارات المقروءة</span><strong id="radarRoutes">—</strong></div>
+        <div><span>Net موجب</span><strong id="radarPositive">—</strong></div>
+        <div><span>فوق حد التنفيذ</span><strong id="radarProfitable">—</strong></div>
+      </div>
+
+      <div id="radarEmpty" class="optimizer-empty">
+        البحث الموسع يرتب النتائج حسب <strong>Net PnL الحقيقي المتوقع</strong> بعد رسوم Aave وGas.
+      </div>
+
+      <div id="radarResult" class="table-wrap hidden">
+        <table class="radar-table">
+          <thead>
+            <tr>
+              <th>الأصل</th>
+              <th>المسار</th>
+              <th>Gross edge</th>
+              <th>Flash fee</th>
+              <th>Gas</th>
+              <th>Net PnL</th>
+              <th>الحالة</th>
+            </tr>
+          </thead>
+          <tbody id="radarRows"></tbody>
+        </table>
+      </div>
+    </section>
+
     <section class="card section preflight-section">
       <div class="section-title">
         <div>
