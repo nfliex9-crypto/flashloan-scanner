@@ -22,6 +22,8 @@ function empty(text){ return '<div class="empty">'+text+'</div>'; }
 function marketCard(m){
   const cls = m.change_24h >= 0 ? "up" : "down";
   const closed = m.last_candle_utc ? new Date(m.last_candle_utc).toLocaleTimeString("en-GB",{hour:"2-digit",minute:"2-digit"}) : "—";
+  const micro = m.microstructure || {};
+  const imbalance = Number(micro.book_imbalance || 0);
   return `
     <article class="market-card" data-market-symbol="${m.symbol}">
       <div class="market-top">
@@ -35,9 +37,15 @@ function marketCard(m){
         </div>
       </div>
       <div class="micro-row">
-        <span>Bid <strong class="live-bid">—</strong></span>
-        <span>Ask <strong class="live-ask">—</strong></span>
-        <span>Spread <strong class="live-spread">—</strong></span>
+        <span>Bid <strong class="live-bid">${micro.best_bid ? money(micro.best_bid) : "—"}</strong></span>
+        <span>Ask <strong class="live-ask">${micro.best_ask ? money(micro.best_ask) : "—"}</strong></span>
+        <span>Spread <strong class="live-spread">${micro.spread_bps != null ? num(micro.spread_bps,2)+" bps" : "—"}</strong></span>
+      </div>
+      <div class="depth-grid">
+        <div><span>$10K Buy Slip</span><strong>${micro.buy_10k_slippage_bps != null ? num(micro.buy_10k_slippage_bps,2)+" bps" : "—"}</strong></div>
+        <div><span>$10K Sell Slip</span><strong>${micro.sell_10k_slippage_bps != null ? num(micro.sell_10k_slippage_bps,2)+" bps" : "—"}</strong></div>
+        <div><span>Book Imbalance</span><strong class="${imbalance>=0?'pass':'fail'}">${pct(imbalance)}</strong></div>
+        <div><span>Taker Fee</span><strong>${micro.taker_fee_bps != null ? num(micro.taker_fee_bps,0)+" bps" : "—"}</strong></div>
       </div>
       <div class="market-meta">
         <div><span>7D Return</span><strong>${pct(m.change_7d)}</strong></div>
@@ -221,6 +229,7 @@ function paperCard(a){
   const pnl = Number(a.equity) / Number(a.initial_equity) - 1;
   const winRate = a.closed_trades ? a.winning_trades / a.closed_trades : 0;
   const position = a.position ? "LONG" : "FLAT";
+  const lastFill = a.last_fill || {};
   return `
     <article class="paper-card">
       <div class="agent-top">
@@ -235,11 +244,78 @@ function paperCard(a){
         <div><span>Forward Max DD</span><strong>${pct(a.max_drawdown)}</strong></div>
         <div><span>Closed trades</span><strong>${a.closed_trades}</strong></div>
         <div><span>Trade win rate</span><strong>${pct(winRate)}</strong></div>
-        <div><span>Updates</span><strong>${a.updates}</strong></div>
+        <div><span>Real fees</span><strong>${money(a.total_fees_usd || 0)}</strong></div>
+        <div><span>Slippage cost</span><strong>${money(a.total_slippage_usd || 0)}</strong></div>
+        <div><span>Last fill slip</span><strong>${lastFill.slippage_bps != null ? num(lastFill.slippage_bps,2)+" bps" : "—"}</strong></div>
         <div><span>Last event</span><strong>${a.last_event}</strong></div>
-        <div><span>Last price</span><strong>${money(a.last_price)}</strong></div>
+        <div><span>Updates</span><strong>${a.updates}</strong></div>
+        <div><span>Missed-bar gaps</span><strong>${a.missed_bar_events || 0}</strong></div>
       </div>
     </article>`;
+}
+
+
+function evolutionCard(row){
+  const genome = row.genome || {};
+  return `
+    <article class="evolution-card">
+      <div class="agent-top">
+        <div>
+          <div class="strategy-name">${row.family}</div>
+          <div class="agent-id">${genome.genome_id || "—"}</div>
+        </div>
+        <span class="status ${row.status || "ACTIVE"}">${row.status || "ACTIVE"}</span>
+      </div>
+      <div class="agent-score">${num(row.score,0)}<small>/100 Robustness</small></div>
+      <div class="agent-metrics">
+        <div><span>Generation</span><strong>${genome.generation ?? 0}</strong></div>
+        <div><span>TF Confirm</span><strong>${row.confirmations ?? 0}/3</strong></div>
+        <div><span>Worst DD</span><strong>${pct(row.worst_drawdown || 0)}</strong></div>
+      </div>
+      <div class="genome-params">${Object.entries(genome.params || {}).map(([k,v])=>`<span>${k}=<strong>${v}</strong></span>`).join("")}</div>
+    </article>`;
+}
+
+function evolutionEventCard(event){
+  const judge = (event.role_trace || []).find(x=>x.role==="JUDGE");
+  const promoted = judge?.event === "PROMOTE";
+  const best = event.best_challenger || {};
+  return `
+    <div class="evolution-event ${promoted?'promoted':''}">
+      <div>
+        <strong>${event.family}</strong>
+        <span>cycle ${event.cycle} · strikes ${event.strikes ?? 0}</span>
+      </div>
+      <div class="event-decision ${promoted?'pass':'neutral'}">${judge?.event || "EVALUATED"}</div>
+      <small>best challenger: ${best.genome?.genome_id || "—"} · score ${num(best.evaluation?.score || 0,1)}</small>
+      <small>${judge?.reason || ""}</small>
+    </div>`;
+}
+
+function renderEvolution(data){
+  if(!data.cycle){
+    $("evolutionSummary").innerHTML = '<div class="paper-kpi"><span>Status</span><strong>INITIALIZING</strong></div>';
+    $("hallOfFame").innerHTML = empty("أول Evolution Cycle قيد التشغيل.");
+    $("evolutionEvents").innerHTML = empty("لا توجد قرارات بعد.");
+    return;
+  }
+
+  const summary = data.summary || {};
+  $("evolutionSummary").innerHTML = `
+    <div class="paper-kpi"><span>Cycle</span><strong>${data.cycle}</strong></div>
+    <div class="paper-kpi"><span>Challengers tested</span><strong>${summary.challengers_tested ?? 0}</strong></div>
+    <div class="paper-kpi"><span>Promotions</span><strong class="pass">${summary.promotions_this_cycle ?? 0}</strong></div>
+    <div class="paper-kpi"><span>Probation / Eliminated</span><strong>${summary.probation ?? 0} / ${summary.eliminated ?? 0}</strong></div>
+  `;
+
+  $("hallOfFame").innerHTML = (data.hall_of_fame || []).length
+    ? data.hall_of_fame.map(evolutionCard).join("")
+    : empty("Hall of Fame لم يتكوّن بعد.");
+
+  const events = (data.events || []).slice(-8).reverse();
+  $("evolutionEvents").innerHTML = events.length
+    ? events.map(evolutionEventCard).join("")
+    : empty("لا توجد قرارات تطوير بعد.");
 }
 
 function renderMarket(data){
@@ -288,6 +364,8 @@ function renderPaper(data){
     <div class="paper-kpi"><span>Average PnL</span><strong class="${avgPnl>=0?'pass':'fail'}">${pct(avgPnl)}</strong></div>
     <div class="paper-kpi"><span>Closed trades</span><strong>${data.summary?.total_closed_trades ?? 0}</strong></div>
     <div class="paper-kpi"><span>Worst DD</span><strong>${pct(data.summary?.max_observed_drawdown ?? 0)}</strong></div>
+    <div class="paper-kpi"><span>Total fees</span><strong>${money(data.summary?.total_fees_usd ?? 0)}</strong></div>
+    <div class="paper-kpi"><span>Total slippage</span><strong>${money(data.summary?.total_slippage_usd ?? 0)}</strong></div>
   `;
 
   $("paperAgents").innerHTML = agents.length ? agents.map(paperCard).join("") : empty("لا توجد Agents في سجل الـPaper بعد.");
@@ -323,9 +401,24 @@ async function loadPaper(){
   }
 }
 
+
+async function loadEvolution(){
+  try{
+    const res = await fetch("/api/evolution");
+    const data = await res.json();
+    renderEvolution(data);
+  }catch(err){
+    console.error(err);
+    $("evolutionSummary").innerHTML = '<div class="paper-kpi"><span>Status</span><strong class="fail">ERROR</strong></div>';
+    $("hallOfFame").innerHTML = empty("تعذر قراءة Evolution Ledger.");
+    $("evolutionEvents").innerHTML = empty("تعذر قراءة سجل التطوير.");
+  }
+}
+
 function refreshAll(){
   loadMarket();
   loadPaper();
+  loadEvolution();
 }
 
 $("refreshBtn").addEventListener("click",refreshAll);
@@ -333,3 +426,4 @@ startTickerStream();
 refreshAll();
 setInterval(loadMarket,60000);
 setInterval(loadPaper,60000);
+setInterval(loadEvolution,300000);
