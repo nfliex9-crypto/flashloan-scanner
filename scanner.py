@@ -21,6 +21,7 @@ WETH = Web3.to_checksum_address("0x82aF49447D8a07e3bd95BD0d56f35241523fBab1")
 USDC = Web3.to_checksum_address("0xaf88d065e77c8cC2239327C5EDb3A432268e5831")
 
 UNISWAP_QUOTER = Web3.to_checksum_address("0xb27308f9F90D607463bb33eA1BeBb41C27CE5AB6")
+PANCAKE_QUOTER = Web3.to_checksum_address("0xB048Bbc1Ee6b733FFfCFb9e9CeF7375518e25997")
 CAMELOT_QUOTER = Web3.to_checksum_address("0x0Fc73040b26E9bC8514fA028D998E73A254Fa76E")
 AAVE_POOL = Web3.to_checksum_address("0x794a61358D6845594F94dc1DB02A252b5b4814aD")
 
@@ -35,6 +36,35 @@ UNISWAP_QUOTER_ABI = [
         ],
         "name": "quoteExactInputSingle",
         "outputs": [{"internalType": "uint256", "name": "amountOut", "type": "uint256"}],
+        "stateMutability": "nonpayable",
+        "type": "function",
+    }
+]
+
+
+PANCAKE_QUOTER_ABI = [
+    {
+        "inputs": [
+            {
+                "components": [
+                    {"internalType": "address", "name": "tokenIn", "type": "address"},
+                    {"internalType": "address", "name": "tokenOut", "type": "address"},
+                    {"internalType": "uint256", "name": "amountIn", "type": "uint256"},
+                    {"internalType": "uint24", "name": "fee", "type": "uint24"},
+                    {"internalType": "uint160", "name": "sqrtPriceLimitX96", "type": "uint160"},
+                ],
+                "internalType": "struct IQuoterV2.QuoteExactInputSingleParams",
+                "name": "params",
+                "type": "tuple",
+            }
+        ],
+        "name": "quoteExactInputSingle",
+        "outputs": [
+            {"internalType": "uint256", "name": "amountOut", "type": "uint256"},
+            {"internalType": "uint160", "name": "sqrtPriceX96After", "type": "uint160"},
+            {"internalType": "uint32", "name": "initializedTicksCrossed", "type": "uint32"},
+            {"internalType": "uint256", "name": "gasEstimate", "type": "uint256"},
+        ],
         "stateMutability": "nonpayable",
         "type": "function",
     }
@@ -142,9 +172,15 @@ class Scanner:
         self.uniswap_fee_tiers = parse_fee_tiers(
             os.getenv("UNISWAP_FEE_TIERS", "100,500,3000,10000")
         )
+        self.pancake_fee_tiers = parse_fee_tiers(
+            os.getenv("PANCAKE_FEE_TIERS", "100,500,2500,10000")
+        )
 
         self.uni = self.w3.eth.contract(
             address=UNISWAP_QUOTER, abi=UNISWAP_QUOTER_ABI
+        )
+        self.pancake = self.w3.eth.contract(
+            address=PANCAKE_QUOTER, abi=PANCAKE_QUOTER_ABI
         )
         self.camelot = self.w3.eth.contract(
             address=CAMELOT_QUOTER, abi=CAMELOT_QUOTER_ABI
@@ -192,6 +228,36 @@ class Scanner:
             raise RuntimeError(f"No usable Uniswap V3 quote{detail}")
         return best
 
+
+    def quote_pancake(
+        self, token_in: str, token_out: str, amount_in: int, fee_hint: int | None = None
+    ) -> Quote:
+        tiers = (fee_hint,) if fee_hint is not None else self.pancake_fee_tiers
+        best: Quote | None = None
+        last_error: Exception | None = None
+
+        for fee in tiers:
+            try:
+                result = self.pancake.functions.quoteExactInputSingle(
+                    (token_in, token_out, amount_in, fee, 0)
+                ).call()
+                quote = Quote(
+                    dex="PancakeSwap V3",
+                    amount_in=amount_in,
+                    amount_out=int(result[0]),
+                    fee_ppm=fee,
+                    fee_label=f"{Decimal(fee) / Decimal(10000):.4f}%",
+                )
+                if best is None or quote.amount_out > best.amount_out:
+                    best = quote
+            except Exception as exc:
+                last_error = exc
+
+        if best is None:
+            detail = f" ({last_error})" if last_error else ""
+            raise RuntimeError(f"No usable PancakeSwap V3 quote{detail}")
+        return best
+
     def quote_camelot(self, token_in: str, token_out: str, amount_in: int) -> Quote:
         try:
             result = self.camelot.functions.quoteExactInputSingle(
@@ -221,6 +287,8 @@ class Scanner:
     ) -> Quote:
         if dex == "uni":
             return self.quote_uniswap(token_in, token_out, amount_in, fee_hint)
+        if dex == "pancake":
+            return self.quote_pancake(token_in, token_out, amount_in, fee_hint)
         if dex == "camelot":
             return self.quote_camelot(token_in, token_out, amount_in)
         raise ValueError(f"Unknown DEX: {dex}")
@@ -233,7 +301,7 @@ class Scanner:
         amount_in: int,
         main_quote: Quote,
     ) -> Quote:
-        fee_hint = main_quote.fee_ppm if dex == "uni" else None
+        fee_hint = main_quote.fee_ppm if dex in ("uni", "pancake") else None
         return self.quote(dex, token_in, token_out, amount_in, fee_hint)
 
     def price_weth_in_usdc(self, dex: str) -> tuple[Decimal, Quote]:
