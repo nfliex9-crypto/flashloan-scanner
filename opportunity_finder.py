@@ -45,13 +45,15 @@ def scan_route(
     buy_dex: str,
     sell_dex: str,
     gas_usdc: Decimal,
+    buy_fee_hint: int | None = None,
+    sell_fee_hint: int | None = None,
 ) -> dict:
     start_raw = to_raw(size_usdc, 6)
 
-    buy = scanner.quote(buy_dex, USDC, asset.address, start_raw)
+    buy = scanner.quote(buy_dex, USDC, asset.address, start_raw, buy_fee_hint)
     token_received = from_raw(buy.amount_out, asset.decimals)
 
-    sell = scanner.quote(sell_dex, asset.address, USDC, buy.amount_out)
+    sell = scanner.quote(sell_dex, asset.address, USDC, buy.amount_out, sell_fee_hint)
     end_usdc = from_raw(sell.amount_out, 6)
 
     gross = end_usdc - size_usdc
@@ -74,6 +76,8 @@ def scan_route(
         "net_pnl_usdc": float(net),
         "buy_pool_fee": buy.fee_label,
         "sell_pool_fee": sell.fee_label,
+        "buy_fee_ppm": buy.fee_ppm,
+        "sell_fee_ppm": sell.fee_ppm,
         "opportunity": net >= scanner.min_net_profit,
     }
 
@@ -137,4 +141,113 @@ def find_opportunities(size_usdc: Decimal) -> dict:
         "gas_est_usdc": float(gas_usdc),
         "results": results,
         "failures": failures,
+    }
+
+
+def deep_scan_opportunities(probe_size_usdc: Decimal) -> dict:
+    """Two-pass search: broad route discovery, then size optimization on the best routes."""
+    broad = find_opportunities(probe_size_usdc)
+
+    ranked = broad["results"][:6]
+    if not ranked:
+        broad["mode"] = "deep-scan"
+        broad["sizes_tested"] = []
+        broad["best"] = None
+        broad["optimized_results"] = []
+        return broad
+
+    scanner = Scanner(trade_size_usdc=probe_size_usdc)
+    uni_weth, _ = scanner.price_weth_in_usdc("uni")
+    camelot_weth, _ = scanner.price_weth_in_usdc("camelot")
+    weth_mid = (uni_weth + camelot_weth) / Decimal(2)
+    gas_usdc = scanner.gas_estimate_usdc(weth_mid)
+
+    asset_map = {asset.symbol: asset for asset in ASSETS}
+    key_by_name = {
+        "Uniswap V3": "uni",
+        "Camelot V3": "camelot",
+        "PancakeSwap V3": "pancake",
+    }
+
+    sizes = {
+        Decimal("100"),
+        Decimal("250"),
+        Decimal("500"),
+        Decimal("1000"),
+        Decimal("2500"),
+        Decimal("5000"),
+        Decimal("10000"),
+        Decimal("25000"),
+        probe_size_usdc,
+    }
+    sizes = sorted(size for size in sizes if Decimal("50") <= size <= Decimal("250000"))
+
+    optimized = []
+    failures = []
+
+    for seed in ranked:
+        asset = asset_map[seed["token"]]
+        buy_dex = key_by_name[seed["buy_dex"]]
+        sell_dex = key_by_name[seed["sell_dex"]]
+
+        buy_hint = seed["buy_fee_ppm"] if buy_dex in ("uni", "pancake") else None
+        sell_hint = seed["sell_fee_ppm"] if sell_dex in ("uni", "pancake") else None
+
+        best_for_route = None
+        samples = []
+
+        for size in sizes:
+            try:
+                result = scan_route(
+                    scanner,
+                    asset,
+                    size,
+                    buy_dex,
+                    sell_dex,
+                    gas_usdc,
+                    buy_fee_hint=buy_hint,
+                    sell_fee_hint=sell_hint,
+                )
+                samples.append(result)
+                if (
+                    best_for_route is None
+                    or result["net_pnl_usdc"] > best_for_route["net_pnl_usdc"]
+                ):
+                    best_for_route = result
+            except Exception as exc:
+                failures.append(
+                    {
+                        "token": asset.symbol,
+                        "route": seed["route"],
+                        "size_usdc": float(size),
+                        "error": str(exc)[:220],
+                    }
+                )
+
+        if best_for_route is not None:
+            best_for_route = dict(best_for_route)
+            best_for_route["samples"] = samples
+            optimized.append(best_for_route)
+
+    optimized.sort(key=lambda item: item["net_pnl_usdc"], reverse=True)
+    best = optimized[0] if optimized else None
+
+    return {
+        "ok": True,
+        "mode": "deep-scan",
+        "network": "Arbitrum One",
+        "chain_id": 42161,
+        "block": scanner.w3.eth.block_number,
+        "probe_size_usdc": float(probe_size_usdc),
+        "dexes_scanned": len(DEXES),
+        "assets_scanned": len(ASSETS),
+        "broad_routes_quoted": broad["routes_quoted"],
+        "routes_optimized": len(optimized),
+        "sizes_tested": [float(size) for size in sizes],
+        "flashloan_fee_pct": float(scanner.borrow_fee_bps / Decimal(100)),
+        "gas_est_usdc": float(gas_usdc),
+        "min_net_profit_usdc": float(scanner.min_net_profit),
+        "best": best,
+        "optimized_results": optimized,
+        "failures": broad["failures"] + failures,
     }
