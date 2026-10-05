@@ -40,9 +40,10 @@ contract FlashloanArbSimulatorForkTest {
     }
 
     function testUnauthorizedCallbackReverts() public {
+        address usdc = simulator.USDC();
         vm.expectRevert(FlashloanArbSimulator.UnauthorizedCallback.selector);
         simulator.executeOperation(
-            simulator.USDC(),
+            usdc,
             100e6,
             50_000,
             address(simulator),
