@@ -23,22 +23,35 @@ jobs:
     timeout-minutes: 5
 
     steps:
-      - name: Checkout paper-state branch
+      - name: Checkout current production code
         uses: actions/checkout@v4
         with:
-          ref: paper-state
+          ref: Bot
           fetch-depth: 0
 
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
 
+      - name: Load previous paper state
+        shell: bash
+        run: |
+          git fetch origin paper-state
+          mkdir -p data
+          git show origin/paper-state:data/paper_state.json > data/paper_state.json 2>/dev/null || true
+
       - name: Run forward paper tick
         run: PYTHONPATH=. python -m aegis.paper_worker
 
-      - name: Persist state only when it changed
+      - name: Persist state to isolated paper-state branch
         shell: bash
         run: |
+          cp data/paper_state.json /tmp/paper_state.json
+          git switch paper-state
+          git reset --hard origin/paper-state
+          mkdir -p data
+          cp /tmp/paper_state.json data/paper_state.json
+
           if [ -z "$(git status --porcelain -- data/paper_state.json)" ]; then
             echo "No new closed candle. Nothing to commit."
             exit 0
