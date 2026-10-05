@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from decimal import Decimal
+from itertools import permutations
 
 from web3 import Web3
 
@@ -26,8 +27,15 @@ ASSETS = (
 )
 
 
+DEXES = ("uni", "camelot", "pancake")
+
+
 def dex_name(key: str) -> str:
-    return {"uni": "Uniswap V3", "camelot": "Camelot V3"}[key]
+    return {
+        "uni": "Uniswap V3",
+        "camelot": "Camelot V3",
+        "pancake": "PancakeSwap V3",
+    }[key]
 
 
 def scan_route(
@@ -82,8 +90,10 @@ def find_opportunities(size_usdc: Decimal) -> dict:
     results = []
     failures = []
 
+    route_pairs = tuple(permutations(DEXES, 2))
+
     for asset in ASSETS:
-        for buy_dex, sell_dex in (("uni", "camelot"), ("camelot", "uni")):
+        for buy_dex, sell_dex in route_pairs:
             try:
                 results.append(
                     scan_route(
@@ -117,7 +127,8 @@ def find_opportunities(size_usdc: Decimal) -> dict:
         "block": scanner.w3.eth.block_number,
         "trade_size_usdc": float(size_usdc),
         "assets_scanned": len(ASSETS),
-        "routes_attempted": len(ASSETS) * 2,
+        "dexes_scanned": len(DEXES),
+        "routes_attempted": len(ASSETS) * len(route_pairs),
         "routes_quoted": len(results),
         "profitable_count": len(profitable),
         "positive_count": len(positive),
