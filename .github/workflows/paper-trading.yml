@@ -1,6 +1,10 @@
 name: AEGIS Forward Paper Trading
 
 on:
+  push:
+    branches: [Bot]
+    paths:
+      - ".github/workflows/paper-trading.yml"
   schedule:
     # 15m Kraken bars close at :00/:15/:30/:45. Run a few minutes later.
     - cron: "7,22,37,52 * * * *"
