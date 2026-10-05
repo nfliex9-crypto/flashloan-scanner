@@ -9,6 +9,7 @@ const state = {
   optimizing: false,
   preflighting: false,
   radarLoading: false,
+  deepLoading: false,
   minProfit: 1,
   history: loadHistory(),
 };
@@ -389,6 +390,80 @@ async function runRadar() {
   }
 }
 
+
+function renderDeepScan(data) {
+  const best = data.best;
+  $("deepEmpty").classList.add("hidden");
+  $("deepResult").classList.remove("hidden");
+
+  if (!best) {
+    $("deepToken").textContent = "—";
+    $("deepSize").textContent = "—";
+    $("deepRoute").textContent = "—";
+    $("deepNet").textContent = "—";
+    $("deepRows").innerHTML =
+      '<tr><td colspan="6" class="loading-row">لم يتم العثور على مسار قابل للتحسين.</td></tr>';
+    return;
+  }
+
+  $("deepToken").textContent = best.token;
+  $("deepSize").textContent = money(best.size_usdc, 0);
+  $("deepRoute").textContent = best.route;
+  $("deepNet").textContent = money(best.net_pnl_usdc);
+  $("deepNet").className = best.net_pnl_usdc > 0 ? "good" : "bad";
+
+  $("deepRows").innerHTML = (data.optimized_results || [])
+    .slice(0, 8)
+    .map(
+      (r) => `
+        <tr>
+          <td><strong>${r.token}</strong></td>
+          <td>${money(r.size_usdc, 0)}</td>
+          <td class="route-name">${r.route}</td>
+          <td class="${r.gross_pnl_usdc >= 0 ? "good" : "bad"}">${money(r.gross_pnl_usdc)}</td>
+          <td>${money(r.flash_fee_usdc)}</td>
+          <td class="${r.net_pnl_usdc > 0 ? "good" : "bad"}">${money(r.net_pnl_usdc)}</td>
+        </tr>
+      `
+    )
+    .join("");
+}
+
+async function runDeepScan() {
+  if (state.deepLoading) return;
+
+  const size = Number($("tradeSize").value || 1000);
+  if (!Number.isFinite(size) || size <= 0) return;
+
+  state.deepLoading = true;
+  $("deepBtn").disabled = true;
+  $("deepBtn").textContent = "Deep Scan جاري...";
+  $("deepEmpty").classList.remove("hidden");
+  $("deepEmpty").textContent =
+    "نفحص أفضل المسارات على عدة أحجام. هذا الفحص أبطأ لأنه يستخدم Quotes حقيقية من البلوكشين.";
+
+  try {
+    const res = await fetch(
+      `/api/deep?size=${encodeURIComponent(size)}&t=${Date.now()}`,
+      { cache: "no-store" }
+    );
+    const data = await res.json();
+
+    if (!res.ok || !data.ok) throw new Error(data.error || "Deep scan error");
+    renderDeepScan(data);
+  } catch (err) {
+    console.error(err);
+    $("deepResult").classList.add("hidden");
+    $("deepEmpty").classList.remove("hidden");
+    $("deepEmpty").textContent =
+      "تعذر إكمال Deep Scan الآن. قد يكون الـRPC محدودًا؛ جرّب مرة ثانية.";
+  } finally {
+    state.deepLoading = false;
+    $("deepBtn").disabled = false;
+    $("deepBtn").textContent = "Deep Scan للأحجام";
+  }
+}
+
 function renderPreflight(data) {
   $("preflightEmpty").classList.add("hidden");
   $("preflightResult").classList.remove("hidden");
@@ -471,6 +546,7 @@ $("refreshBtn").addEventListener("click", refresh);
 $("optimizeBtn").addEventListener("click", optimizeSize);
 $("preflightBtn").addEventListener("click", runPreflight);
 $("radarBtn").addEventListener("click", runRadar);
+$("deepBtn").addEventListener("click", runDeepScan);
 $("tradeSize").addEventListener("change", refresh);
 $("clearHistoryBtn").addEventListener("click", () => {
   state.history = [];
