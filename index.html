@@ -17,7 +17,7 @@
         <div>
           <p class="eyebrow">ZERO-TRUST QUANT LAB</p>
           <h1>AEGIS Control Room</h1>
-          <p class="sub">كل Agent يعمل داخل غرفة حقيقية الوظيفة، ويُقيَّم على بيانات سوق حية. لا يوجد تداول حقيقي أو رأس مال متصل.</p>
+          <p class="sub">بيانات مغلقة فقط، تأكيد 15m/1h/4h، وForward Paper Ledger مستقل عن الـBacktest. لا يوجد تداول حقيقي أو رأس مال متصل.</p>
         </div>
       </div>
 
@@ -58,6 +58,13 @@
       </article>
     </section>
 
+    <section class="speed-strip">
+      <div><span>Timeframes</span><strong id="timeframes">15m · 1h · 4h</strong></div>
+      <div><span>Closed candles</span><strong>ONLY</strong></div>
+      <div><span>Parallel feeds</span><strong id="parallelFeeds">6</strong></div>
+      <div><span>Engine latency</span><strong id="engineLatency">—</strong></div>
+    </section>
+
     <section class="floor">
       <article class="room market-room">
         <div class="room-head">
@@ -78,15 +85,31 @@
             <p class="eyebrow">ROOM 02</p>
             <h2>Strategy Arena</h2>
           </div>
-          <span class="room-badge good">SURVIVORS</span>
+          <span class="room-badge good">MULTI-TF SURVIVORS</span>
         </div>
         <div id="strategyAgents" class="agent-grid"></div>
+      </article>
+
+
+      <article class="room paper-room">
+        <div class="room-head">
+          <div>
+            <p class="eyebrow">ROOM 03</p>
+            <h2>Forward Paper Trading</h2>
+          </div>
+          <span class="room-badge good">NO BACKFILL</span>
+        </div>
+        <p class="room-desc">السجل يبدأ من لحظة تشغيله فقط. كل تحديث يستخدم شمعة 15 دقيقة مغلقة، ورسوم افتراضية 6 bps لكل تغيير مركز.</p>
+        <div id="paperSummary" class="paper-summary"></div>
+        <div id="paperAgents" class="paper-grid">
+          <div class="loading">تهيئة Forward Paper Ledger…</div>
+        </div>
       </article>
 
       <article class="room probation-room">
         <div class="room-head">
           <div>
-            <p class="eyebrow">ROOM 03</p>
+            <p class="eyebrow">ROOM 04</p>
             <h2>Probation Room</h2>
           </div>
           <span class="room-badge warn">UNDER PRESSURE</span>
@@ -98,7 +121,7 @@
       <article class="room red-room">
         <div class="room-head">
           <div>
-            <p class="eyebrow">ROOM 04</p>
+            <p class="eyebrow">ROOM 05</p>
             <h2>Red Team Chamber</h2>
           </div>
           <span class="room-badge danger">ATTACK MODE</span>
@@ -110,7 +133,7 @@
       <article class="room graveyard-room">
         <div class="room-head">
           <div>
-            <p class="eyebrow">ROOM 05</p>
+            <p class="eyebrow">ROOM 06</p>
             <h2>Elimination Vault</h2>
           </div>
           <span class="room-badge danger">REMOVED</span>
@@ -121,7 +144,7 @@
       <article class="room replacement-room">
         <div class="room-head">
           <div>
-            <p class="eyebrow">ROOM 06</p>
+            <p class="eyebrow">ROOM 07</p>
             <h2>Replacement Lab</h2>
           </div>
           <span class="room-badge">QUARANTINE</span>
@@ -133,7 +156,7 @@
       <article class="room evidence-room">
         <div class="room-head">
           <div>
-            <p class="eyebrow">ROOM 07</p>
+            <p class="eyebrow">ROOM 08</p>
             <h2>Evidence & Method</h2>
           </div>
           <span class="room-badge">AUDIT</span>
@@ -142,14 +165,14 @@
           <div><span>المصدر</span><strong id="source">—</strong></div>
           <div><span>آخر تحديث UTC</span><strong id="updated">—</strong></div>
           <div><span>Out-of-Sample</span><strong id="oos">—</strong></div>
-          <div><span>Cost Model</span><strong id="costModel">—</strong></div>
+          <div><span>Activation Gate</span><strong id="activationGate">—</strong></div>
         </div>
       </article>
     </section>
 
     <footer>
       <span>AEGIS · Personal Research System</span>
-      <span>النتائج أبحاث تاريخية/حالية وليست ضمانًا لأداء مستقبلي.</span>
+      <span>Paper/Backtest evidence ليس ضمانًا لأداء مستقبلي. رأس المال الحقيقي مقفول.</span>
     </footer>
   </main>
 
