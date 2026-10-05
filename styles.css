@@ -183,3 +183,129 @@ footer{display:flex;justify-content:space-between;gap:20px;color:var(--muted);fo
 @media(max-width:500px){
   .micro-row{grid-template-columns:1fr 1fr 1fr}
 }
+
+
+/* AEGIS v3: L2 execution + self-evolution */
+.depth-grid{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:6px;
+  margin:8px 0 10px;
+}
+.depth-grid>div{
+  border:1px solid rgba(255,255,255,.05);
+  background:rgba(255,255,255,.018);
+  border-radius:9px;
+  padding:7px;
+}
+.depth-grid span{
+  display:block;
+  color:var(--muted);
+  font-size:8px;
+}
+.depth-grid strong{
+  display:block;
+  margin-top:3px;
+  font-size:10px;
+  direction:ltr;
+}
+.paper-summary{
+  grid-template-columns:repeat(6,1fr);
+}
+.evolution-room{
+  grid-column:span 12;
+  border-color:rgba(156,136,255,.22);
+}
+.evolution-summary{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:9px;
+  margin-bottom:14px;
+}
+.evolution-columns{
+  display:grid;
+  grid-template-columns:1.25fr .75fr;
+  gap:14px;
+}
+.evolution-columns h3{
+  font-size:13px;
+  margin:0 0 9px;
+  color:var(--muted);
+}
+.evolution-grid{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:10px;
+}
+.evolution-card{
+  border:1px solid var(--line);
+  background:rgba(5,9,15,.76);
+  border-radius:14px;
+  padding:12px;
+}
+.genome-params{
+  display:flex;
+  flex-wrap:wrap;
+  gap:5px;
+  margin-top:10px;
+  direction:ltr;
+}
+.genome-params span{
+  font-size:8px;
+  color:var(--muted);
+  border:1px solid rgba(255,255,255,.06);
+  border-radius:999px;
+  padding:4px 6px;
+}
+.genome-params strong{
+  color:var(--cyan);
+}
+.evolution-events{
+  display:grid;
+  gap:8px;
+}
+.evolution-event{
+  border:1px solid var(--line);
+  background:rgba(5,9,15,.72);
+  border-radius:12px;
+  padding:10px;
+}
+.evolution-event.promoted{
+  border-color:rgba(71,230,158,.24);
+  background:rgba(71,230,158,.035);
+}
+.evolution-event>div:first-child{
+  display:flex;
+  justify-content:space-between;
+  gap:8px;
+}
+.evolution-event span,
+.evolution-event small{
+  color:var(--muted);
+  font-size:9px;
+}
+.evolution-event small{
+  display:block;
+  margin-top:5px;
+  line-height:1.45;
+}
+.event-decision{
+  font-size:10px;
+  font-weight:900;
+  direction:ltr;
+  margin-top:6px;
+}
+.neutral{color:var(--muted)}
+@media(max-width:1100px){
+  .paper-summary{grid-template-columns:repeat(3,1fr)}
+  .evolution-columns{grid-template-columns:1fr}
+}
+@media(max-width:720px){
+  .depth-grid{grid-template-columns:1fr 1fr}
+  .evolution-summary{grid-template-columns:1fr 1fr}
+  .evolution-grid{grid-template-columns:1fr}
+}
+@media(max-width:500px){
+  .paper-summary,
+  .evolution-summary{grid-template-columns:1fr}
+}
