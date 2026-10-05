@@ -1,0 +1,34 @@
+name: Arbitrum fork simulation
+
+on:
+  push:
+    branches: [Bot]
+    paths:
+      - "contracts/**"
+      - "test/**"
+      - "foundry.toml"
+      - ".github/workflows/fork-sim.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  fork-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Foundry
+        uses: foundry-rs/foundry-toolchain@v1
+        with:
+          version: stable
+
+      - name: Build
+        run: forge build
+
+      - name: Test against Arbitrum fork
+        env:
+          ARBITRUM_RPC_URL: https://arb1.arbitrum.io/rpc
+        run: forge test -vvv
