@@ -482,3 +482,55 @@ footer {
     flex-basis: 100%;
   }
 }
+
+
+/* Multi-asset opportunity radar */
+.radar-sub {
+  margin: 8px 0 0;
+  max-width: 720px;
+  font-size: 13px;
+}
+
+.radar-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.radar-stats > div {
+  padding: 14px;
+  border-radius: 14px;
+  border: 1px solid var(--line);
+  background: var(--panel-2);
+}
+
+.radar-stats span {
+  display: block;
+  color: var(--muted);
+  font-size: 12px;
+  margin-bottom: 7px;
+}
+
+.radar-stats strong {
+  font-size: 20px;
+}
+
+.radar-table {
+  min-width: 850px;
+}
+
+.warm {
+  color: var(--amber);
+  font-weight: 800;
+}
+
+@media (max-width: 760px) {
+  .radar-stats {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .radar-section .section-title > button {
+    width: 100%;
+  }
+}
