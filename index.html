@@ -13,7 +13,7 @@
   <main class="shell">
     <header class="topbar">
       <div>
-        <p class="eyebrow">ARBITRUM · STAGE 2 ANALYTICS</p>
+        <p class="eyebrow">ARBITRUM · STAGE 3 PREFLIGHT</p>
         <h1>Flashloan Arbitrage Scanner</h1>
         <p class="sub">مراقبة مباشرة وتحليل أحجام الصفقات لـ WETH/USDC بين Uniswap V3 و Camelot V3</p>
       </div>
@@ -31,6 +31,7 @@
       </label>
       <button id="refreshBtn">تحديث الآن</button>
       <button id="optimizeBtn" class="secondary-btn">أفضل حجم الآن</button>
+      <button id="preflightBtn" class="secondary-btn">محاكاة التنفيذ</button>
       <div class="countdown">تحديث تلقائي خلال <strong id="countdown">20</strong>ث</div>
     </section>
 
@@ -59,6 +60,46 @@
         <span>عدد الفحوصات</span>
         <strong id="scanCount">0</strong>
       </article>
+    </section>
+
+
+    <section class="card section preflight-section">
+      <div class="section-title">
+        <div>
+          <p class="eyebrow">TRANSACTION PREFLIGHT</p>
+          <h2>هل العقد سينفّذ أم يعمل Revert؟</h2>
+        </div>
+        <span id="preflightBadge" class="pill neutral-pill">لم يتم الفحص</span>
+      </div>
+
+      <div id="preflightEmpty" class="optimizer-empty">
+        اضغط <strong>محاكاة التنفيذ</strong> لفحص الصفقة الحالية بنفس منطق حماية العقد قبل أي تنفيذ حقيقي.
+      </div>
+
+      <div id="preflightResult" class="preflight-result hidden">
+        <div class="preflight-hero">
+          <div>
+            <span>النتيجة</span>
+            <strong id="preflightStatus">—</strong>
+          </div>
+          <div>
+            <span>المسار</span>
+            <strong id="preflightRoute">—</strong>
+          </div>
+          <div>
+            <span>Net PnL</span>
+            <strong id="preflightNet">—</strong>
+          </div>
+          <div>
+            <span>النقص عن حد التنفيذ</span>
+            <strong id="preflightShortfall">—</strong>
+          </div>
+        </div>
+
+        <p id="preflightReason" class="preflight-reason"></p>
+        <div id="preflightChecks" class="checks-grid"></div>
+        <p class="muted small-note">العقد الخاص بـ Stage 3 موجود في المشروع ويُختبر على Arbitrum fork عبر Foundry. لا يتم إرسال أي معاملة Mainnet من هذه الصفحة.</p>
+      </div>
     </section>
 
     <section class="card section optimizer-section">
@@ -194,7 +235,7 @@
     </section>
 
     <footer>
-      <span>Stage 2 · Live analytics + Aave fee + size optimizer</span>
+      <span>Stage 3 · Preflight + fork contract + analytics</span>
       <span>لا محفظة · لا Private Key · لا اقتراض · لا تنفيذ</span>
     </footer>
   </main>
