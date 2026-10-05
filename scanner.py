@@ -22,6 +22,7 @@ USDC = Web3.to_checksum_address("0xaf88d065e77c8cC2239327C5EDb3A432268e5831")
 
 UNISWAP_QUOTER = Web3.to_checksum_address("0xb27308f9F90D607463bb33eA1BeBb41C27CE5AB6")
 CAMELOT_QUOTER = Web3.to_checksum_address("0x0Fc73040b26E9bC8514fA028D998E73A254Fa76E")
+AAVE_POOL = Web3.to_checksum_address("0x794a61358D6845594F94dc1DB02A252b5b4814aD")
 
 UNISWAP_QUOTER_ABI = [
     {
@@ -53,6 +54,16 @@ CAMELOT_QUOTER_ABI = [
             {"internalType": "uint16", "name": "fee", "type": "uint16"},
         ],
         "stateMutability": "nonpayable",
+        "type": "function",
+    }
+]
+
+AAVE_POOL_ABI = [
+    {
+        "inputs": [],
+        "name": "FLASHLOAN_PREMIUM_TOTAL",
+        "outputs": [{"internalType": "uint128", "name": "", "type": "uint128"}],
+        "stateMutability": "view",
         "type": "function",
     }
 ]
@@ -128,7 +139,6 @@ class Scanner:
         self.min_net_profit = env_decimal("MIN_NET_PROFIT_USDC", "1")
         self.gas_units = env_int("GAS_UNITS_ESTIMATE", 850000)
         self.gas_buffer = env_decimal("GAS_BUFFER_MULTIPLIER", "1.20")
-        self.borrow_fee_bps = env_decimal("BORROW_FEE_BPS", "0")
         self.uniswap_fee_tiers = parse_fee_tiers(
             os.getenv("UNISWAP_FEE_TIERS", "100,500,3000,10000")
         )
@@ -139,6 +149,19 @@ class Scanner:
         self.camelot = self.w3.eth.contract(
             address=CAMELOT_QUOTER, abi=CAMELOT_QUOTER_ABI
         )
+        self.aave_pool = self.w3.eth.contract(
+            address=AAVE_POOL, abi=AAVE_POOL_ABI
+        )
+
+        borrow_override = os.getenv("BORROW_FEE_BPS", "").strip()
+        if borrow_override:
+            self.borrow_fee_bps = Decimal(borrow_override)
+            self.borrow_fee_source = "env-override"
+        else:
+            self.borrow_fee_bps = Decimal(
+                self.aave_pool.functions.FLASHLOAN_PREMIUM_TOTAL().call()
+            )
+            self.borrow_fee_source = "aave-live"
 
     def quote_uniswap(
         self, token_in: str, token_out: str, amount_in: int, fee_hint: int | None = None
@@ -281,6 +304,50 @@ class Scanner:
             gross_pnl_usdc=gross_pnl,
             dex_fee_est_usdc=dex_fee_est,
             impact_est_pct=buy_impact + sell_impact,
+            gas_est_usdc=gas_est_usdc,
+            borrow_fee_est_usdc=borrow_fee,
+            net_pnl_usdc=net_pnl,
+            buy_fee=buy.fee_label,
+            sell_fee=sell.fee_label,
+        )
+
+
+    def estimate_route_quick(
+        self,
+        buy_dex: str,
+        sell_dex: str,
+        size_usdc: Decimal,
+        weth_usdc_reference_price: Decimal,
+        gas_est_usdc: Decimal,
+        uni_buy_fee_hint: int | None = None,
+        uni_sell_fee_hint: int | None = None,
+    ) -> RouteResult:
+        start_raw = to_raw(size_usdc, 6)
+
+        buy_hint = uni_buy_fee_hint if buy_dex == "uni" else None
+        sell_hint = uni_sell_fee_hint if sell_dex == "uni" else None
+
+        buy = self.quote(buy_dex, USDC, WETH, start_raw, buy_hint)
+        weth_received = from_raw(buy.amount_out, 18)
+        sell = self.quote(sell_dex, WETH, USDC, buy.amount_out, sell_hint)
+        end_usdc = from_raw(sell.amount_out, 6)
+
+        buy_fee_usdc = size_usdc * Decimal(buy.fee_ppm) / Decimal(1_000_000)
+        sell_fee_weth = weth_received * Decimal(sell.fee_ppm) / Decimal(1_000_000)
+        sell_fee_usdc = sell_fee_weth * weth_usdc_reference_price
+        dex_fee_est = buy_fee_usdc + sell_fee_usdc
+
+        gross_pnl = end_usdc - size_usdc
+        borrow_fee = size_usdc * self.borrow_fee_bps / Decimal(10_000)
+        net_pnl = gross_pnl - gas_est_usdc - borrow_fee
+
+        return RouteResult(
+            name=f"{buy.dex} → {sell.dex}",
+            start_usdc=size_usdc,
+            end_usdc=end_usdc,
+            gross_pnl_usdc=gross_pnl,
+            dex_fee_est_usdc=dex_fee_est,
+            impact_est_pct=Decimal("0"),
             gas_est_usdc=gas_est_usdc,
             borrow_fee_est_usdc=borrow_fee,
             net_pnl_usdc=net_pnl,
