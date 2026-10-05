@@ -2,7 +2,24 @@ name: Python checks
 
 on:
   push:
+    branches: [Bot, Aegis]
+    paths:
+      - "scanner.py"
+      - "opportunity_finder.py"
+      - "api/**"
+      - "aegis/**"
+      - "requirements.txt"
+      - "pyproject.toml"
+      - ".github/workflows/ci.yml"
   pull_request:
+    paths:
+      - "scanner.py"
+      - "opportunity_finder.py"
+      - "api/**"
+      - "aegis/**"
+      - "requirements.txt"
+      - "pyproject.toml"
+      - ".github/workflows/ci.yml"
 
 jobs:
   check:
@@ -14,7 +31,7 @@ jobs:
           python-version: "3.12"
       - name: Install dependencies
         run: python -m pip install -r requirements.txt
-      - name: Compile scanner
-        run: python -m compileall -q scanner.py
+      - name: Compile Python
+        run: python -m compileall -q scanner.py opportunity_finder.py api aegis
       - name: Import scanner
         run: python -c "import scanner; print('scanner import OK')"
