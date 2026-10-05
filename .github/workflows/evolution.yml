@@ -38,7 +38,11 @@ jobs:
         run: |
           git fetch origin evolution-state
           mkdir -p data
-          git show origin/evolution-state:data/evolution_state.json > data/evolution_state.json 2>/dev/null || true
+          if git show origin/evolution-state:data/evolution_state.json > /tmp/evolution_state.json 2>/dev/null; then
+            if [ -s /tmp/evolution_state.json ]; then
+              cp /tmp/evolution_state.json data/evolution_state.json
+            fi
+          fi
 
       - name: Run deterministic evolution tournament
         run: PYTHONPATH=. python -m aegis.evolution
