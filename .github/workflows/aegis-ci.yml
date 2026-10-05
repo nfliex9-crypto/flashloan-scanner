@@ -22,5 +22,6 @@ jobs:
         with:
           python-version: "3.12"
       - run: pip install -r requirements-aegis.txt
-      - run: PYTHONPATH=. pytest -q tests/test_aegis.py
+      - run: PYTHONPATH=. pytest -q tests/test_aegis.py tests/test_arena.py
       - run: PYTHONPATH=. python -m aegis.demo
+      - run: PYTHONPATH=. python -m aegis.arena_demo
