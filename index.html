@@ -71,7 +71,10 @@
           <h2>البحث الموسع عن الفرص</h2>
           <p class="sub radar-sub">يفحص WETH و WBTC و ARB و USDT و GHO و weETH عبر Uniswap V3 و Camelot V3 و PancakeSwap V3، ويرتب المسارات حسب Net PnL.</p>
         </div>
-        <button id="radarBtn" class="secondary-btn">بحث موسع الآن</button>
+        <div class="radar-actions">
+          <button id="radarBtn" class="secondary-btn">بحث موسع الآن</button>
+          <button id="deepBtn" class="secondary-btn">Deep Scan للأحجام</button>
+        </div>
       </div>
 
       <div class="radar-stats">
@@ -83,6 +86,48 @@
 
       <div id="radarEmpty" class="optimizer-empty">
         البحث الموسع يرتب النتائج حسب <strong>Net PnL الحقيقي المتوقع</strong> بعد رسوم Aave وGas.
+      </div>
+
+
+      <div id="deepEmpty" class="optimizer-empty deep-empty">
+        <strong>Deep Scan</strong> يفحص أفضل المسارات المكتشفة على أحجام متعددة من 100 إلى 25,000 USDC ويختار أعلى Net PnL.
+      </div>
+
+      <div id="deepResult" class="deep-result hidden">
+        <div class="optimizer-hero">
+          <div>
+            <span>أفضل أصل</span>
+            <strong id="deepToken">—</strong>
+          </div>
+          <div>
+            <span>أفضل حجم</span>
+            <strong id="deepSize">—</strong>
+          </div>
+          <div>
+            <span>أفضل مسار</span>
+            <strong id="deepRoute">—</strong>
+          </div>
+          <div>
+            <span>أفضل Net PnL</span>
+            <strong id="deepNet">—</strong>
+          </div>
+        </div>
+
+        <div class="table-wrap compact-table">
+          <table>
+            <thead>
+              <tr>
+                <th>الأصل</th>
+                <th>الحجم الأفضل</th>
+                <th>المسار</th>
+                <th>Gross</th>
+                <th>Flash fee</th>
+                <th>Net</th>
+              </tr>
+            </thead>
+            <tbody id="deepRows"></tbody>
+          </table>
+        </div>
       </div>
 
       <div id="radarResult" class="table-wrap hidden">
