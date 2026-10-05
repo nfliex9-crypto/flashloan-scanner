@@ -1,0 +1,50 @@
+name: AEGIS Alpaca Auto Paper
+
+on:
+  schedule:
+    - cron: "9,24,39,54 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: aegis-alpaca-auto-paper
+  cancel-in-progress: false
+
+jobs:
+  trade:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    env:
+      ALPACA_PAPER_API_KEY: ${{ secrets.ALPACA_PAPER_API_KEY }}
+      ALPACA_PAPER_API_SECRET: ${{ secrets.ALPACA_PAPER_API_SECRET }}
+      AEGIS_AUTOPAPER_ENABLED: ${{ vars.AEGIS_AUTOPAPER_ENABLED }}
+      AEGIS_BASE_RISK_PCT: ${{ vars.AEGIS_BASE_RISK_PCT }}
+      AEGIS_STOP_PCT: ${{ vars.AEGIS_STOP_PCT }}
+      AEGIS_MAX_POSITION_PCT: ${{ vars.AEGIS_MAX_POSITION_PCT }}
+      AEGIS_PAPER_MAX_ORDER_USD: ${{ vars.AEGIS_PAPER_MAX_ORDER_USD }}
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: Bot
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Paper account configuration check
+        shell: bash
+        run: |
+          if [ -z "$ALPACA_PAPER_API_KEY" ] || [ -z "$ALPACA_PAPER_API_SECRET" ]; then
+            echo "Alpaca Paper keys not configured. Runner remains idle."
+            exit 0
+          fi
+
+          if [ "$AEGIS_AUTOPAPER_ENABLED" != "1" ] && [ "$AEGIS_AUTOPAPER_ENABLED" != "true" ]; then
+            echo "AEGIS_AUTOPAPER_ENABLED is off. Runner remains idle."
+            exit 0
+          fi
+
+          PYTHONPATH=. python -m aegis.alpaca_runner
