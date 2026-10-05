@@ -101,3 +101,40 @@ Never put a seed phrase or private key in this repository, Codespace, issue,
 commit, screenshot, or chat.
 
 The current scanner does not need either one.
+
+
+## Stage 3 — Arbitrum fork transaction simulation
+
+Stage 3 adds a Solidity execution contract at:
+
+```text
+contracts/FlashloanArbSimulator.sol
+```
+
+It contains the real Aave V3 `flashLoanSimple` callback flow and swap calls for:
+- Uniswap V3
+- Camelot V3 (Algebra)
+- WETH / USDC on Arbitrum
+
+The contract has a hard profitability guard. If the final USDC balance cannot repay
+the flash loan premium **and** clear the configured minimum profit, the whole
+transaction reverts.
+
+The fork test suite runs with Foundry:
+
+```bash
+forge build
+forge test -vvv
+```
+
+GitHub Actions also runs the same test suite against an Arbitrum fork.
+
+The hosted dashboard includes a **Transaction Preflight** button. It uses current
+on-chain quotes, the live Aave flash-loan premium, gas estimate, and the configured
+profit threshold to show:
+
+- `WOULD EXECUTE`
+- `WOULD REVERT`
+
+This is still simulation mode. No mainnet contract deployment, wallet connection,
+private key, or automatic transaction signing is enabled.
