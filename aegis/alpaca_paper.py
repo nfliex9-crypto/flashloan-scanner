@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import os
 import urllib.error
+import urllib.parse
 import urllib.request
 from dataclasses import dataclass
 
@@ -172,5 +173,24 @@ def place_market_order(
         "status": raw.get("status"),
         "notional": raw.get("notional"),
         "qty": raw.get("qty"),
+        "created_at": raw.get("created_at"),
+    }
+
+
+def close_position(symbol: str) -> dict:
+    if symbol not in ALLOWED_CRYPTO:
+        raise ValueError(f"unsupported paper symbol: {symbol}")
+
+    encoded = urllib.parse.quote(symbol, safe="")
+    raw = _request(f"/v2/positions/{encoded}", method="DELETE")
+    return {
+        "id": raw.get("id"),
+        "symbol": raw.get("symbol"),
+        "side": raw.get("side"),
+        "type": raw.get("type"),
+        "status": raw.get("status"),
+        "qty": raw.get("qty"),
+        "filled_qty": raw.get("filled_qty"),
+        "filled_avg_price": raw.get("filled_avg_price"),
         "created_at": raw.get("created_at"),
     }
