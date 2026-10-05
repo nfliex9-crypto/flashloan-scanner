@@ -172,6 +172,36 @@ def strategy_returns(
     return out
 
 
+
+def closed_trade_outcomes(
+    returns: list[float],
+    positions: list[int],
+) -> list[float]:
+    """Aggregate bar-level strategy returns into completed long-trade returns."""
+    if len(returns) != len(positions):
+        raise ValueError("returns and positions length mismatch")
+
+    trades: list[float] = []
+    growth: float | None = None
+    previous_held = 0
+
+    for i in range(1, len(returns)):
+        held = positions[i - 1]
+
+        if previous_held == 0 and held == 1:
+            growth = 1.0
+
+        if growth is not None:
+            growth *= 1.0 + returns[i]
+
+        if previous_held == 1 and held == 0 and growth is not None:
+            trades.append(growth - 1.0)
+            growth = None
+
+        previous_held = held
+
+    return trades
+
 def compounded_return(returns: list[float]) -> float:
     equity = 1.0
     for value in returns:
@@ -302,9 +332,10 @@ def evaluate_agent(
     total = compounded_return(returns)
     oos = compounded_return(oos_returns)
     dd = max_drawdown(returns)
-    pf = profit_factor(returns)
+    closed_trades = closed_trade_outcomes(returns, positions)
+    pf = profit_factor(closed_trades)
     sharpe = annualized_sharpe(returns, interval_minutes)
-    trades = trade_count(positions)
+    trades = len(closed_trades)
 
     stress = {
         "baseline_positive": total > 0,
@@ -347,7 +378,7 @@ def evaluate_agent(
         "profit_factor": pf,
         "sharpe": sharpe,
         "trades": trades,
-        "win_rate": win_rate(returns),
+        "win_rate": win_rate(closed_trades),
         "latest_signal": "LONG" if positions[-1] else "FLAT",
         "stress": stress,
         "stress_passes": stress_passes,
