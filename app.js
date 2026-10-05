@@ -4,16 +4,40 @@ const money = (v) => new Intl.NumberFormat("en-US",{style:"currency",currency:"U
 const pct = (v,d=2) => (Number(v)*100).toFixed(d)+"%";
 const num = (v,d=2) => Number(v).toFixed(d);
 
+const tickerState = {
+  ws: null,
+  connected: false,
+  reconnectTimer: null,
+  pingTimer: null,
+  quotes: {},
+};
+
+function feedLabel(){
+  if(tickerState.connected) return "LIVE · KRAKEN WS + CLOSED BARS";
+  return "LIVE · CLOSED KRAKEN BARS";
+}
+
 function empty(text){ return '<div class="empty">'+text+'</div>'; }
 
 function marketCard(m){
   const cls = m.change_24h >= 0 ? "up" : "down";
   const closed = m.last_candle_utc ? new Date(m.last_candle_utc).toLocaleTimeString("en-GB",{hour:"2-digit",minute:"2-digit"}) : "—";
   return `
-    <article class="market-card">
+    <article class="market-card" data-market-symbol="${m.symbol}">
       <div class="market-top">
-        <div><span class="symbol">${m.symbol}/USD</span><div class="delta ${cls}">${pct(m.change_24h)}</div></div>
-        <div class="price">${money(m.price)}</div>
+        <div>
+          <span class="symbol">${m.symbol}/USD</span>
+          <div class="delta ${cls}">${pct(m.change_24h)}</div>
+        </div>
+        <div class="live-price-wrap">
+          <span class="live-caption">LIVE MID</span>
+          <div class="price live-price">${money(m.price)}</div>
+        </div>
+      </div>
+      <div class="micro-row">
+        <span>Bid <strong class="live-bid">—</strong></span>
+        <span>Ask <strong class="live-ask">—</strong></span>
+        <span>Spread <strong class="live-spread">—</strong></span>
       </div>
       <div class="market-meta">
         <div><span>7D Return</span><strong>${pct(m.change_7d)}</strong></div>
@@ -22,6 +46,117 @@ function marketCard(m){
         <div><span>Closed bar</span><strong>${closed}</strong></div>
       </div>
     </article>`;
+}
+
+
+function applyTicker(symbol, quote){
+  const card = document.querySelector(`[data-market-symbol="${symbol}"]`);
+  if(!card || !quote) return;
+
+  const bid = Number(quote.bid);
+  const ask = Number(quote.ask);
+  const mid = bid > 0 && ask > 0 ? (bid + ask) / 2 : Number(quote.last || 0);
+  const spreadBps = bid > 0 && ask > 0 && mid > 0 ? ((ask - bid) / mid) * 10000 : null;
+
+  const priceEl = card.querySelector(".live-price");
+  const bidEl = card.querySelector(".live-bid");
+  const askEl = card.querySelector(".live-ask");
+  const spreadEl = card.querySelector(".live-spread");
+
+  if(priceEl && mid > 0) priceEl.textContent = money(mid);
+  if(bidEl && bid > 0) bidEl.textContent = money(bid);
+  if(askEl && ask > 0) askEl.textContent = money(ask);
+  if(spreadEl) spreadEl.textContent = spreadBps == null ? "—" : num(spreadBps,2)+" bps";
+}
+
+function hydrateTickerCards(){
+  for(const [symbol,quote] of Object.entries(tickerState.quotes)){
+    applyTicker(symbol,quote);
+  }
+}
+
+function stopTickerHeartbeat(){
+  if(tickerState.pingTimer){
+    clearInterval(tickerState.pingTimer);
+    tickerState.pingTimer = null;
+  }
+}
+
+function scheduleTickerReconnect(){
+  if(tickerState.reconnectTimer) return;
+  tickerState.reconnectTimer = setTimeout(()=>{
+    tickerState.reconnectTimer = null;
+    startTickerStream();
+  },5000);
+}
+
+function startTickerStream(){
+  if(
+    tickerState.ws &&
+    (tickerState.ws.readyState === WebSocket.OPEN ||
+     tickerState.ws.readyState === WebSocket.CONNECTING)
+  ) return;
+
+  const ws = new WebSocket("wss://ws.kraken.com/v2");
+  tickerState.ws = ws;
+
+  ws.addEventListener("open",()=>{
+    tickerState.connected = true;
+    $("feedStatus").textContent = feedLabel();
+
+    ws.send(JSON.stringify({
+      method:"subscribe",
+      params:{
+        channel:"ticker",
+        symbol:["BTC/USD","ETH/USD"],
+        event_trigger:"bbo",
+        snapshot:true
+      }
+    }));
+
+    stopTickerHeartbeat();
+    tickerState.pingTimer = setInterval(()=>{
+      if(ws.readyState === WebSocket.OPEN){
+        ws.send(JSON.stringify({method:"ping"}));
+      }
+    },25000);
+  });
+
+  ws.addEventListener("message",(event)=>{
+    try{
+      const message = JSON.parse(event.data);
+      if(message.channel !== "ticker" || !Array.isArray(message.data)) return;
+
+      for(const item of message.data){
+        const raw = item.symbol || "";
+        const symbol = raw.split("/")[0];
+        if(!["BTC","ETH"].includes(symbol)) continue;
+
+        tickerState.quotes[symbol] = {
+          bid:item.bid,
+          ask:item.ask,
+          last:item.last,
+          timestamp:item.timestamp
+        };
+        applyTicker(symbol,tickerState.quotes[symbol]);
+      }
+    }catch(err){
+      console.debug("Ticker message ignored",err);
+    }
+  });
+
+  ws.addEventListener("close",()=>{
+    tickerState.connected = false;
+    stopTickerHeartbeat();
+    $("feedStatus").textContent = feedLabel();
+    scheduleTickerReconnect();
+  });
+
+  ws.addEventListener("error",()=>{
+    tickerState.connected = false;
+    $("feedStatus").textContent = feedLabel();
+    try{ ws.close(); }catch{}
+  });
 }
 
 function tfBadges(a){
@@ -108,7 +243,7 @@ function paperCard(a){
 }
 
 function renderMarket(data){
-  $("feedStatus").textContent = "LIVE · CLOSED KRAKEN BARS";
+  $("feedStatus").textContent = feedLabel();
   $("firewallStatus").textContent = data.capital_firewall;
   $("agentCount").textContent = data.summary.agents;
   $("activeCount").textContent = data.summary.active;
@@ -122,6 +257,7 @@ function renderMarket(data){
   }
 
   $("markets").innerHTML = data.markets.map(marketCard).join("");
+  hydrateTickerCards();
   $("strategyAgents").innerHTML = data.rooms.strategy.length ? data.rooms.strategy.map(agentCard).join("") : empty("لا يوجد Agent اجتاز شروط Active متعددة الأطر الزمنية الآن.");
   $("probationAgents").innerHTML = data.rooms.probation.length ? data.rooms.probation.map(agentCard).join("") : empty("لا يوجد Agents تحت Probation حاليًا.");
   $("graveyard").innerHTML = data.rooms.graveyard.length ? data.rooms.graveyard.map(agentCard).join("") : empty("لا يوجد Agents مقصاة حاليًا.");
@@ -193,6 +329,7 @@ function refreshAll(){
 }
 
 $("refreshBtn").addEventListener("click",refreshAll);
+startTickerStream();
 refreshAll();
 setInterval(loadMarket,60000);
 setInterval(loadPaper,60000);
