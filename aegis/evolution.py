@@ -238,6 +238,72 @@ def mutate(parent: Genome, *, seed: str) -> Genome:
     )
 
 
+def learned_parameter_votes(memory: list[dict], strategy: str) -> dict[str, float]:
+    """Aggregate safe parameter directions learned from prior generations."""
+    votes: dict[str, float] = {}
+
+    for lesson in memory[-300:]:
+        if lesson.get("strategy") != strategy:
+            continue
+
+        score_delta = float(lesson.get("score_delta", 0.0))
+        drawdown_delta = float(lesson.get("drawdown_delta", 0.0))
+        if score_delta <= 0 or drawdown_delta > 0.01:
+            continue
+
+        weight = score_delta * (2.0 if lesson.get("promoted") else 1.0)
+        for key, change in lesson.get("changed", {}).items():
+            before = change.get("from")
+            after = change.get("to")
+            if not isinstance(before, (int, float)) or not isinstance(after, (int, float)):
+                continue
+            delta = float(after) - float(before)
+            if abs(delta) < 1e-12:
+                continue
+            votes[key] = votes.get(key, 0.0) + (weight if delta > 0 else -weight)
+
+    return votes
+
+
+def memory_aware_challenger(
+    parent: Genome,
+    memory: list[dict],
+    *,
+    seed: str,
+    explore: bool = False,
+) -> Genome:
+    """Prefer mutations aligned with safe historical improvements.
+
+    Exploration remains enabled so the search cannot collapse into one local optimum.
+    Risk gates are not part of the genome and cannot be mutated here.
+    """
+    if explore:
+        return mutate(parent, seed=seed + ":explore")
+
+    votes = learned_parameter_votes(memory, parent.strategy)
+    candidates = [
+        mutate(parent, seed=f"{seed}:candidate:{i}")
+        for i in range(3)
+    ]
+
+    if not votes:
+        return candidates[0]
+
+    def alignment(child: Genome) -> float:
+        score = 0.0
+        for key, vote in votes.items():
+            before = parent.params.get(key)
+            after = child.params.get(key)
+            if not isinstance(before, (int, float)) or not isinstance(after, (int, float)):
+                continue
+            delta = float(after) - float(before)
+            if delta == 0:
+                continue
+            score += abs(vote) if delta * vote > 0 else -abs(vote)
+        return score
+
+    return max(candidates, key=alignment)
+
 def evaluate_genome(symbol: str, genome: Genome, matrix: dict) -> dict:
     timeframes = {}
 
@@ -480,8 +546,24 @@ def run_cycle() -> dict:
                 }
             ]
 
+            memory = state.get("memory", [])
+            votes = learned_parameter_votes(memory, strategy)
+            role_trace.append(
+                {
+                    "role": "ARCHIVIST",
+                    "event": "memory_bias_loaded",
+                    "parameter_votes": votes,
+                    "memory_size": len(memory),
+                }
+            )
+
             challengers = [
-                mutate(parent, seed=f"cycle-{cycle}-challenger-{i}")
+                memory_aware_challenger(
+                    parent,
+                    memory,
+                    seed=f"cycle-{cycle}-challenger-{i}",
+                    explore=(i % 3 == 0),
+                )
                 for i in range(CHALLENGERS_PER_FAMILY)
             ]
 
