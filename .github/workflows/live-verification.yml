@@ -1,0 +1,49 @@
+name: AEGIS Live Verification
+
+on:
+  push:
+    branches: [Bot]
+    paths:
+      - ".github/workflows/live-verification.yml"
+      - "aegis/**"
+      - "tests/**"
+  schedule:
+    - cron: "6,21,36,51 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: aegis-live-verification
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: Bot
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install test dependencies
+        run: pip install -r requirements-aegis.txt
+
+      - name: Unit and deterministic tests
+        run: >-
+          PYTHONPATH=. pytest -q
+          tests/test_aegis.py
+          tests/test_arena.py
+          tests/test_live_lab.py
+          tests/test_paper_worker.py
+          tests/test_execution.py
+          tests/test_evolution.py
+
+      - name: Live Kraken market and L2 smoke test
+        run: PYTHONPATH=. python -m aegis.live_smoke
