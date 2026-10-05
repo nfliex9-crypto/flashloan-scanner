@@ -162,7 +162,7 @@ async function loadMarket(){
   $("refreshBtn").textContent = "جاري التحديث…";
   $("feedStatus").textContent = "FETCHING…";
   try{
-    const res = await fetch("/api/aegis?t="+Date.now(),{cache:"no-store"});
+    const res = await fetch("/api/aegis");
     const data = await res.json();
     if(!res.ok || !data.ok) throw new Error(data.error || "API error");
     renderMarket(data);
@@ -178,7 +178,7 @@ async function loadMarket(){
 
 async function loadPaper(){
   try{
-    const res = await fetch("/api/paper?t="+Date.now(),{cache:"no-store"});
+    const res = await fetch("/api/paper");
     const data = await res.json();
     renderPaper(data);
   }catch(err){
