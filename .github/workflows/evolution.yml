@@ -1,6 +1,10 @@
 name: AEGIS Evolution Lab
 
 on:
+  push:
+    branches: [Bot]
+    paths:
+      - ".github/workflows/evolution.yml"
   schedule:
     # Slow evolution reduces overfitting to tiny market changes.
     - cron: "17 2 * * *"
