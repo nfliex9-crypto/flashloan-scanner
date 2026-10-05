@@ -534,3 +534,44 @@ footer {
     width: 100%;
   }
 }
+
+
+.radar-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.deep-empty {
+  margin-bottom: 14px;
+}
+
+.deep-result {
+  display: grid;
+  gap: 14px;
+  margin-bottom: 16px;
+}
+
+.deep-result .optimizer-hero {
+  grid-template-columns: repeat(4, 1fr);
+}
+
+@media (max-width: 900px) {
+  .deep-result .optimizer-hero {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 760px) {
+  .radar-actions {
+    width: 100%;
+  }
+
+  .radar-actions button {
+    flex: 1 1 100%;
+  }
+
+  .deep-result .optimizer-hero {
+    grid-template-columns: 1fr;
+  }
+}
