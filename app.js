@@ -8,6 +8,7 @@ const state = {
   loading: false,
   optimizing: false,
   preflighting: false,
+  radarLoading: false,
   minProfit: 1,
   history: loadHistory(),
 };
@@ -319,6 +320,75 @@ async function optimizeSize() {
 }
 
 
+
+function renderRadar(data) {
+  $("radarAssets").textContent = data.assets_scanned ?? "—";
+  $("radarRoutes").textContent = data.routes_quoted ?? "—";
+  $("radarPositive").textContent = data.positive_count ?? 0;
+  $("radarProfitable").textContent = data.profitable_count ?? 0;
+
+  $("radarEmpty").classList.add("hidden");
+  $("radarResult").classList.remove("hidden");
+
+  const rows = (data.results || []).slice(0, 12);
+  $("radarRows").innerHTML = rows.length
+    ? rows
+        .map((r) => {
+          const status = r.opportunity
+            ? '<span class="good">OPPORTUNITY</span>'
+            : r.net_pnl_usdc > 0
+              ? '<span class="warm">POSITIVE</span>'
+              : '<span class="neutral">NO TRADE</span>';
+
+          return `
+            <tr>
+              <td><strong>${r.token}</strong></td>
+              <td class="route-name">${r.route}</td>
+              <td class="${r.gross_pnl_usdc >= 0 ? "good" : "bad"}">${num(r.gross_edge_pct, 4)}%</td>
+              <td>${money(r.flash_fee_usdc)}</td>
+              <td>${money(r.gas_est_usdc)}</td>
+              <td class="${r.net_pnl_usdc > 0 ? "good" : "bad"}">${money(r.net_pnl_usdc)}</td>
+              <td>${status}</td>
+            </tr>
+          `;
+        })
+        .join("")
+    : '<tr><td colspan="7" class="loading-row">لم يتم العثور على مسارات قابلة للتسعير.</td></tr>';
+}
+
+async function runRadar() {
+  if (state.radarLoading) return;
+
+  const size = Number($("tradeSize").value || 1000);
+  if (!Number.isFinite(size) || size <= 0) return;
+
+  state.radarLoading = true;
+  $("radarBtn").disabled = true;
+  $("radarBtn").textContent = "جاري فحص عدة أسواق...";
+  $("radarEmpty").classList.remove("hidden");
+  $("radarEmpty").textContent = "يتم الآن تسعير الأصول والمسارات مباشرة من Arbitrum...";
+
+  try {
+    const res = await fetch(
+      `/api/opportunities?size=${encodeURIComponent(size)}&t=${Date.now()}`,
+      { cache: "no-store" }
+    );
+    const data = await res.json();
+
+    if (!res.ok || !data.ok) throw new Error(data.error || "Radar error");
+    renderRadar(data);
+  } catch (err) {
+    console.error(err);
+    $("radarEmpty").classList.remove("hidden");
+    $("radarResult").classList.add("hidden");
+    $("radarEmpty").textContent = "تعذر إكمال البحث الموسع الآن. جرّب مرة ثانية.";
+  } finally {
+    state.radarLoading = false;
+    $("radarBtn").disabled = false;
+    $("radarBtn").textContent = "بحث موسع الآن";
+  }
+}
+
 function renderPreflight(data) {
   $("preflightEmpty").classList.add("hidden");
   $("preflightResult").classList.remove("hidden");
@@ -400,6 +470,7 @@ function startTimer() {
 $("refreshBtn").addEventListener("click", refresh);
 $("optimizeBtn").addEventListener("click", optimizeSize);
 $("preflightBtn").addEventListener("click", runPreflight);
+$("radarBtn").addEventListener("click", runRadar);
 $("tradeSize").addEventListener("change", refresh);
 $("clearHistoryBtn").addEventListener("click", () => {
   state.history = [];
@@ -410,4 +481,5 @@ window.addEventListener("resize", drawHistoryChart);
 
 renderHistory();
 refresh();
+setTimeout(runRadar, 2500);
 startTimer();
