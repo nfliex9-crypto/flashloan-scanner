@@ -39,7 +39,7 @@ jobs:
       - name: Persist state only when it changed
         shell: bash
         run: |
-          if git diff --quiet -- data/paper_state.json; then
+          if [ -z "$(git status --porcelain -- data/paper_state.json)" ]; then
             echo "No new closed candle. Nothing to commit."
             exit 0
           fi
