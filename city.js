@@ -83,6 +83,55 @@ function ghostCard(g){
     </article>\`;
 }
 
+function intelCard(a){
+  const sec = a.sec || {};
+  const finra = a.finra || {};
+  const counts = sec.counts || {};
+  const latest = finra.latest || {};
+  const ratio = latest.short_volume_ratio == null ? "—" : pct(latest.short_volume_ratio);
+  const finraDate = latest.date || "—";
+  const sourceState = a.sources_available + "/2 sources";
+  return `
+    <article class="intel-card">
+      <div class="intel-top">
+        <div><div class="symbol">${a.symbol}</div><div class="agent-id">${sourceState}</div></div>
+        <div class="intel-score">${num(a.attention_score,0)}<small>/100 attention</small></div>
+      </div>
+      <div class="intel-metrics">
+        <div><span>Form 4 · 7D</span><strong>${counts.form4_7d ?? "—"}</strong></div>
+        <div><span>8-K · 30D</span><strong>${counts["8k_30d"] ?? "—"}</strong></div>
+        <div><span>FINRA Short Vol</span><strong>${ratio}</strong></div>
+        <div><span>Flow Anomaly</span><strong>${finra.anomaly_score == null ? "—" : num(finra.anomaly_score,0)+"/100"}</strong></div>
+        <div><span>FINRA Date</span><strong>${finraDate}</strong></div>
+        <div><span>Role</span><strong>CONTEXT ONLY</strong></div>
+      </div>
+      ${a.errors?.length ? `<p class="intel-error">${a.errors.join(" · ")}</p>` : ""}
+    </article>`;
+}
+
+function renderIntelligence(data){
+  const box = $("intelHQ");
+  if(!data?.ok){
+    box.innerHTML = '<div class="empty">Intelligence API غير متاح حاليًا.</div>';
+    return;
+  }
+  box.innerHTML = data.assets?.length
+    ? data.assets.map(intelCard).join("")
+    : '<div class="empty">لا توجد بيانات Intelligence.</div>';
+}
+
+async function loadIntelligence(){
+  try{
+    const res = await fetch("/api/intelligence",{cache:"no-store"});
+    const data = await res.json();
+    if(!res.ok || !data.ok) throw new Error(data.error || "Intelligence API error");
+    renderIntelligence(data);
+  }catch(err){
+    console.error(err);
+    $("intelHQ").innerHTML = '<div class="empty">تعذر جلب SEC / FINRA الآن؛ Agent City الأساسي مستمر بدونها.</div>';
+  }
+}
+
 function render(data){
   current = data;
   $("feedStatus").textContent = "LIVE · KRAKEN 1H";
@@ -148,6 +197,8 @@ async function load(){
   }
 }
 
-$("refreshBtn").addEventListener("click",load);
+$("refreshBtn").addEventListener("click",()=>{ load(); loadIntelligence(); });
 load();
+loadIntelligence();
 setInterval(load,60000);
+setInterval(loadIntelligence,900000);
