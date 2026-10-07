@@ -6,7 +6,7 @@ import os
 import statistics
 import urllib.request
 from collections import defaultdict
-from datetime import date, datetime, timezone
+from datetime import date, datetime, timedelta, timezone
 from functools import lru_cache
 
 
@@ -15,13 +15,25 @@ SEC_SUBMISSIONS_URL = "https://data.sec.gov/submissions/CIK{cik}.json"
 FINRA_REG_SHO_URL = "https://api.finra.org/data/group/otcMarket/name/regShoDaily"
 
 WATCHLIST = ("SPY", "QQQ", "NVDA", "TSLA", "AAPL", "MSFT")
-SEC_USER_AGENT = os.getenv("SEC_USER_AGENT", "AEGIS-Agent-City/1.0 (paper-research)")
+KNOWN_CIKS = {
+    "SPY": {"cik": "0000884394", "title": "SPDR S&P 500 ETF TRUST"},
+    "QQQ": {"cik": "0001067839", "title": "INVESCO QQQ TRUST, SERIES 1"},
+    "NVDA": {"cik": "0001045810", "title": "NVIDIA CORP"},
+    "TSLA": {"cik": "0001318605", "title": "TESLA, INC."},
+    "AAPL": {"cik": "0000320193", "title": "APPLE INC."},
+    "MSFT": {"cik": "0000789019", "title": "MICROSOFT CORP"},
+}
+SEC_USER_AGENT = os.getenv(
+    "SEC_USER_AGENT",
+    "AEGIS-Agent-City/1.1 https://github.com/nfliex9-crypto/flashloan-scanner",
+)
 
 
 def _request_json(url: str, *, payload: dict | None = None, timeout: int = 12):
     data = None
     headers = {
         "Accept": "application/json",
+        "Accept-Encoding": "identity",
         "User-Agent": SEC_USER_AGENT,
     }
     if payload is not None:
@@ -122,7 +134,7 @@ def score_sec_activity(filings: list[dict]) -> dict:
 
 
 def sec_snapshot(symbol: str) -> dict:
-    mapping = sec_ticker_map().get(symbol.upper())
+    mapping = KNOWN_CIKS.get(symbol.upper()) or sec_ticker_map().get(symbol.upper())
     if not mapping:
         return {
             "ok": False,
@@ -182,6 +194,8 @@ def aggregate_finra_rows(rows: list[dict]) -> dict:
     if not series:
         return {
             "latest": None,
+            "data_age_days": None,
+            "context_eligible": False,
             "avg_5d_ratio": 0.0,
             "zscore_20d": 0.0,
             "anomaly_score": 0.0,
@@ -199,8 +213,13 @@ def aggregate_finra_rows(rows: list[dict]) -> dict:
     # Anomaly/intensity only. FINRA short-sale volume is not the same as short interest.
     anomaly = min(100.0, 15.0 + abs(z) * 22.0 + abs(latest_ratio - avg5) * 120.0)
 
+    latest_age = _days_ago(series[-1]["date"])
+    context_eligible = latest_age is not None and 0 <= latest_age <= 10
+
     return {
         "latest": series[-1],
+        "data_age_days": latest_age,
+        "context_eligible": context_eligible,
         "avg_5d_ratio": avg5,
         "zscore_20d": z,
         "anomaly_score": round(anomaly, 1),
@@ -209,8 +228,10 @@ def aggregate_finra_rows(rows: list[dict]) -> dict:
 
 
 def finra_snapshot(symbol: str) -> dict:
+    today = datetime.now(timezone.utc).date()
+    start = today - timedelta(days=75)
     body = {
-        "limit": 100,
+        "limit": 1000,
         "fields": [
             "tradeReportDate",
             "securitiesInformationProcessorSymbolIdentifier",
@@ -224,6 +245,13 @@ def finra_snapshot(symbol: str) -> dict:
                 "compareType": "equal",
                 "fieldName": "securitiesInformationProcessorSymbolIdentifier",
                 "fieldValue": symbol.upper(),
+            }
+        ],
+        "dateRangeFilters": [
+            {
+                "fieldName": "tradeReportDate",
+                "startDate": start.isoformat(),
+                "endDate": today.isoformat(),
             }
         ],
     }
@@ -269,14 +297,15 @@ def build_symbol_intelligence(symbol: str) -> dict:
         errors.append(f"FINRA: {exc}")
 
     sec_score = float(sec.get("attention_score", 0.0)) if sec.get("ok") else 0.0
-    finra_score = float(finra.get("anomaly_score", 0.0)) if finra.get("ok") else 0.0
+    finra_usable = bool(finra.get("ok") and finra.get("context_eligible"))
+    finra_score = float(finra.get("anomaly_score", 0.0)) if finra_usable else 0.0
 
-    available = int(bool(sec.get("ok"))) + int(bool(finra.get("ok")))
-    if available == 2:
+    available = int(bool(sec.get("ok"))) + int(finra_usable)
+    if sec.get("ok") and finra_usable:
         attention = 0.55 * sec_score + 0.45 * finra_score
     elif sec.get("ok"):
         attention = sec_score
-    elif finra.get("ok"):
+    elif finra_usable:
         attention = finra_score
     else:
         attention = 0.0
@@ -287,6 +316,7 @@ def build_symbol_intelligence(symbol: str) -> dict:
         "execution_eligible": False,
         "role": "CONTEXT_ONLY",
         "sources_available": available,
+        "finra_fresh": finra_usable,
         "sec": sec,
         "finra": finra,
         "errors": errors,
