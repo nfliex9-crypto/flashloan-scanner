@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#03060b" />
+  <title>AEGIS Agent City</title>
+  <link rel="stylesheet" href="/city.css" />
+</head>
+<body>
+  <div class="grid-bg"></div>
+  <main class="shell">
+    <header class="hero">
+      <div>
+        <p class="eyebrow">AEGIS · AGENT CITY V1</p>
+        <h1>Trading City</h1>
+        <p class="lead">مختبر تنفيذ Paper مبني على بيانات سوق حية، مع Risk Engine، Ghost Trades، وTrade Autopsy. لا أوامر حقيقية.</p>
+      </div>
+      <div class="hero-actions">
+        <a class="ghost-btn" href="/">Control Room</a>
+        <button id="refreshBtn">تحديث الآن</button>
+      </div>
+    </header>
+
+    <section class="status-strip">
+      <div><span class="dot"></span><strong id="feedStatus">Connecting…</strong><small>DATA</small></div>
+      <div><strong class="locked" id="firewall">LOCKED</strong><small>CAPITAL FIREWALL</small></div>
+      <div><strong id="mode">—</strong><small>MODE</small></div>
+      <div><strong id="updated">—</strong><small>UPDATED UTC</small></div>
+    </section>
+
+    <section class="vault">
+      <div class="section-title">
+        <div><p class="eyebrow">THE VAULT</p><h2>Portfolio Reality</h2></div>
+        <span class="paper-badge">PAPER ONLY</span>
+      </div>
+      <div class="vault-grid">
+        <article><span>Marked Equity</span><strong id="equity">—</strong></article>
+        <article><span>Net P&amp;L</span><strong id="netPnl">—</strong></article>
+        <article><span>Realized</span><strong id="realized">—</strong></article>
+        <article><span>Unrealized</span><strong id="unrealized">—</strong></article>
+        <article><span>Max Drawdown</span><strong id="drawdown">—</strong></article>
+        <article><span>Profit Factor</span><strong id="profitFactor">—</strong></article>
+        <article><span>Win Rate</span><strong id="winRate">—</strong></article>
+        <article><span>Fees + Slippage</span><strong id="costs">—</strong></article>
+      </div>
+    </section>
+
+    <section class="layout">
+      <article class="panel market-panel">
+        <div class="section-title">
+          <div><p class="eyebrow">ROOM 01</p><h2>Market Pulse</h2></div>
+          <span class="chip">LIVE KRAKEN</span>
+        </div>
+        <div id="markets" class="market-grid"><div class="empty">تحميل السوق…</div></div>
+      </article>
+
+      <article class="panel brain-panel">
+        <div class="section-title">
+          <div><p class="eyebrow">ROOM 02</p><h2>Risk Constitution</h2></div>
+          <span class="chip red">HARD RULES</span>
+        </div>
+        <div id="riskRules" class="rules"></div>
+        <p id="paperNote" class="note"></p>
+      </article>
+
+      <article class="panel agents-panel">
+        <div class="section-title">
+          <div><p class="eyebrow">ROOM 03</p><h2>Agent Floor</h2></div>
+          <span class="chip green">SURVIVAL GATED</span>
+        </div>
+        <div id="agents" class="agent-grid"><div class="empty">تحميل Agents…</div></div>
+      </article>
+
+      <article class="panel trades-panel">
+        <div class="section-title">
+          <div><p class="eyebrow">ROOM 04</p><h2>Trade Tape</h2></div>
+          <span class="chip green">EXECUTED PAPER</span>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Agent</th><th>Asset</th><th>Result</th><th>Net P&amp;L</th><th>R</th><th>Exit</th></tr></thead>
+            <tbody id="trades"></tbody>
+          </table>
+        </div>
+        <div id="autopsy" class="autopsy empty">اضغط على أي صفقة لفتح Trade Autopsy.</div>
+      </article>
+
+      <article class="panel ghost-panel">
+        <div class="section-title">
+          <div><p class="eyebrow">ROOM 05</p><h2>Ghost Lab</h2></div>
+          <span class="chip amber">REJECTED SIGNALS</span>
+        </div>
+        <p class="note">نسجل الإشارات التي منعها Risk/Survival Gate بدل حذفها، حتى نعرف لاحقًا إذا كان النظام يرفض فرصًا جيدة أو يحمي رأس المال فعلًا.</p>
+        <div id="ghosts" class="ghost-list"></div>
+      </article>
+
+      <article class="panel next-panel">
+        <div class="section-title">
+          <div><p class="eyebrow">NEXT BUILD</p><h2>Persistent Paper Broker</h2></div>
+          <span class="chip violet">STAGE 2</span>
+        </div>
+        <div id="nextStage" class="next-stage"></div>
+      </article>
+    </section>
+
+    <footer>
+      <span>AEGIS Agent City · Research / Paper Execution</span>
+      <span>لا يوجد وعد ربح. الترقية تعتمد على Evidence وRisk Limits.</span>
+    </footer>
+  </main>
+  <script src="/city.js"></script>
+</body>
+</html>
