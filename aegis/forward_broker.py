@@ -297,8 +297,11 @@ def run_forward_tick(scheduled_at: datetime | None = None, config: RiskConfig | 
                 exit_event = None
 
                 for bar in candles:
-                    bar_close = _dt(bar.ts) + timedelta(hours=1)
-                    if bar_close <= opened_at:
+                    bar_open = _dt(bar.ts)
+                    bar_close = bar_open + timedelta(hours=1)
+                    # Never use pre-entry OHLC from the candle in which the fill occurred.
+                    # We intentionally start stop/target evaluation from the next full candle.
+                    if bar_open < opened_at:
                         continue
                     stop_hit = bar.low <= _num(position["stop_price"])
                     target_hit = bar.high >= _num(position["target_price"])
