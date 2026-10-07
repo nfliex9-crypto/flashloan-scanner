@@ -19,4 +19,4 @@ jobs:
       - name: Import scanner
         run: python -c "import scanner; print('scanner import OK')"
       - name: Run AEGIS tests
-        run: pytest -q
+        run: PYTHONPATH=. pytest -q
