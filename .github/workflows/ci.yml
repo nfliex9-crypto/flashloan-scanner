@@ -13,8 +13,10 @@ jobs:
         with:
           python-version: "3.12"
       - name: Install dependencies
-        run: python -m pip install -r requirements.txt
-      - name: Compile scanner
-        run: python -m compileall -q scanner.py
+        run: python -m pip install -r requirements.txt -r requirements-aegis.txt
+      - name: Compile Python
+        run: python -m compileall -q scanner.py aegis api tests
       - name: Import scanner
         run: python -c "import scanner; print('scanner import OK')"
+      - name: Run AEGIS tests
+        run: pytest -q
