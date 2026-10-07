@@ -132,6 +132,79 @@ async function loadIntelligence(){
   }
 }
 
+function forwardPositionCard(p){
+  return `
+    <article class="forward-position">
+      <div>
+        <strong>${p.symbol} · ${p.agent_id}</strong>
+        <span>LONG · ${Number(p.qty||0).toFixed(6)} units</span>
+      </div>
+      <div><span>Entry</span><strong>${money(p.entry_price)}</strong></div>
+      <div><span>Mark</span><strong>${money(p.last_mark_price)}</strong></div>
+      <div><span>Stop</span><strong>${money(p.stop_price)}</strong></div>
+      <div><span>Target</span><strong>${money(p.target_price)}</strong></div>
+      <div><span>Unrealized</span><strong class="${cls(p.unrealized_pnl)}">${money(p.unrealized_pnl)}</strong></div>
+    </article>`;
+}
+
+function renderForward(data){
+  if(!data?.ok){
+    $("forwardStatus").textContent = "LEDGER ERROR";
+    $("forwardStatus").className = "chip red";
+    return;
+  }
+
+  if(!data.initialized){
+    $("forwardStatus").textContent = "WAITING FOR FIRST RUN";
+    $("forwardStatus").className = "chip amber";
+    $("forwardPositions").innerHTML = '<div class="empty">الـPersistent Broker جاهز وينتظر أول scheduled run.</div>';
+    return;
+  }
+
+  const v = data.vault || {};
+  const a = data.account || {};
+  const unrealized = Number(v.marked_equity||0) - Number(a.cash||0);
+  const circuit = String(v.circuit_state || "UNKNOWN");
+  const open = circuit === "OPEN";
+
+  $("forwardStatus").textContent = open ? "HOURLY · OPEN" : "HALTED · "+circuit;
+  $("forwardStatus").className = open ? "chip green" : "chip red";
+  $("forwardEquity").textContent = money(v.marked_equity);
+  $("forwardRealized").textContent = money(v.realized_pnl);
+  $("forwardRealized").className = cls(v.realized_pnl);
+  $("forwardUnrealized").textContent = money(unrealized);
+  $("forwardUnrealized").className = cls(unrealized);
+  $("forwardTrades").textContent = String(v.closed_trades ?? 0);
+  $("forwardOpen").textContent = String(v.open_positions ?? 0);
+  $("forwardWin").textContent = pct(v.win_rate || 0);
+  $("forwardPf").textContent = num(v.profit_factor || 0);
+  $("forwardCircuit").textContent = circuit;
+  $("forwardCircuit").className = open ? "positive" : "negative";
+
+  const latest = data.runs?.[0];
+  $("forwardLastRun").textContent = latest?.completed_at
+    ? new Date(latest.completed_at).toLocaleString("en-GB",{timeZone:"UTC",month:"short",day:"2-digit",hour:"2-digit",minute:"2-digit"})+" UTC · "+latest.status
+    : "No completed run yet";
+
+  $("forwardPositions").innerHTML = data.positions?.length
+    ? data.positions.map(forwardPositionCard).join("")
+    : '<div class="forward-flat"><span class="dot"></span><strong>FLAT</strong><span>لا توجد صفقات Forward مفتوحة حاليًا.</span></div>';
+}
+
+async function loadForward(){
+  try{
+    const res = await fetch("/api/forward?t="+Date.now(),{cache:"no-store"});
+    const data = await res.json();
+    if(!res.ok || !data.ok) throw new Error(data.error || "Forward API error");
+    renderForward(data);
+  }catch(err){
+    console.error(err);
+    $("forwardStatus").textContent = "LEDGER ERROR";
+    $("forwardStatus").className = "chip red";
+    $("forwardPositions").innerHTML = '<div class="empty">تعذر قراءة Forward Paper Ledger من Neon.</div>';
+  }
+}
+
 function render(data){
   current = data;
   $("feedStatus").textContent = "LIVE · KRAKEN 1H";
@@ -197,8 +270,10 @@ async function load(){
   }
 }
 
-$("refreshBtn").addEventListener("click",()=>{ load(); loadIntelligence(); });
+$("refreshBtn").addEventListener("click",()=>{ load(); loadIntelligence(); loadForward(); });
 load();
 loadIntelligence();
+loadForward();
 setInterval(load,60000);
+setInterval(loadForward,60000);
 setInterval(loadIntelligence,900000);
