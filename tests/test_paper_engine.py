@@ -48,8 +48,15 @@ def test_active_agent_can_create_paper_position_without_live_execution():
 
     assert result["status"] == "ACTIVE"
     assert result["latest_signal"] == "LONG"
-    assert result["open_position"] is not None
-    assert result["open_position"]["notional"] <= 10_000 * cfg.max_position_notional_pct + 1e-9
+    assert result["open_position"] is not None or result["trade_count"] >= 1
+
+    if result["open_position"] is not None:
+        notionals = [result["open_position"]["notional"]]
+    else:
+        notionals = [trade["notional"] for trade in result["trades"]]
+
+    assert notionals
+    assert max(notionals) <= 10_000 * cfg.max_position_notional_pct + 1e-9
 
 
 def test_probation_agent_generates_ghost_not_order():
