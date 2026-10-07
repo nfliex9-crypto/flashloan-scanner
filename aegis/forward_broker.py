@@ -668,6 +668,15 @@ def get_forward_state() -> dict:
             )
             trades = list(cur.fetchall())
             cur.execute(
+                "SELECT count(*) AS closed_trades, "
+                "count(*) FILTER (WHERE net_pnl > 0) AS wins, "
+                "COALESCE(sum(net_pnl) FILTER (WHERE net_pnl > 0),0) AS gains, "
+                "COALESCE(abs(sum(net_pnl) FILTER (WHERE net_pnl < 0)),0) AS losses "
+                "FROM aegis.paper_trades WHERE account_id=%s",
+                (ACCOUNT_ID,),
+            )
+            trade_stats = cur.fetchone()
+            cur.execute(
                 "SELECT ts,cash,realized_pnl,unrealized_pnl,equity,peak_equity,drawdown "
                 "FROM aegis.equity_curve WHERE account_id=%s ORDER BY ts DESC LIMIT 200",
                 (ACCOUNT_ID,),
@@ -684,9 +693,10 @@ def get_forward_state() -> dict:
             )
             agents = list(cur.fetchall())
 
-    gains = sum(_num(t["net_pnl"]) for t in trades if _num(t["net_pnl"]) > 0)
-    losses = abs(sum(_num(t["net_pnl"]) for t in trades if _num(t["net_pnl"]) < 0))
-    wins = sum(1 for t in trades if _num(t["net_pnl"]) > 0)
+    gains = _num(trade_stats["gains"])
+    losses = _num(trade_stats["losses"])
+    wins = int(trade_stats["wins"] or 0)
+    closed_trades = int(trade_stats["closed_trades"] or 0)
     pf = gains / losses if losses > 0 else (99.0 if gains > 0 else 0.0)
     latest_equity = _num(equity_curve[0]["equity"]) if equity_curve else _num(account["cash"])
 
@@ -701,8 +711,8 @@ def get_forward_state() -> dict:
                 "marked_equity": latest_equity,
                 "realized_pnl": _num(account["realized_pnl"]),
                 "open_positions": len(positions),
-                "closed_trades": len(trades),
-                "win_rate": wins / len(trades) if trades else 0.0,
+                "closed_trades": closed_trades,
+                "win_rate": wins / closed_trades if closed_trades else 0.0,
                 "profit_factor": pf,
                 "circuit_state": account["circuit_state"],
             },
