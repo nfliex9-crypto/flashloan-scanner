@@ -31,8 +31,8 @@
 
     <section class="vault">
       <div class="section-title">
-        <div><p class="eyebrow">THE VAULT</p><h2>Portfolio Reality</h2></div>
-        <span class="paper-badge">PAPER ONLY</span>
+        <div><p class="eyebrow">RESEARCH REPLAY</p><h2>Historical Reconstruction</h2></div>
+        <span class="paper-badge">RECONSTRUCTION</span>
       </div>
       <div class="vault-grid">
         <article><span>Marked Equity</span><strong id="equity">—</strong></article>
@@ -44,6 +44,35 @@
         <article><span>Win Rate</span><strong id="winRate">—</strong></article>
         <article><span>Fees + Slippage</span><strong id="costs">—</strong></article>
       </div>
+    </section>
+
+    <section class="forward-vault">
+      <div class="section-title">
+        <div><p class="eyebrow">FORWARD PAPER · NEON</p><h2>Persistent Forward Record</h2></div>
+        <span id="forwardStatus" class="chip green">WAITING FOR LEDGER…</span>
+      </div>
+      <p class="forward-lead">هذا السجل يبدأ من لحظة تشغيل الـbroker فقط. لا backfill ولا إعادة كتابة للماضي، وكل run محفوظ في Neon بمفتاح idempotent.</p>
+      <div class="forward-grid">
+        <article><span>Forward Equity</span><strong id="forwardEquity">—</strong></article>
+        <article><span>Realized P&amp;L</span><strong id="forwardRealized">—</strong></article>
+        <article><span>Unrealized</span><strong id="forwardUnrealized">—</strong></article>
+        <article><span>Closed Trades</span><strong id="forwardTrades">—</strong></article>
+        <article><span>Open Positions</span><strong id="forwardOpen">—</strong></article>
+        <article><span>Win Rate</span><strong id="forwardWin">—</strong></article>
+        <article><span>Profit Factor</span><strong id="forwardPf">—</strong></article>
+        <article><span>Circuit</span><strong id="forwardCircuit">—</strong></article>
+      </div>
+      <div class="forward-bottom">
+        <div>
+          <span class="forward-label">LAST PERSISTED RUN</span>
+          <strong id="forwardLastRun">Waiting for first run…</strong>
+        </div>
+        <div>
+          <span class="forward-label">LIVE MONEY</span>
+          <strong class="locked">OFF · PAPER ONLY</strong>
+        </div>
+      </div>
+      <div id="forwardPositions" class="forward-positions"></div>
     </section>
 
     <section class="layout">
