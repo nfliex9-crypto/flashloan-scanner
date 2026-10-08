@@ -193,7 +193,9 @@ def simulate_costed_backtest(candles:list[Candle], *,
             cash+=gross-exit_fee
             slip=p["entry_slippage"]+max(0,raw_exit-exit_price)*p["qty"]
             trades.append({"entry_ts":datetime.fromtimestamp(p["entry_ts"],timezone.utc).isoformat(),
-                           "exit_ts":datetime.fromtimestamp(bar.ts+seconds,timezone.utc).isoformat(),
+                           "exit_ts":datetime.fromtimestamp(
+                               bar.ts if exit_kind=="SIGNAL_EXIT" else bar.ts+seconds,
+                               timezone.utc).isoformat(),
                            "entry_price":round(p["entry"],6),"exit_price":round(exit_price,6),
                            "qty":round(p["qty"],8),"net_pnl":round(net,4),
                            "fees":round(p["entry_fee"]+exit_fee,4),
