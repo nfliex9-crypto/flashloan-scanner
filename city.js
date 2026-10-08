@@ -116,6 +116,7 @@ function paintCity(d){
   paintEventFeed(d.events||[]);
   paintEquity(d.equity_curve||[]);
   paintPayroll(workers,d.positions||[],v);
+  paintTradeTape(d.recent_trades||[],d.recent_ghosts||[]);
   paintEvolution(workers,d.evolution_events||[],d.promotion_rules||{});
   if(currentSelection?.kind==="agent"){
     const worker=workers.find(w=>w.agent_id===currentSelection.id);
@@ -201,6 +202,53 @@ function paintPayroll(workers,positions,v){
        <strong class="${sign(p.unrealized_pnl)}">${currency(p.unrealized_pnl)}</strong></div>`).join("")
     :'<div class="await">No forward paper positions are open. The engine waits for new eligible signals.</div>';
 }
+function paintTradeTape(trades,ghosts){
+  $("cityTradeTape").innerHTML=trades.length?trades.slice(0,12).map(t=>`
+    <button class="tape-item" data-tradeid="${safe(t.trade_id)}">
+      <div><strong>${safe(t.symbol)} · ${safe(t.agent_id)}</strong>
+        <small>${safe(t.exit_reason)} · ${utc(t.exit_ts)}</small></div>
+      <span class="amount ${sign(t.net_pnl)}">${currency(t.net_pnl)}</span>
+    </button>`).join("")
+    :'<div class="await">No forward paper trades closed yet. The tape never imports research replay trades.</div>';
+  document.querySelectorAll("[data-tradeid]").forEach(el=>el.addEventListener("click",()=>{
+    const t=trades.find(x=>x.trade_id===el.dataset.tradeid);
+    if(t)showTrade(t);
+  }));
+  $("cityGhostLab").innerHTML=ghosts.length?ghosts.slice(0,12).map(g=>`
+    <div class="ghost-item"><div><strong>${safe(g.symbol)} · ${safe(g.agent_id)}</strong>
+      <small>${safe(g.reason)} · ${utc(g.signal_ts)}</small></div>
+      <span class="${g.settled_at?'amount '+sign(g.forward_return):'pending'}">${g.settled_at?percent(g.forward_return):"PENDING 12H"}</span>
+    </div>`).join("")
+    :'<div class="await">No ghost signals recorded yet. Rejected signals will settle only after future market data exists.</div>';
+}
+function showTrade(t){
+  const html=`
+    <p class="eyebrow">CLOSED PAPER TRADE · ${safe(t.trade_id)}</p>
+    <h2 class="drawer-agent-symbol">${safe(t.symbol)} / LONG</h2>
+    <span class="drawer-role">FORWARD VERIFIED · PAPER ONLY</span>
+    <div class="drawer-huge ${sign(t.net_pnl)}">${currency(t.net_pnl)}</div>
+    <p class="drawer-small">NET P&amp;L AFTER MODELED FEES</p>
+    <div class="drawer-box"><h4>EXECUTION AUTOPSY</h4><div class="drawer-pairs">
+      <div><span>ENTRY PRICE</span><strong>${currency(t.entry_price)}</strong></div>
+      <div><span>EXIT PRICE</span><strong>${currency(t.exit_price)}</strong></div>
+      <div><span>STOP</span><strong>${t.stop_price==null?"UNRECORDED":currency(t.stop_price)}</strong></div>
+      <div><span>TARGET</span><strong>${t.target_price==null?"UNRECORDED":currency(t.target_price)}</strong></div>
+      <div><span>QUANTITY</span><strong>${fixed(t.qty,6)}</strong></div>
+      <div><span>R MULTIPLE</span><strong>${fixed(t.r_multiple,2)}R</strong></div>
+      <div><span>GROSS</span><strong>${currency(t.gross_pnl)}</strong></div>
+      <div><span>FEES</span><strong>${currency(t.fees)}</strong></div>
+      <div><span>SLIPPAGE MODEL</span><strong>${currency(t.slippage_cost)}</strong></div>
+      <div><span>EXIT REASON</span><strong>${safe(t.exit_reason)}</strong></div>
+    </div></div>
+    <div class="drawer-box"><h4>TRADE TIMELINE</h4><p class="drawer-small">ENTRY: ${dateTime(t.entry_ts)}<br>EXIT: ${dateTime(t.exit_ts)}<br>AGENT: ${safe(t.agent_id)}</p></div>
+    <div class="drawer-box"><h4>WHY THE SYSTEM ACTED</h4>
+      <p class="drawer-small">Entry: ${safe(t.order_metadata?.signal_reason||"Signal rationale was not persisted in this trade record.")}
+      <br>Exit: ${safe(t.exit_reason)}
+      <br>Fill model: hourly candles, estimated slippage and fees. No broker execution.</p></div>`;
+  currentSelection={kind:"trade",id:t.trade_id};
+  openDrawer(html,"TRADE AUTOPSY / FORWARD LEDGER");
+}
+
 function paintEvolution(workers,changes,rules){
   const active=workers.filter(w=>effectiveRole(w)==="ACTIVE_PAPER").length;
   const challengers=workers.filter(w=>effectiveRole(w)==="CHALLENGER").length;
