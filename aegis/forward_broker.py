@@ -360,6 +360,9 @@ def run_forward_tick(scheduled_at: datetime | None = None, config: RiskConfig | 
                         ),
                     )
 
+            # Shared conservative gap-fill rule: virtual stops cannot assume a
+            # fill above the first observable traded price after a gap.
+            from .shadow_broker import conservative_stop_fill
             positions = _open_positions(cur)
             for position in positions:
                 candles = closed_by_symbol[position["symbol"]]
@@ -376,10 +379,10 @@ def run_forward_tick(scheduled_at: datetime | None = None, config: RiskConfig | 
                     stop_hit = bar.low <= _num(position["stop_price"])
                     target_hit = bar.high >= _num(position["target_price"])
                     if stop_hit and target_hit:
-                        exit_event = (_num(position["stop_price"]), "STOP_AMBIGUOUS_BAR", bar_close)
+                        exit_event = (conservative_stop_fill(_num(position["stop_price"]), bar.open), "STOP_AMBIGUOUS_BAR", bar_close)
                         break
                     if stop_hit:
-                        exit_event = (_num(position["stop_price"]), "STOP", bar_close)
+                        exit_event = (conservative_stop_fill(_num(position["stop_price"]), bar.open), "STOP", bar_close)
                         break
                     if target_hit:
                         exit_event = (_num(position["target_price"]), "TARGET", bar_close)
