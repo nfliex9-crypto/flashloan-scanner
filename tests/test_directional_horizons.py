@@ -138,3 +138,34 @@ def test_router_rejects_lucky_small_samples_and_high_drawdown():
     assert rank_forward_horizons([dd])["selected"] is None
     flat=evidence(net=-1)
     assert rank_forward_horizons([flat])["selected"] is None
+
+
+def test_gold_weekend_market_closure_allowed_but_weekday_data_gap_rejected():
+    from aegis.backtest_lab import _verify_research_history
+    fri=datetime(2026,10,2,23,tzinfo=timezone.utc)
+    # We need >= 120 valid 1h bars. 120 hours preceding Friday close,
+    # followed by Monday; the only omitted slots are weekend sessions.
+    stamps=[int((fri-timedelta(hours=n)).timestamp()) for n in range(119,-1,-1)]
+    stamps.append(int(datetime(2026,10,5,tzinfo=timezone.utc).timestamp()))
+    bars=[Candle(ts=ts,open=100,high=101,low=99,close=100,volume=5)
+          for ts in stamps]
+    _verify_research_history(bars,"XAU",3600)
+    with pytest.raises(ValueError,match="nonconsecutive"):
+        _verify_research_history(bars,"BTC",3600)
+    # A missing weekday bar is never silently filled with synthetic data.
+    broken=bars[:50]+bars[51:]
+    with pytest.raises(ValueError,match="nonconsecutive"):
+        _verify_research_history(broken,"XAU",3600)
+
+
+def test_horizon_ranks_each_agent_not_blended_pooled_profit():
+    from aegis.horizon_selector import rank_forward_horizons
+    base=evidence(n=28,net=900,days=45,minutes=5)
+    base.update({"agent_id":"micro-btc-5m-ema-cross","strategy":"EMA Cross","side":"LONG"})
+    other={**base,"agent_id":"micro-btc-5m-channel-breakout",
+           "strategy":"Channel Breakout","net_pnl":-500}
+    result=rank_forward_horizons([base,other],side="LONG")
+    assert result["selected"]["agent_id"]=="micro-btc-5m-ema-cross"
+    assert result["selected"]["strategy"]=="EMA Cross"
+    assert len(result["candidates"])==2
+    assert sum(int(c["qualified"]) for c in result["candidates"])==1
