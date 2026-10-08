@@ -120,3 +120,19 @@ def test_1m_and_5m_risk_model_allowed():
     assert INTERVALS["1min"]==60
     assert INTERVALS["5min"]==300
     assert validate_backtest_request({"interval":"1min"})["interval"]=="1min"
+
+
+def test_backtest_rejects_hidden_missing_candles():
+    candles=samples(n=150,period=60)
+    broken=candles[:90]+candles[91:]
+    with pytest.raises(ValueError,match="nonconsecutive"):
+        simulate_costed_backtest(broken,asset="BTC",strategy="EMA Cross",interval="1min")
+
+
+def test_backtest_rejects_corrupt_price_bars():
+    candles=samples(n=150,period=300)
+    bar=candles[55]
+    candles[55]=Candle(ts=bar.ts,open=bar.open,high=bar.open-10,
+                       low=bar.low,close=bar.close,volume=bar.volume)
+    with pytest.raises(ValueError,match="Invalid historical OHLC"):
+        simulate_costed_backtest(candles,asset="BTC",strategy="EMA Cross",interval="5min")
