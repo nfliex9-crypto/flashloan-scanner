@@ -119,7 +119,7 @@ def review_run(cur, run_id: str, now: datetime, agents: list[dict],
                    (("24h",1),("7d",7),("30d",30),("lifetime",None))}
         lifetime = windows["lifetime"]
         role, multiplier, review_status, reason = decide_role(
-            research_status=agent["status"],
+            research_status=("PROBATION" if agent.get("shadow_only") else agent["status"]),
             prior_role=previous_role,
             forward_days=age_days,
             trade_count=lifetime["trades"],
