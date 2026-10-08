@@ -283,6 +283,15 @@ def run_forward_tick(scheduled_at: datetime | None = None, config: RiskConfig | 
                 "paper_trading_15min": False,
                 "live_execution": False,
             }
+            from .experiments import read_controls
+            experiment_settings = read_controls(cur)
+            monitor_snapshot["experiments"] = {
+                "enabled":experiment_settings["enabled"],
+                "assets":experiment_settings["assets"],
+                "strategies":experiment_settings["strategies"],
+                "max_candidates":experiment_settings["max_candidates"],
+                "real_execution":False,
+            }
             # Snapshot empirical strategy standings on each genuine 15m pulse.
             # Rankings never authorize positions; only closed costed fills count.
             from .strategy_filter import strategy_snapshot
@@ -758,6 +767,21 @@ def run_forward_tick(scheduled_at: datetime | None = None, config: RiskConfig | 
             summary["gold_closed_bars"] = len(gold_closed) if gold_closed else 0
             summary["gold_agents_evaluated"] = len(gold_research_agents)
             summary["gold_live_execution"] = False
+            # Bounded strategy experiments join independent Shadow ONLY.
+            # Historical research rankings never authorize paper-main or
+            # broker execution. Existing virtual positions keep exit coverage.
+            from .experiments import select_experiment_agents,record_experiments
+            experiment_bars=dict(closed_by_symbol)
+            if gold_closed is not None:
+                experiment_bars["XAU"]=gold_closed
+            experiment_agents=select_experiment_agents(experiment_bars,experiment_settings)
+            if experiment_agents:
+                record_experiments(cur,experiment_agents,run_id,scheduled_at)
+            shadow_agents+=experiment_agents
+            summary["experiment_candidates_evaluated"]=len(experiment_agents)
+            summary["experiments_enabled"]=experiment_settings["enabled"]
+            summary["experiment_ids"]=[a["agent_id"] for a in experiment_agents]
+            summary["experiment_live_execution"]=False
             # Independent costed shadow broker. All virtual fills and Stage 3
             # evidence share one atomic transaction with the paper account.
             # A repeated hourly run cannot duplicate fills.
