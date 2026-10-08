@@ -67,3 +67,45 @@ def test_worker_avoids_retroactive_fill_after_websocket_lag():
         assert r==[]
         assert w.stats["skipped_late"]==1
     asyncio.run(scenario())
+
+
+def test_kraken_interval_subscriptions_use_three_separate_sockets(monkeypatch):
+    """Kraken forbids one socket subscribing to >1 OHLC interval per symbol."""
+    from aegis import stream_worker as worker_module
+    from websockets.asyncio import client as ws_client
+    sent=[]
+    statuses=[]
+    class FakeSocket:
+        async def __aenter__(self):return self
+        async def __aexit__(self,*args):return False
+        async def send(self,payload):
+            import json
+            obj=json.loads(payload)
+            sent.append(obj)
+            self.interval=obj["params"]["interval"]
+        def __aiter__(self):
+            self.messages=iter([
+                {"method":"subscribe","success":True,
+                 "result":{"interval":self.interval}},
+            ])
+            return self
+        async def __anext__(self):
+            try:return __import__("json").dumps(next(self.messages))
+            except StopIteration:raise StopAsyncIteration
+    monkeypatch.setattr(ws_client,"connect",lambda *a,**k:FakeSocket())
+    monkeypatch.setattr(worker_module,"_write_status",lambda name,state,**kw:
+                        statuses.append((name,state)))
+    w=KrakenMicroWorker(["BTC"])
+    async def fake_warmup(interval):
+        w.history[("BTC",interval)]=deque(maxlen=720)
+    w.bootstrap_interval=fake_warmup
+    async def scenario():
+        for interval in (1,5,15):
+            await w.stream_interval_once(interval)
+    asyncio.run(scenario())
+    assert len(sent)==3
+    assert [msg["params"]["interval"] for msg in sent]==[1,5,15]
+    assert all(msg["params"]["symbol"]==["BTC/USD"] for msg in sent)
+    assert all(msg["req_id"]==msg["params"]["interval"] for msg in sent)
+    for interval in (1,5,15):
+        assert (f"kraken-public-micro-{interval}m","CONNECTED") in statuses
