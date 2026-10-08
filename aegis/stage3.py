@@ -411,19 +411,24 @@ def get_stage3_state() -> dict:
     trade_feed.sort(key=lambda row:row["timestamp"],reverse=True)
     trade_feed=trade_feed[:180]
     rank_by_id={r["agent_id"]:r for r in strategy_ranks}
-    stream_active=False
-    if micro_sources:
-        latest_heartbeat=micro_sources[0]
-        observed=latest_heartbeat["updated_at"]
-        age=(datetime.now(timezone.utc)-observed).total_seconds() if observed else float("inf")
-        stream_active=latest_heartbeat["state"]=="CONNECTED" and 0<=age<180
-    micro_mode="CONNECTED_PUBLIC_MARKET_PAPER_ONLY" if stream_active else (
-        "WORKER_STALE_OR_STOPPED" if micro_sources else "WORKER_NOT_DEPLOYED")
+    required_micro_feeds={"kraken-public-micro-1m","kraken-public-micro-5m",
+                          "kraken-public-micro-15m"}
+    live_feeds=set()
+    checked_at=datetime.now(timezone.utc)
+    for source in micro_sources:
+        age=(checked_at-source["updated_at"]).total_seconds() if source["updated_at"] else float("inf")
+        if source["stream_name"] in required_micro_feeds and (
+            source["state"]=="CONNECTED" and 0<=age<180):
+            live_feeds.add(source["stream_name"])
+    stream_active=required_micro_feeds.issubset(live_feeds)
+    micro_mode=("CONNECTED_PUBLIC_MARKET_PAPER_ONLY" if stream_active else
+                "PARTIAL_OR_STALE_PUBLIC_FEEDS" if micro_sources else "WORKER_NOT_DEPLOYED")
     micro_engine={
         "mode":micro_mode,"is_connected":stream_active,
         "source":"Kraken public Spot WebSocket v2 (BTC/ETH only)",
         "live_execution_enabled":False,
         "sources":micro_sources,
+        "active_intervals_minutes":[n for n in (1,5,15) if f"kraken-public-micro-{n}m" in live_feeds],
         "agents":micro_agents,
         "open_positions":micro_positions,
         "recent_closed_trades":micro_trades,
