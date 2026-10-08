@@ -210,6 +210,20 @@ def run_forward_tick(scheduled_at: datetime | None = None, config: RiskConfig | 
     live_by_symbol = {symbol: candles[-1] for symbol, candles in all_by_symbol.items()}
     latest_closed = {symbol: candles[-1].ts for symbol, candles in closed_by_symbol.items()}
     run_id = f"forward:{latest_closed['BTC']}:{latest_closed['ETH']}"
+    # Gold uses independently timestamped Twelve Data candles and must never
+    # delay/disable existing crypto paper trading when its provider fails.
+    gold_closed = None
+    gold_live = None
+    gold_research_agents = []
+    gold_status = "UNAVAILABLE"
+    try:
+        from .gold_lab import fetch_gold_research, gold_agents
+        gold_closed, gold_live = fetch_gold_research(scheduled_at)
+        gold_research_agents = gold_agents(gold_closed)
+        gold_status = "CLOSED_BAR_READY"
+    except (ValueError, KeyError, TypeError, OSError) as exc:
+        gold_status = "STALE_OR_FEED_ERROR"
+
 
     summary = {
         "entries": 0,
@@ -644,21 +658,44 @@ def run_forward_tick(scheduled_at: datetime | None = None, config: RiskConfig | 
                     "circuit_state": circuit,
                 }
             )
+            # New gold agents join the INDEPENDENT shadow lab only. They are
+            # intentionally excluded from the paper-main order-entry loop.
+            shadow_agents = agents + gold_research_agents
+            shadow_closed = dict(closed_by_symbol)
+            shadow_live = dict(live_by_symbol)
+            shadow_configs = {}
+            if gold_research_agents:
+                from dataclasses import replace
+                from .gold_lab import (
+                    GOLD_FEE_BPS_PER_SIDE, GOLD_SLIPPAGE_BPS_PER_SIDE,
+                    record_gold_agents,
+                )
+                record_gold_agents(cur, gold_research_agents, run_id, scheduled_at)
+                shadow_closed["XAU"] = gold_closed
+                shadow_live["XAU"] = gold_live
+                shadow_configs["XAU"] = replace(
+                    config, fee_bps_per_side=GOLD_FEE_BPS_PER_SIDE,
+                    slippage_bps_per_side=GOLD_SLIPPAGE_BPS_PER_SIDE,
+                )
+            summary["gold_research_status"] = gold_status
+            summary["gold_agents_evaluated"] = len(gold_research_agents)
+            summary["gold_live_execution"] = False
             # Independent costed shadow broker. All virtual fills and Stage 3
             # evidence share one atomic transaction with the paper account.
             # A repeated hourly run cannot duplicate fills.
             from .shadow_broker import run_shadow_tick
             shadow = run_shadow_tick(
-                cur, run_id=run_id, now=scheduled_at, agents=agents,
-                closed_by_symbol=closed_by_symbol,
-                live_by_symbol=live_by_symbol, config=config,
+                cur, run_id=run_id, now=scheduled_at, agents=shadow_agents,
+                closed_by_symbol=shadow_closed,
+                live_by_symbol=shadow_live, config=config,
+                config_by_symbol=shadow_configs,
             )
             summary.update(shadow)
 
             # Evolution is reviewed AFTER costed shadow fills are persisted.
             # The deterministic portfolio risk constitution remains authoritative.
             from .stage3 import review_run
-            review_run(cur, run_id, scheduled_at, agents, account, summary)
+            review_run(cur, run_id, scheduled_at, shadow_agents, account, summary)
             cur.execute(
                 "UPDATE aegis.engine_runs "
                 "SET completed_at=now(),status='COMPLETED',summary=%s::jsonb WHERE run_id=%s",
