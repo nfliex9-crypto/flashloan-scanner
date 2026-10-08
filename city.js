@@ -317,7 +317,7 @@ function paintPriorityMarkets(data){
     const price=$(priceId),meta=$(metaId);
     if(!market || typeof market.price!=="number"){
       price.textContent=symbol==="XAU/USD"?"FEED NOT CONNECTED":"DATA UNAVAILABLE";
-      meta.textContent=market?.status==="WAITING_FOR_GOLD_FEED"?"XAU/USD requires TWELVEDATA_API_KEY · source not connected":
+      meta.textContent=market?.status==="WAITING_FOR_OANDA_PRACTICE_CREDENTIALS"?"Requires OANDA_API_TOKEN + OANDA_ACCOUNT_ID · Practice only":market?.status==="WAITING_FOR_GOLD_FEED"?"Gold source not connected":
         market?.error?"Provider unavailable · no synthetic price":"Waiting for verified market feed";
       continue;
     }
