@@ -237,6 +237,36 @@ def run_forward_tick(scheduled_at: datetime | None = None, config: RiskConfig | 
 
     with _connect() as conn:
         with conn.cursor() as cur:
+            # Quarter-hour monitoring is separate from the 1h trading strategy.
+            # A heartbeat never opens/closes a position or reprocesses an hourly bar.
+            monitor_id = f"monitor:{int(scheduled_at.timestamp() // 900)}"
+            monitor_snapshot = {
+                "observation_type": "PARTIAL_HOURLY_CANDLE_SNAPSHOT",
+                "crypto": {
+                    symbol: {"source": "Kraken OHLC open 1h bar",
+                             "bar_started_at": _dt(candle.ts).isoformat(),
+                             "sampled_at": scheduled_at.isoformat(),
+                             "observed_close": candle.close}
+                    for symbol, candle in live_by_symbol.items()
+                },
+                "gold": {
+                    "source": "Twelve Data XAU/USD open 1h bar",
+                    "available": gold_live is not None,
+                    "bar_started_at": _dt(gold_live.ts).isoformat() if gold_live else None,
+                    "observed_close": gold_live.close if gold_live else None,
+                    "status": gold_status,
+                },
+                "paper_trading_15min": False,
+                "live_execution": False,
+            }
+            cur.execute(
+                "INSERT INTO aegis.engine_runs"
+                "(run_id,started_at,completed_at,mode,status,market_snapshot,summary) "
+                "VALUES (%s,%s,now(),'MARKET_MONITOR','COMPLETED',%s::jsonb,%s::jsonb) "
+                "ON CONFLICT (run_id) DO NOTHING",
+                (monitor_id, scheduled_at, json.dumps(monitor_snapshot),
+                 json.dumps({"cadence_minutes": 15, "no_order_execution": True})),
+            )
             cur.execute(
                 "INSERT INTO aegis.engine_runs(run_id,started_at,mode,status,market_snapshot) "
                 "VALUES (%s,%s,'FORWARD_PAPER','RUNNING',%s::jsonb) "
@@ -246,9 +276,13 @@ def run_forward_tick(scheduled_at: datetime | None = None, config: RiskConfig | 
             if cur.fetchone() is None:
                 cur.execute("SELECT status,summary FROM aegis.engine_runs WHERE run_id=%s", (run_id,))
                 prior = cur.fetchone()
-                conn.rollback()
+                # Keep the real market-monitor heartbeat, but never duplicate
+                # forward fills or change strategy state for a repeated 1h bar.
+                conn.commit()
                 return {
                     "ok": True,
+                    "monitor_id": monitor_id,
+                    "monitor_only": True,
                     "run_id": run_id,
                     "idempotent_noop": True,
                     "prior": _json_safe(prior),
