@@ -366,6 +366,22 @@ def get_stage3_state() -> dict:
             "GROUP BY symbol,interval_minutes ORDER BY symbol,interval_minutes")
         micro_bar_stats=list(cur.fetchall())
 
+        # These are BROKER-CONFIRMED DEMO records, never computed shadow
+        # paper fills. No login, API key, password or account number is stored.
+        cur.execute(
+            "SELECT source_id,provider,market,account_type,currency,balance,equity,"
+            "open_positions,open_orders,spot_balances,source_of_truth,"
+            "last_synced,last_status FROM aegis.demo_account_state "
+            "ORDER BY last_synced DESC LIMIT 8")
+        demo_accounts=list(cur.fetchall())
+        cur.execute(
+            "SELECT f.source_id,f.external_id,f.order_id,f.position_id,f.symbol,"
+            "f.side,f.entry_kind,f.price,f.qty,f.fee,f.fee_asset,f.net_pnl,"
+            "f.executed_at,f.agent_id,s.provider "
+            "FROM aegis.demo_fills f JOIN aegis.demo_account_state s ON s.source_id=f.source_id "
+            "ORDER BY executed_at DESC LIMIT 60")
+        demo_fills=list(cur.fetchall())
+
     trade_feed=[]
     for p in shadow_open_feed:
         trade_feed.append({
@@ -423,6 +439,22 @@ def get_stage3_state() -> dict:
     stream_active=required_micro_feeds.issubset(live_feeds)
     micro_mode=("CONNECTED_PUBLIC_MARKET_PAPER_ONLY" if stream_active else
                 "PARTIAL_OR_STALE_PUBLIC_FEEDS" if micro_sources else "WORKER_NOT_DEPLOYED")
+    linked_demo_accounts=[]
+    for account in demo_accounts:
+        a=dict(account)
+        age=(checked_at-a["last_synced"]).total_seconds() if a.get("last_synced") else float("inf")
+        a["sync_status"]="SYNCED_DEMO" if 0<=age<300 else "STALE_DEMO_HISTORY"
+        linked_demo_accounts.append(a)
+    demo_broker_state={
+        "mode":"NATIVE_DEMO_EXECUTION_HISTORY",
+        "live_execution_enabled":False,
+        "connected_accounts":linked_demo_accounts,
+        "recent_fills":demo_fills,
+        "missing_connectors":[name for name in ("MT5_DEMO","BINANCE_SPOT_DEMO")
+                              if name not in {a["provider"] for a in demo_accounts}],
+        "execution_authorized":False,
+        "history_source":"Broker demo / exchange demo. Neon contains only compact reconciled execution IDs.",
+    }
     micro_engine={
         "mode":micro_mode,"is_connected":stream_active,
         "source":"Kraken public Spot WebSocket v2 (BTC/ETH only)",
@@ -476,6 +508,7 @@ def get_stage3_state() -> dict:
         "trade_feed":trade_feed,"strategy_rankings":strategy_ranks,
         "experiment_controls":experiment_controls,
         "micro_engine":micro_engine,
+        "demo_brokers":demo_broker_state,
         "experiment_eligible_shadow_agents":sum(1 for a in agents if a["strategy"] in ("EMA Cross","RSI Pullback","Channel Breakout")),
         "shadow_open_positions":sum(bool(r.get("position_id")) for r in shadow_account_rows),
         "shadow_costed_trades":sum(int(v.get("trades",0)) for v in shadow_trade_stats.values()),
