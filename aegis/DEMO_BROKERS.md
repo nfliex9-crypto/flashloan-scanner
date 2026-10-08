@@ -93,3 +93,40 @@ When providers are not configured, show NOT LINKED, not mock trades.
 **Never paste any API key, Binance secret, Neon URL or MT5 account
 password into a chat.** Never enable a live order endpoint. Keep the
 separate `Bot` branch and existing live systems untouched.
+
+
+## Directional research / horizon selection (added 2026-10-08)
+
+The Research Lab now accepts **LONG**, **SHORT** and **BOTH** modes,
+from **1min, 5min (scalping)** through **15min, 1h (intraday)**,
+**4h, 1day (swing)** and **1week (position research)**.
+
+Directional signals are tested on genuine completed OHLC bars, with
+entry at the next bar open. Short positions use the reciprocal price
+*solely to derive downside signals*, never as a traded asset.
+The simulator books reverse-direction P&L, conservative gap-up stops,
+fees, side-aware slippage and an illustrative 2 bps/day short financing
+charge (scaled by selected stress mode). This is **not** broker-margin
+or liquidation simulation. Gold weekends, exchange holidays, sparse
+history and unsupported provider entitlements can cause backtest
+requests to fail closed instead of fabricating candles.
+
+The **Adaptive Timeframe Selector** is a *research recommender*, not
+an execution router. It compares persisted, costed forward trade
+results and refuses to identify a leader without 20+ closed trades,
+time-window coverage, positive net returns, PF >= 1.25 and a max
+drawdown below 4%. Backtest holdout results do not count toward
+forward sample thresholds. It currently only sees long-only BTC
+micro shadow evidence; SHORT, gold and weekly forward cohorts are
+not yet measured. Until there is enough evidence it reports
+INSUFFICIENT_FORWARD_EVIDENCE. No automatic Demo broker or real money
+order permission is added.
+
+**Broker capability firewall:** XAUUSD on a verified MT5 DEMO account
+can support both LONG/SHORT subject to broker symbol permissions.
+Binance **Spot** Demo only supports long spot inventory positions:
+a SELL there is reduction/liquidation of owned BTC, **not a short**.
+BTC short execution would require a dedicated, separately verified
+non-production futures/margin environment, with independent liquidation,
+funding and leverage risk rules. The current repo intentionally
+provides no order-sending adapter for this.
