@@ -15,7 +15,8 @@ endpoint. The old Neon hourly Shadow/Paper engine remains separate.
   the observed *next* interval open within 10 seconds. If the first trade
   arrives late, entry is skipped (no retroactive fill).
 - EMA Cross and Channel Breakout each run in 1, 5 and 15 minute
-  **independent micro paper** books. Every trade includes modeled
+  independent **LONG and SHORT micro paper** books. Each directional
+  cohort has a separate $100k virtual equity ledger. Every trade includes modeled
   fees/slippage; position notional <= 20% of simulated balance,
   budgeted initial price-stop risk 0.25%, 5% latched drawdown halt.
 - Neon table `aegis.stream_bar_ledger` ensures each completed candle is
@@ -59,3 +60,27 @@ Keep `agent-city-v1` separate from `Bot`. Never deploy this as a
 live order execution worker or alter brokerage permissions. This process
 needs an independent always-running host; Vercel's request/response
 functions cannot hold the required WebSocket connection indefinitely.
+
+
+## LONG/SHORT expansion (2026-10-08)
+
+Run additive `sql/008_short_micro_research.sql` before updating Railway.
+Historical micro positions and fills default to LONG. Newly generated
+`-short` agents are isolated per strategy and timeframe, with a
+position direction field and costed synthetic short-financing ledger.
+
+Short micro virtual stops trigger when OHLC **high** reaches the
+higher stop. If a candle opens beyond the stop, the worse opening price
+is used. Short take profits trigger when the OHLC **low** reaches the
+lower target. Opposite exit fills are BUY, with side-aware slippage.
+A simulated 2 basis points per day financing cost is charged for short
+positions and included in unrealized forward equity and net trade P&L.
+This is an **assumption** and does not simulate real futures leverage,
+liquidations, maintenance margin or varying funding fees.
+
+The research horizon selector compares real costed, settled virtual
+fills per direction and timeframe, requiring minimum sample count,
+time coverage and conservative performance thresholds. On insufficient
+evidence it explicitly returns no choice. Long/short micro Paper
+does **not** place exchange orders and does not connect to Binance
+Spot Demo, derivatives API, MT5 or any funded brokerage.
