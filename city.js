@@ -25,11 +25,14 @@ function syncCamera(){
 function statusClass(role){
   if(role==="ACTIVE_PAPER"||role==="RESEARCH_ACTIVE")return "active";
   if(role==="HALTED")return "halted";
+  if(role==="RESEARCH_HOLD")return "shadow";
   if(role==="CHALLENGER")return "challenger";
   return "shadow";
 }
 function effectiveRole(worker){
-  return worker.role || (worker.status==="ACTIVE"?"RESEARCH_ACTIVE":"SHADOW");
+  const role=worker.role || (worker.status==="ACTIVE"?"RESEARCH_ACTIVE":"SHADOW");
+  if(role==="ACTIVE_PAPER" && worker.status!=="ACTIVE")return "RESEARCH_HOLD";
+  return role;
 }
 function symbolWorker(worker){
   return safe(worker.asset)+" / "+safe(worker.strategy);
@@ -83,7 +86,7 @@ function makeScene(workers){
     el.addEventListener("click",handler);
     el.addEventListener("keydown",ev=>{if(ev.key==="Enter"||ev.key===" "){ev.preventDefault();handler()}});
   });
-  const active=arranged.filter(w=>effectiveRole(w)==="ACTIVE_PAPER"||effectiveRole(w)==="RESEARCH_ACTIVE").length;
+  const active=arranged.filter(w=>w.status==="ACTIVE" && (effectiveRole(w)==="ACTIVE_PAPER"||effectiveRole(w)==="RESEARCH_ACTIVE")).length;
   $("activeWorkers").textContent=String(active)+" / "+arranged.length;
   $("onShiftDetails").textContent="Paper-eligible research incumbents";
   $("quickWorkers").innerHTML=arranged.map(w=>`<button class="worker-chip ${statusClass(effectiveRole(w))}" data-quickagent="${safe(w.agent_id)}">
