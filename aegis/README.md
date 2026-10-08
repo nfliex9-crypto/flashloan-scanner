@@ -55,3 +55,33 @@ pytest -q tests/test_aegis.py
 ```
 
 The demo contains no market connection and places no orders.
+
+
+## Continuous bounded Shadow Research — Agent City
+
+The `agent-city-v1` research lab evaluates **EMA Cross**, **RSI Pullback**, and
+**Channel Breakout** for BTC/USD and XAU/USD on genuine closed hourly bars.
+Each candidate receives its own independent costed **shadow-only** account;
+no candidate gets main paper account allocation, broker order access, or live money.
+Strategies are reviewed on historical out-of-sample slices, but only *future*
+persisted costed shadow fills count toward forward ranking and quarantine.
+This is evidence-based adaptation, **not continuous ML-model retraining**.
+
+Neon migration: `sql/004_research_controls.sql` (additive, idempotent).
+Default settings: enabled, BTC + XAU, three strategies, six total candidates.
+The hourly engine reads these settings and the 15-minute monitor records the
+configuration. Historical trade records are never fabricated.
+
+**Authenticated owner control:** In Vercel project settings on the
+`agent-city-v1` Preview environment, create a Sensitive environment variable
+named `AEGIS_CONTROL_TOKEN` containing an independent, randomly generated
+secret **at least 24 characters long**. Redeploy the Preview branch and paste
+that secret into the **Research Lab → Owner Control Key** field to save settings.
+The browser does not put this secret in URLs, localStorage, or cookies, and
+clears the field after each save. Do not use an OANDA, Alpaca, Twelve Data,
+database, or scheduler credential as this control token.
+
+The owner can pause new research experiments, choose BTC/XAU, enable/disable
+the three candidate families, and set a cap of 2/4/6 candidates.
+Existing virtual positions remain subject to exits even when experimentation
+is paused. There is **no live-broker or order-control route**.
