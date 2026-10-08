@@ -152,6 +152,39 @@ function paintStrategyFilterBoard(rankings){
     el.addEventListener("click",()=>showAgent(el.dataset.rankagent)));
 }
 
+function renderDemoBrokerLedger(data){
+  const d=data||{};
+  const accounts=d.connected_accounts||[];
+  const fills=d.recent_fills||[];
+  const provider=(name)=>accounts.find(x=>x.provider===name);
+  const tile=(label,name)=>{
+    const a=provider(name);
+    const state=a?a.sync_status:"NOT LINKED";
+    return '<div class="bt-metric"><small>'+label+'</small>'+
+      '<strong>'+safe(state.replaceAll("_"," "))+'</strong>'+
+      '<span class="bt-small-note">'+(a?"Last broker sync "+utc(a.last_synced)+" · "+safe(a.market):
+      "Waiting for demo-only account connection")+'</span></div>';
+  };
+  $("demoBrokerSummary").innerHTML=tile("MT5 GOLD","MT5_DEMO")+
+    tile("BINANCE SPOT BTC","BINANCE_SPOT_DEMO");
+  $("demoBrokerStatus").textContent=accounts.length
+    ? accounts.length+" broker demo sources · "+fills.length+
+      " recent confirmed execution rows · Order automation: OFF"
+    : "No demo broker account linked. Independent shadow-paper agent activity continues separately.";
+  $("demoBrokerFeed").innerHTML=fills.length?fills.map(t=>
+    '<div class="agent-trade-item bt-trade-item">'+
+    '<span class="trade-state closed">'+safe(t.side)+'</span>'+
+    '<span class="trade-ledger-main"><strong>'+safe(t.provider)+
+    ' · '+safe(t.symbol)+'</strong>'+
+    '<small>'+utc(t.executed_at)+' · Broker deal '+safe(t.external_id)+
+    ' · Order '+safe(t.order_id||"—")+'</small>'+
+    '<small>Price '+currency(t.price)+' · Qty '+fixed(t.qty,6)+
+    ' · Fee '+fixed(t.fee,6)+' '+safe(t.fee_asset||"")+
+    (t.net_pnl==null?" · Trade P&L not calculated for spot fills":
+      " · Broker P&L "+currency(t.net_pnl))+'</small></span></div>'
+  ).join(""):'<div class="await">No demo broker trade execution has been synchronized yet. We do not manufacture execution history.</div>';
+}
+
 function renderMicroEngine(data){
   const d=data||{};
   const mode=d.mode||"WORKER_NOT_DEPLOYED";
@@ -386,6 +419,7 @@ function paintCity(d){
   paintEvolution(workers,d.evolution_events||[],d.promotion_rules||{});
   renderResearchLab(d);
   renderMicroEngine(d.micro_engine);
+  renderDemoBrokerLedger(d.demo_brokers);
   if(currentSelection?.kind==="agent"){
     const worker=workers.find(w=>w.agent_id===currentSelection.id);
     if(worker)fillAgentDrawer(worker);
