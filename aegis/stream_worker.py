@@ -159,7 +159,15 @@ class KrakenMicroWorker:
                 packet=json.loads(raw)
                 if packet.get("method")=="subscribe":
                     if packet.get("success") is False:
+                        # Public subscription errors are safe to classify;
+                        # never log credentials, headers, connection strings,
+                        # or raw service exceptions.
+                        explanation=str(packet.get("error","UNKNOWN"))
+                        code="".join(ch for ch in explanation if ch.isalnum() or ch in "-_ :.")[:120]
+                        log.warning("Kraken public subscription rejected: %s",code)
                         raise RuntimeError("Kraken rejected public market-data subscription")
+                    log.info("Kraken accepted public %sm candle subscription",
+                             packet.get("result",{}).get("interval","?"))
                 results=await self.handle(packet)
                 for item in results:
                     log.info("Closed %s %dm bar %s | %d new virtual entries | %d exits",
@@ -176,8 +184,9 @@ class KrakenMicroWorker:
                 delay=2
             except asyncio.CancelledError:
                 raise
-            except Exception:
-                log.warning("Streaming connection degraded; reconnect pending; no phantom fills.")
+            except Exception as exc:
+                log.warning("Streaming connection degraded (%s); reconnect pending; no phantom fills.",
+                            type(exc).__name__)
                 try:
                     await asyncio.to_thread(_write_status,"kraken-public-micro","DEGRADED")
                 except Exception:
