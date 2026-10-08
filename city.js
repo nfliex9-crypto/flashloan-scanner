@@ -327,7 +327,7 @@ function paintPriorityMarkets(data){
   }
 }
 async function pollPriorityMarkets(){
-  try{paintPriorityMarkets(await fetchJson("/api/priority_markets"))}
+  try{paintPriorityMarkets({markets:(await fetchJson("/api/equities")).priority_markets||[]})}
   catch(err){console.error("Priority market data:",err);paintPriorityMarkets(null)}
 }
 
