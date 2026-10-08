@@ -48,11 +48,12 @@ function nowClock(){
   $("nextScan").textContent=String(mm).padStart(2,"0")+":"+String(ss).padStart(2,"0");
 }
 function makeScene(workers){
-  const byAsset={BTC:[],ETH:[]};
+  const byAsset={BTC:[],XAU:[]};
   workers.forEach(w=>{if(byAsset[w.asset])byAsset[w.asset].push(w)});
   byAsset.BTC.sort((a,b)=>a.strategy.localeCompare(b.strategy));
-  byAsset.ETH.sort((a,b)=>a.strategy.localeCompare(b.strategy));
-  const arranged=[...byAsset.BTC,...byAsset.ETH];
+  byAsset.XAU.sort((a,b)=>a.strategy.localeCompare(b.strategy));
+  const arranged=[...byAsset.BTC,...byAsset.XAU];
+  const allWorkers=[...arranged,...workers.filter(w=>w.asset!=="BTC"&&w.asset!=="XAU")];
   let towersMarkup="",roads="";
   selectedTowerMap=new Map();
   arranged.slice(0,8).forEach((w,i)=>{
@@ -86,10 +87,10 @@ function makeScene(workers){
     el.addEventListener("click",handler);
     el.addEventListener("keydown",ev=>{if(ev.key==="Enter"||ev.key===" "){ev.preventDefault();handler()}});
   });
-  const active=arranged.filter(w=>w.status==="ACTIVE" && (effectiveRole(w)==="ACTIVE_PAPER"||effectiveRole(w)==="RESEARCH_ACTIVE")).length;
-  $("activeWorkers").textContent=String(active)+" / "+arranged.length;
-  $("onShiftDetails").textContent="Paper-eligible research incumbents";
-  $("quickWorkers").innerHTML=arranged.map(w=>`<button class="worker-chip ${statusClass(effectiveRole(w))}" data-quickagent="${safe(w.agent_id)}">
+  const active=allWorkers.filter(w=>w.status==="ACTIVE" && (effectiveRole(w)==="ACTIVE_PAPER"||effectiveRole(w)==="RESEARCH_ACTIVE")).length;
+  $("activeWorkers").textContent=String(active)+" / "+allWorkers.length;
+  $("onShiftDetails").textContent="BTC + XAU shadow research · ETH available below";
+  $("quickWorkers").innerHTML=allWorkers.map(w=>`<button class="worker-chip ${statusClass(effectiveRole(w))}" data-quickagent="${safe(w.agent_id)}">
     <strong>${symbolWorker(w)}</strong><small>${safe(effectiveRole(w))} · ${currency(w.earned)}</small></button>`).join("");
   document.querySelectorAll("[data-quickagent]").forEach(el=>el.addEventListener("click",()=>showAgent(el.dataset.quickagent)));
   syncCamera();
