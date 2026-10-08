@@ -345,18 +345,18 @@ def get_stage3_state() -> dict:
             "FROM aegis.stream_status ORDER BY updated_at DESC LIMIT 4")
         micro_sources=list(cur.fetchall())
         cur.execute(
-            "SELECT agent_id,symbol,interval_minutes,strategy,cash,"
+            "SELECT agent_id,symbol,interval_minutes,strategy,direction,cash,"
             "peak_equity,max_drawdown,halted,updated_at "
             "FROM aegis.stream_accounts ORDER BY symbol,interval_minutes,strategy")
         micro_agents=list(cur.fetchall())
         cur.execute(
             "SELECT agent_id,position_id,symbol,interval_minutes,opened_at,"
-            "entry_price,qty,stop_price,target_price,last_mark "
+            "entry_price,qty,stop_price,target_price,last_mark,direction "
             "FROM aegis.stream_positions ORDER BY opened_at DESC LIMIT 20")
         micro_positions=list(cur.fetchall())
         cur.execute(
             "SELECT agent_id,symbol,interval_minutes,opened_at,closed_at,"
-            "entry_price,exit_price,qty,entry_fee,exit_fee,slippage_cost,net_pnl,reason "
+            "entry_price,exit_price,qty,entry_fee,exit_fee,slippage_cost,net_pnl,reason,direction,financing_cost "
             "FROM aegis.stream_trades ORDER BY closed_at DESC LIMIT 45")
         micro_trades=list(cur.fetchall())
         cur.execute(
@@ -366,7 +366,7 @@ def get_stage3_state() -> dict:
             "GROUP BY symbol,interval_minutes ORDER BY symbol,interval_minutes")
         micro_bar_stats=list(cur.fetchall())
         cur.execute(
-            "SELECT t.symbol,t.interval_minutes,count(*) AS trades,"
+            "SELECT t.symbol,t.interval_minutes,t.direction AS side,count(*) AS trades,"
             "COALESCE(sum(t.net_pnl),0) AS net_pnl,"
             "COALESCE(sum(t.net_pnl) FILTER(WHERE t.net_pnl>0),0) AS gross_gains,"
             "COALESCE(sum(t.net_pnl) FILTER(WHERE t.net_pnl<0),0) AS gross_losses,"
@@ -374,7 +374,7 @@ def get_stage3_state() -> dict:
             "COALESCE(max(a.max_drawdown),0) AS max_drawdown "
             "FROM aegis.stream_trades t "
             "LEFT JOIN aegis.stream_accounts a ON a.agent_id=t.agent_id "
-            "GROUP BY t.symbol,t.interval_minutes")
+            "GROUP BY t.symbol,t.interval_minutes,t.direction")
         micro_directional_evidence=list(cur.fetchall())
 
         # These are BROKER-CONFIRMED DEMO records, never computed shadow
@@ -467,7 +467,7 @@ def get_stage3_state() -> dict:
         "history_source":"Broker demo / exchange demo. Neon contains only compact reconciled execution IDs.",
     }
     from .horizon_selector import rank_forward_horizons
-    micro_horizon_router=rank_forward_horizons(micro_directional_evidence,side="LONG")
+    micro_horizon_router=rank_forward_horizons(micro_directional_evidence,side="BOTH")
     micro_engine={
         "mode":micro_mode,"is_connected":stream_active,
         "source":"Kraken public Spot WebSocket v2 (BTC/ETH only)",
