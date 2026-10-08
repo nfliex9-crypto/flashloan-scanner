@@ -61,7 +61,7 @@ def shadow_exit_result(
     }
 
 
-def shadow_bar_exit(position: dict, candles: list) -> tuple[float,str,datetime] | None:
+def shadow_bar_exit(position: dict, candles: list, bar_seconds: int = 3600) -> tuple[float,str,datetime] | None:
     """Conservative OHLC stops: omit pre-entry data, assume stop if both touched."""
     opened_at = position["opened_at"]
     for candle in candles:
@@ -72,7 +72,7 @@ def shadow_bar_exit(position: dict, candles: list) -> tuple[float,str,datetime] 
         target = float(position["target_price"])
         stop_hit = candle.low <= stop
         target_hit = candle.high >= target
-        end = start + timedelta(hours=1)
+        end = start + timedelta(seconds=bar_seconds)
         if stop_hit and target_hit:
             return conservative_stop_fill(stop, candle.open),"STOP_AMBIGUOUS_BAR",end
         if stop_hit:
