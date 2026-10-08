@@ -39,7 +39,7 @@ def priority_market_board():
         return results
     key=os.getenv("TWELVEDATA_API_KEY")
     if not key:
-        results["markets"].append(oanda if oanda.get("status")!="WAITING_FOR_OANDA_PRACTICE_CREDENTIALS" else {
+        results["markets"].append(oanda if oanda.get("status")!="WAITING_FOR_OANDA_CREDENTIALS" else {
             **oanda,"preferred_source":"OANDA","note":"Use existing OANDA Practice account; Twelve Data is optional fallback"})
     else:
         try:
