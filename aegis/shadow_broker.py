@@ -11,6 +11,7 @@ import hashlib
 import json
 import math
 from datetime import datetime, timedelta, timezone
+from dataclasses import replace
 
 from .live_lab import strategy_positions
 from .paper_engine import RiskConfig, _atr_at, _fee, _fill_price, _position_size
@@ -77,13 +78,15 @@ def shadow_bar_exit(position: dict, candles: list) -> tuple[float,str,datetime] 
 
 def run_shadow_tick(
     cur, *, run_id: str, now: datetime, agents: list[dict],
-    closed_by_symbol: dict, live_by_symbol: dict, config: RiskConfig
+    closed_by_symbol: dict, live_by_symbol: dict, config: RiskConfig,
+    config_by_symbol: dict[str, RiskConfig] | None = None
 ) -> dict:
     """Call exactly once inside the forward broker's existing transaction."""
     from .stage3 import emit_event
 
     stats = {"shadow_entries":0,"shadow_exits":0,"shadow_open":0}
     by_id = {a["agent_id"]:a for a in agents}
+    config_by_symbol = config_by_symbol or {}
 
     for agent in agents:
         agent_id = agent["agent_id"]
@@ -110,7 +113,8 @@ def run_shadow_tick(
             continue
 
         raw_exit, reason, exit_ts = close
-        result = shadow_exit_result(p, raw_exit, config)
+        asset_config = config_by_symbol.get(asset, config)
+        result = shadow_exit_result(p, raw_exit, asset_config)
         tid = shadow_id("trade",p["position_id"])
         cur.execute(
             "INSERT INTO aegis.shadow_trades "
@@ -123,8 +127,8 @@ def run_shadow_tick(
              exit_ts,p["raw_entry"],p["entry_price"],result["exit_price"],p["qty"],
              result["gross"],result["entry_fee"],result["exit_fee"],result["slippage_cost"],
              result["net_pnl"],result["r_multiple"],reason,
-             json.dumps({"run_id":run_id,"fee_bps_each_side":config.fee_bps_per_side,
-                         "slippage_bps_each_side":config.slippage_bps_per_side,
+             json.dumps({"run_id":run_id,"fee_bps_each_side":asset_config.fee_bps_per_side,
+                         "slippage_bps_each_side":asset_config.slippage_bps_per_side,
                          "source":"FORWARD_COSTED_SHADOW","live_execution":False})),
         )
         if cur.fetchone() is None:
@@ -148,6 +152,7 @@ def run_shadow_tick(
     # a research-approved paper incumbent, to make costed comparisons possible.
     for agent in agents:
         symbol = agent["asset"]
+        asset_config = config_by_symbol.get(symbol, config)
         aid = agent["agent_id"]
         candles = closed_by_symbol.get(symbol,[])
         if len(candles)<30 or symbol not in live_by_symbol:
@@ -167,19 +172,21 @@ def run_shadow_tick(
         account = cur.fetchone()
         if not account:
             continue
+        if symbol == "XAU" and float(account["max_drawdown"]) >= 0.05:
+            continue  # Gold virtual circuit: never auto-rearm after 5% drawdown
         mark = live_by_symbol[symbol].close
         if mark<=0 or not math.isfinite(mark):
             continue
-        entry = shadow_entry_price(mark,config)
+        entry = shadow_entry_price(mark,asset_config)
         atr = _atr_at(candles,len(candles)-1)
-        stop_distance = max(atr*config.atr_stop_multiple,entry*0.0025)
+        stop_distance = max(atr*asset_config.atr_stop_multiple,entry*0.0025)
         stop = max(0.0,entry-stop_distance)
-        target = entry+stop_distance*config.reward_to_risk
+        target = entry+stop_distance*asset_config.reward_to_risk
         virtual_equity = float(account["cash"])
-        qty, _, notional = _position_size(virtual_equity,entry,stop,config)
+        qty, _, notional = _position_size(virtual_equity,entry,stop,asset_config)
         if qty<=0 or not math.isfinite(qty):
             continue
-        entry_fee = _fee(entry*qty,config.fee_bps_per_side)
+        entry_fee = _fee(entry*qty,asset_config.fee_bps_per_side)
         slip_cost = max(0,entry-mark)*qty
         pos_id = shadow_id("position",signal_key)
         cur.execute(
@@ -212,7 +219,7 @@ def run_shadow_tick(
         if p:
             mark=live_by_symbol[p["symbol"]].close
             qty=float(p["qty"])
-            u=(mark-float(p["entry_price"]))*qty-_fee(mark*qty,config.fee_bps_per_side)
+            u=(mark-float(p["entry_price"]))*qty-_fee(mark*qty,config_by_symbol.get(p["symbol"],config).fee_bps_per_side)
             cur.execute(
                 "UPDATE aegis.shadow_positions SET last_mark=%s,unrealized_pnl=%s,updated_at=%s "
                 "WHERE agent_id=%s",(mark,u,now,aid))
