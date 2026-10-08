@@ -160,14 +160,15 @@ function renderHorizonRouter(data){
   const options=router.candidates||[];
   $("horizonRouterSummary").textContent=winner
     ?"Best forward-tested candidate: "+winner.asset+" / "+winner.interval+
-      " / "+winner.horizon+" · Not a demo/live order authorization"
+      " / "+winner.horizon+" / "+(winner.strategy||"unknown strategy")+
+      " / "+winner.direction+" · Not a demo/live order authorization"
     :"No qualifying timeframe yet · "+options.length+
       " candidate timeframes · Short and weekly forward evidence still pending";
   $("horizonRouterBoard").innerHTML=options.length?options.map(o=>
     '<div class="strategy-rank-row">'+
       '<strong class="strategy-rank-number">'+safe(o.interval)+'</strong>'+
       '<span class="strategy-rank-name"><strong>'+safe(o.asset)+' / '+safe(o.direction)+' / '+safe(o.horizon)+'</strong>'+
-      '<small>'+Number(o.trades)+' closed costed trades · '+fixed(o.observed_days,1)+
+      '<small>'+safe(o.strategy||"Unidentified strategy")+' · '+Number(o.trades)+' closed costed trades · '+fixed(o.observed_days,1)+
       ' observation days'+(o.qualified?" · Qualified":" · Pending: "+safe((o.failed_checks||[]).join(", ")))+'</small></span>'+
       '<span class="strategy-rank-metrics">PF '+fixed(o.profit_factor,2)+
       ' · <span class="'+sign(o.net_pnl)+'">'+currency(o.net_pnl)+'</span></span>'+
