@@ -251,6 +251,21 @@ def run_forward_tick(scheduled_at: datetime | None = None, config: RiskConfig | 
         gold_reason = str(exc)[:120]
 
 
+    # Only request 15-minute data when there are EXISTING virtual
+    # positions to supervise. Never spend gold provider credits when flat.
+    # All lookups/fills fail closed on stale/missing closed bars.
+    quarter_bars = {}
+    quarter_feed_status = {}
+    from .intrabar_guard import fetch_quarter_bars
+    with _connect() as feed_conn, feed_conn.cursor() as feed_cur:
+        feed_cur.execute("SELECT DISTINCT symbol FROM aegis.shadow_positions")
+        open_shadow_symbols = sorted(r["symbol"] for r in feed_cur.fetchall())
+    for symbol in open_shadow_symbols:
+        try:
+            quarter_bars[symbol] = fetch_quarter_bars(symbol,scheduled_at)
+            quarter_feed_status[symbol] = "CLOSED_15M_VERIFIED"
+        except (ValueError, KeyError, TypeError, OSError, RuntimeError) as exc:
+            quarter_feed_status[symbol] = "DATA_UNAVAILABLE"
     summary = {
         "entries": 0,
         "exits": 0,
@@ -281,6 +296,8 @@ def run_forward_tick(scheduled_at: datetime | None = None, config: RiskConfig | 
                     "status": gold_status,
                 },
                 "paper_trading_15min": False,
+                "shadow_risk_management_15min": True,
+                "quarter_data": quarter_feed_status,
                 "live_execution": False,
             }
             from .experiments import read_controls
@@ -302,17 +319,35 @@ def run_forward_tick(scheduled_at: datetime | None = None, config: RiskConfig | 
                 "filter_checked_at": scheduled_at.isoformat(),
                 "agents_ranked": len(current_rankings),
                 "quarantined": sum(x["state"] == "QUARANTINED" for x in current_rankings),
-                "no_order_execution": True,
+                "opens_no_new_15m_positions": True,
+                "may_close_costed_shadow_positions": True,
+                "no_live_order_execution": True,
                 "real_money": False,
             }
             cur.execute(
                 "INSERT INTO aegis.engine_runs"
                 "(run_id,started_at,completed_at,mode,status,market_snapshot,summary) "
                 "VALUES (%s,%s,now(),'MARKET_MONITOR','COMPLETED',%s::jsonb,%s::jsonb) "
-                "ON CONFLICT (run_id) DO NOTHING",
+                "ON CONFLICT (run_id) DO NOTHING RETURNING run_id",
                 (monitor_id, scheduled_at, json.dumps(monitor_snapshot),
                  json.dumps(monitor_summary)),
             )
+            # Never run virtual risk exits twice in the same quarter-hour
+            # trigger. Entries remain hourly; quarter supervision is exit-only.
+            if cur.fetchone() is not None:
+                from .intrabar_guard import settle_intrabar_shadow
+                quarter_stats = settle_intrabar_shadow(
+                    cur,run_id=monitor_id,now=scheduled_at,
+                    closed_by_symbol=quarter_bars,config=config)
+                monitor_summary.update(quarter_stats)
+                monitor_summary["quarter_symbols_checked"]=len(quarter_bars)
+                monitor_summary["quarter_missing_sources"]=[
+                    k for k,v in quarter_feed_status.items()
+                    if v!="CLOSED_15M_VERIFIED"]
+                cur.execute(
+                    "UPDATE aegis.engine_runs SET summary=%s::jsonb "
+                    "WHERE run_id=%s",(json.dumps(monitor_summary),monitor_id))
+                summary.update(quarter_stats)
             cur.execute(
                 "INSERT INTO aegis.engine_runs(run_id,started_at,mode,status,market_snapshot) "
                 "VALUES (%s,%s,'FORWARD_PAPER','RUNNING',%s::jsonb) "
