@@ -41,9 +41,11 @@ function isReady(data){return data?.ok&&data?.initialized;}
 function nowClock(){
   $("utcClock").textContent=new Date().toLocaleTimeString("en-GB",{hour12:false,timeZone:"UTC"})+" UTC";
   const n=new Date(),utcMin=n.getUTCMinutes(),utcSec=n.getUTCSeconds();
-  let remaining;
-  if(utcMin < 5){remaining=(5-utcMin)*60-utcSec;}
-  else{remaining=(65-utcMin)*60-utcSec;}
+  // Monitoring runs at UTC :05, :20, :35, :50, while strategy
+  // signals remain based on independently verified CLOSED hourly bars.
+  const seconds=utcMin*60+utcSec;
+  const next=[5,20,35,50,65].find(m=>m*60>seconds);
+  const remaining=next*60-seconds;
   const mm=Math.floor(Math.max(0,remaining)/60),ss=Math.max(0,remaining)%60;
   $("nextScan").textContent=String(mm).padStart(2,"0")+":"+String(ss).padStart(2,"0");
 }
@@ -108,7 +110,12 @@ function paintCity(d){
   $("floatingVault").textContent=currency(v.realized);
   $("floatingVault").className=Number(v.realized)>=0?"positive":"negative";
   $("floatingVaultSub").textContent="Today's forward realized: "+currency(v.today);
-  $("lastRunLabel").textContent=d.last_run?.completed_at?"ENGINE VERIFIED "+utc(d.last_run.completed_at):"WAITING FOR FIRST RUN";
+  const marketPulse=d.last_market_monitor?.completed_at;
+  $("lastRunLabel").textContent=marketPulse
+    ? "MARKET PULSE VERIFIED "+utc(marketPulse)+" · 15M"
+    : d.last_run?.completed_at
+      ? "STRATEGY 1H VERIFIED "+utc(d.last_run.completed_at)
+      : "WAITING FOR FIRST MARKET CYCLE";
   $("positionsCount").textContent=String(d.positions?.length||0);
   $("tradesCount").textContent=String(workers.reduce((sum,w)=>sum+(Number(w.paper_trades)||0),0));
   $("ghostCount").textContent=String(Number(d.ghosts?.total||0))+" · "+String(Number(d.ghosts?.pending||0))+" pending";
