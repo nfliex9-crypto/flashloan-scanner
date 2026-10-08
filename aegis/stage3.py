@@ -36,7 +36,10 @@ def window_stats(rows: list[dict], now: datetime, days: int | None) -> dict:
 
 def decide_role(*, research_status: str, prior_role: str | None,
                 forward_days: float, trade_count: int, profit_factor: float,
-                net_pnl: float, drawdown: float, shadow_count: int = 0) -> tuple[str,float,str,str]:
+                net_pnl: float, drawdown: float, shadow_count: int = 0,
+                shadow_costed_trades: int = 0, shadow_pf: float = 0.0,
+                shadow_net: float = 0.0, shadow_drawdown: float = 0.0,
+                shadow_days: float = 0.0) -> tuple[str,float,str,str]:
     """Fail-closed promotion gate. No position is ever created by this function."""
     if drawdown >= MAX_FORWARD_DRAWDOWN:
         return ("HALTED", 0.0, "RISK_HALT", "Portfolio forward drawdown >= 5%; capital frozen")
@@ -53,11 +56,17 @@ def decide_role(*, research_status: str, prior_role: str | None,
         # paper authorization so it can resume if research improves.
         return ("ACTIVE_PAPER", 1.0, "RESEARCH_HOLD", "Paper authorization retained; execution blocked by research probation")
 
-    # Shadow signals have a different execution / fee model; never promote
-    # from 12h ghost return alone even if they look profitable.
-    if shadow_count >= MIN_SHADOW_TRADES and forward_days >= MIN_SHADOW_DAYS:
-        return ("CHALLENGER", 0.0, "SHADOW_VALIDATION", "Needs costed independent shadow fills before promotion")
-    return ("SHADOW", 0.0, "COLLECTING", f"Shadow-only; {shadow_count}/{MIN_SHADOW_TRADES} ghost observations, no capital")
+    # Only costed, persisted, independent forward fills can qualify a shadow
+    # strategy for a HUMAN review. No automatic paper-capital promotion.
+    if shadow_drawdown >= MAX_FORWARD_DRAWDOWN:
+        return ("SHADOW", 0.0, "SHADOW_DRAWDOWN", "Independent costed shadow drawdown exceeded 5%; not eligible")
+    if (shadow_days >= MIN_SHADOW_DAYS and
+            shadow_costed_trades >= MIN_SHADOW_TRADES and
+            shadow_pf >= PROMOTION_PF and shadow_net > 0):
+        return ("CHALLENGER_READY", 0.0, "REVIEW_REQUIRED", "Costed shadow evidence passed; human review required before any paper allocation")
+    if shadow_costed_trades >= 10:
+        return ("CHALLENGER", 0.0, "COSTED_VALIDATION", f"Costed shadow fills: {shadow_costed_trades}/{MIN_SHADOW_TRADES}; paper allocation is zero")
+    return ("SHADOW", 0.0, "COLLECTING", f"Costed shadow trades: {shadow_costed_trades}/{MIN_SHADOW_TRADES}; ghost observations {shadow_count} not qualifying")
 
  
 def emit_event(cur, *, key: str, kind: str, title: str,
@@ -94,6 +103,18 @@ def review_run(cur, run_id: str, now: datetime, agents: list[dict],
         trades = list(cur.fetchall())
         cur.execute("SELECT count(*) AS n FROM aegis.ghost_trades WHERE agent_id=%s AND settled_at IS NOT NULL", (aid,))
         ghost_count = int(cur.fetchone()["n"])
+        cur.execute(
+            "SELECT closed_at AS exit_ts,net_pnl FROM aegis.shadow_trades "
+            "WHERE agent_id=%s ORDER BY closed_at",(aid,),
+        )
+        shadow_trades=list(cur.fetchall())
+        cur.execute("SELECT initialized_at,max_drawdown FROM aegis.shadow_accounts WHERE agent_id=%s",(aid,))
+        shadow_account=cur.fetchone()
+        shadow_days=max(0.0,(now-shadow_account["initialized_at"]).total_seconds()/86400) if shadow_account else 0.0
+        shadow_dd=_num(shadow_account["max_drawdown"]) if shadow_account else 0.0
+        shadow_windows={name:window_stats(shadow_trades,now,period) for name,period in
+                        (("24h",1),("7d",7),("30d",30),("lifetime",None))}
+        shadow_lifetime=shadow_windows["lifetime"]
         windows = {name: window_stats(trades, now, period) for name, period in
                    (("24h",1),("7d",7),("30d",30),("lifetime",None))}
         lifetime = windows["lifetime"]
@@ -106,13 +127,20 @@ def review_run(cur, run_id: str, now: datetime, agents: list[dict],
             net_pnl=lifetime["net_pnl"],
             drawdown=historical_dd,
             shadow_count=ghost_count,
+            shadow_costed_trades=shadow_lifetime["trades"],
+            shadow_pf=shadow_lifetime["profit_factor"],
+            shadow_net=shadow_lifetime["net_pnl"],
+            shadow_drawdown=shadow_dd,
+            shadow_days=shadow_days,
         )
+        windows["shadow"]={**shadow_windows,"forward_days":round(shadow_days,4),"max_drawdown":shadow_dd,
+                           "model":"independent_costed_forward","position_sizing":"0.25% isolated virtual equity"}
         eligible = (
             role == "ACTIVE_PAPER" and age_days >= MIN_FORWARD_DAYS and
             lifetime["trades"] >= MIN_FORWARD_TRADES and
             lifetime["profit_factor"] >= PROMOTION_PF and
             lifetime["net_pnl"] > 0 and historical_dd < MAX_FORWARD_DRAWDOWN
-        )
+        ) or (role == "CHALLENGER_READY" and review_status == "REVIEW_REQUIRED")
         cur.execute(
             "INSERT INTO aegis.agent_evaluations "
             "(agent_id,run_id,evaluated_at,research_status,role,closed_trades,wins,net_pnl,"
@@ -225,6 +253,23 @@ def get_stage3_state() -> dict:
         agents=list(cur.fetchall())
         cur.execute("SELECT * FROM aegis.paper_positions WHERE status='OPEN' ORDER BY opened_at DESC")
         positions=list(cur.fetchall())
+        cur.execute(
+            "SELECT a.agent_id,a.initialized_at,a.cash,a.realized_pnl,a.peak_equity,a.max_drawdown,"
+            "p.position_id,p.symbol,p.entry_price,p.qty,p.unrealized_pnl "
+            "FROM aegis.shadow_accounts a "
+            "LEFT JOIN aegis.shadow_positions p ON p.agent_id=a.agent_id"
+        )
+        shadow_account_rows=list(cur.fetchall())
+        shadow_by_agent={r["agent_id"]:r for r in shadow_account_rows}
+        cur.execute(
+            "SELECT agent_id,count(*) AS trades,"
+            "count(*) FILTER(WHERE net_pnl>0) AS wins,"
+            "COALESCE(sum(net_pnl),0) AS net_pnl,"
+            "COALESCE(sum(net_pnl) FILTER(WHERE closed_at>=now()-interval '7 days'),0) AS week_pnl,"
+            "COALESCE(sum(net_pnl) FILTER(WHERE closed_at>=now()-interval '30 days'),0) AS month_pnl "
+            "FROM aegis.shadow_trades GROUP BY agent_id"
+        )
+        shadow_trade_stats={r["agent_id"]:r for r in cur.fetchall()}
         cur.execute("SELECT agent_id,count(*) AS trades,"
                     "count(*) FILTER(WHERE net_pnl>0) AS wins,"
                     "coalesce(sum(net_pnl),0) AS earned,"
@@ -265,10 +310,21 @@ def get_stage3_state() -> dict:
     for a in agents:
         a=dict(a)
         stats=pay.get(a["agent_id"],{})
+        shadow=shadow_by_agent.get(a["agent_id"],{})
+        shadow_stats=shadow_trade_stats.get(a["agent_id"],{})
         a.update({"paper_trades":int(stats.get("trades",0)),
                   "paper_wins":int(stats.get("wins",0)),
                   "earned":_num(stats.get("earned",0)),
-                  "today":_num(stats.get("today",0))})
+                  "today":_num(stats.get("today",0)),
+                  "shadow_trades":int(shadow_stats.get("trades",0)),
+                  "shadow_wins":int(shadow_stats.get("wins",0)),
+                  "shadow_net_pnl":_num(shadow_stats.get("net_pnl",0)),
+                  "shadow_week_pnl":_num(shadow_stats.get("week_pnl",0)),
+                  "shadow_month_pnl":_num(shadow_stats.get("month_pnl",0)),
+                  "shadow_max_drawdown":_num(shadow.get("max_drawdown",0)),
+                  "shadow_open":bool(shadow.get("position_id")),
+                  "shadow_unrealized":_num(shadow.get("unrealized_pnl",0)),
+                  "shadow_started_at":shadow.get("initialized_at")})
         workers.append(a)
     last=runs[0] if runs else None
     curve_last=curve[-1] if curve else None
@@ -286,6 +342,8 @@ def get_stage3_state() -> dict:
         "equity_curve":curve,"runs":runs,"ghosts":ghosts,
         "evolution_events":changes,"intel_snapshots":intel_snapshots,
         "recent_trades":recent_trades,"recent_ghosts":recent_ghosts,
+        "shadow_open_positions":sum(bool(r.get("position_id")) for r in shadow_account_rows),
+        "shadow_costed_trades":sum(int(v.get("trades",0)) for v in shadow_trade_stats.values()),
         "last_run":last,
         "engine_frequency":"HOURLY_AT_05_UTC",
         "live_money":False,
