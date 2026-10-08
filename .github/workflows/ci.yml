@@ -18,5 +18,7 @@ jobs:
         run: python -m compileall -q scanner.py aegis api tests
       - name: Import scanner
         run: python -c "import scanner; print('scanner import OK')"
+      - name: Check browser JavaScript syntax
+        run: node --check city.js
       - name: Run AEGIS tests
         run: PYTHONPATH=. pytest -q
