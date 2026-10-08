@@ -152,6 +152,34 @@ function paintStrategyFilterBoard(rankings){
     el.addEventListener("click",()=>showAgent(el.dataset.rankagent)));
 }
 
+function renderMicroEngine(data){
+  const d=data||{};
+  const mode=d.mode||"WORKER_NOT_DEPLOYED";
+  $("microConnectionBadge").textContent=mode.replaceAll("_"," ");
+  const statuses=d.sources||[];
+  const newest=statuses[0];
+  $("microMarketStatus").textContent=
+    "Feed: "+safe(d.source||"Public Kraken BTC/ETH only")+" · "+
+    (newest?"Last worker heartbeat "+utc(newest.updated_at):"No worker heartbeat recorded")+
+    " · Live broker orders OFF";
+  const agents=d.agents||[],open=d.open_positions||[],closed=d.recent_closed_trades||[],bars=d.bar_stats||[];
+  const tile=(label,value)=>'<div class="bt-metric"><small>'+label+'</small><strong>'+value+'</strong></div>';
+  $("microWorkerTiles").innerHTML=
+    tile("MICRO AGENTS",agents.length)+tile("OPEN MICRO VIRTUAL",open.length)+
+    tile("RECENT CLOSED FILLS",closed.length)+
+    tile("ACTIVE DATA SERIES",bars.length)+tile("EXECUTION","PAPER ONLY");
+  $("microTradeTape").innerHTML=closed.length?closed.slice(0,35).map(t=>
+    '<div class="agent-trade-item bt-trade-item">'+
+    '<span class="trade-state closed">'+safe(t.reason)+'</span>'+
+    '<span class="trade-ledger-main"><strong>'+safe(t.agent_id)+'</strong>'+
+    '<small>'+safe(t.symbol)+' · '+Number(t.interval_minutes)+'m · '+
+    utc(t.opened_at)+' → '+utc(t.closed_at)+'</small>'+
+    '<small>Entry '+currency(t.entry_price)+' · Exit '+currency(t.exit_price)+
+    ' · Qty '+fixed(t.qty,6)+' · Fees '+currency(Number(t.entry_fee)+Number(t.exit_fee))+
+    ' · Slip '+currency(t.slippage_cost)+'</small></span>'+
+    '<strong class="trade-ledger-pnl '+sign(t.net_pnl)+'">'+currency(t.net_pnl)+'</strong></div>'
+  ).join(""):'<div class="await">No verified micro paper closes recorded. '+(d.is_connected?"Waiting for actual signals and trades.":"Worker is not yet running or is stale.")+'</div>';
+}
 const EXPERIMENT_NAMES=["EMA Cross","RSI Pullback","Channel Breakout"];
 function renderResearchLab(d){
   const c=d.experiment_controls;
@@ -357,6 +385,7 @@ function paintCity(d){
   paintStrategyFilterBoard(d.strategy_rankings||[]);
   paintEvolution(workers,d.evolution_events||[],d.promotion_rules||{});
   renderResearchLab(d);
+  renderMicroEngine(d.micro_engine);
   if(currentSelection?.kind==="agent"){
     const worker=workers.find(w=>w.agent_id===currentSelection.id);
     if(worker)fillAgentDrawer(worker);
