@@ -14,6 +14,13 @@ const towers=[
   {x:804,y:338},{x:956,y:391},{x:824,y:487},{x:990,y:499},
 ];
 let selectedTowerMap=new Map();
+let mobileCameraX=300;
+let lastSceneDragAt=0;
+function clampCamera(v){return Math.max(0,Math.min(600,v))}
+function syncCamera(){
+  const small=window.matchMedia("(max-width:620px)").matches;
+  $("citySvg").setAttribute("viewBox",small?`${mobileCameraX} 0 600 620`:"0 0 1200 620");
+}
 
 function statusClass(role){
   if(role==="ACTIVE_PAPER"||role==="RESEARCH_ACTIVE")return "active";
@@ -79,6 +86,10 @@ function makeScene(workers){
   const active=arranged.filter(w=>effectiveRole(w)==="ACTIVE_PAPER"||effectiveRole(w)==="RESEARCH_ACTIVE").length;
   $("activeWorkers").textContent=String(active)+" / "+arranged.length;
   $("onShiftDetails").textContent="Paper-eligible research incumbents";
+  $("quickWorkers").innerHTML=arranged.map(w=>`<button class="worker-chip ${statusClass(effectiveRole(w))}" data-quickagent="${safe(w.agent_id)}">
+    <strong>${symbolWorker(w)}</strong><small>${safe(effectiveRole(w))} · ${currency(w.earned)}</small></button>`).join("");
+  document.querySelectorAll("[data-quickagent]").forEach(el=>el.addEventListener("click",()=>showAgent(el.dataset.quickagent)));
+  syncCamera();
 }
 
 function paintCity(d){
@@ -359,6 +370,26 @@ async function pollIntel(){
   catch(err){console.error("Intelligence feed:",err);paintIntelligence(null)}
 }
 function init(){
+  const svg=$("citySvg");
+  let touchStart=null;
+  svg.addEventListener("pointerdown",e=>{
+    if(!window.matchMedia("(max-width:620px)").matches)return;
+    touchStart={x:e.clientX,cameraX:mobileCameraX,dragged:false};
+  });
+  svg.addEventListener("pointermove",e=>{
+    if(!touchStart || !window.matchMedia("(max-width:620px)").matches)return;
+    const delta=e.clientX-touchStart.x;
+    if(Math.abs(delta)<8 && !touchStart.dragged)return;
+    touchStart.dragged=true;
+    mobileCameraX=clampCamera(touchStart.cameraX-delta*1.65);
+    syncCamera();
+  });
+  const stopPointer=()=>{if(touchStart?.dragged)lastSceneDragAt=Date.now();touchStart=null};
+  svg.addEventListener("pointerup",stopPointer);
+  svg.addEventListener("pointercancel",stopPointer);
+  svg.addEventListener("click",e=>{if(Date.now()-lastSceneDragAt<300){e.preventDefault();e.stopPropagation()}},true);
+  window.addEventListener("resize",syncCamera);
+  syncCamera();
   document.querySelectorAll(".nav-tab").forEach(el=>el.addEventListener("click",()=>setView(el.dataset.view)));
   $("openPayroll").addEventListener("click",()=>setView("payroll"));
   $("eventsBtn").addEventListener("click",()=>$("activityFeed").scrollIntoView({behavior:"smooth",block:"center"}));
