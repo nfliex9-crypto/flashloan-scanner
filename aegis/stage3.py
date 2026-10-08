@@ -366,7 +366,7 @@ def get_stage3_state() -> dict:
             "GROUP BY symbol,interval_minutes ORDER BY symbol,interval_minutes")
         micro_bar_stats=list(cur.fetchall())
         cur.execute(
-            "SELECT t.symbol,t.interval_minutes,t.direction AS side,count(*) AS trades,"
+            "SELECT t.agent_id,a.strategy,t.symbol,t.interval_minutes,t.direction AS side,count(*) AS trades,"
             "COALESCE(sum(t.net_pnl),0) AS net_pnl,"
             "COALESCE(sum(t.net_pnl) FILTER(WHERE t.net_pnl>0),0) AS gross_gains,"
             "COALESCE(sum(t.net_pnl) FILTER(WHERE t.net_pnl<0),0) AS gross_losses,"
@@ -374,7 +374,7 @@ def get_stage3_state() -> dict:
             "COALESCE(max(a.max_drawdown),0) AS max_drawdown "
             "FROM aegis.stream_trades t "
             "LEFT JOIN aegis.stream_accounts a ON a.agent_id=t.agent_id "
-            "GROUP BY t.symbol,t.interval_minutes,t.direction")
+            "GROUP BY t.agent_id,a.strategy,t.symbol,t.interval_minutes,t.direction")
         micro_directional_evidence=list(cur.fetchall())
 
         # These are BROKER-CONFIRMED DEMO records, never computed shadow
