@@ -9,7 +9,7 @@ class handler(BaseHTTPRequestHandler):
             payload = get_stage3_state()
             status = 200
         except Exception as exc:
-            payload = {"ok":False,"error":str(exc)}
+            payload = {"ok":False,"error":"ledger_temporarily_unavailable"}
             status = 500
         raw = json.dumps(payload).encode("utf-8")
         self.send_response(status)
