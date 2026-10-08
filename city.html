@@ -1,152 +1,147 @@
 <!doctype html>
-<html lang="ar" dir="rtl">
+<html lang="en" dir="ltr">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="theme-color" content="#03060b" />
-  <title>AEGIS Agent City</title>
-  <link rel="stylesheet" href="/city.css" />
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#08071b">
+  <title>AEGIS · The Living Trading City</title>
+  <meta name="description" content="AEGIS is a forward-only paper trading city with evolving trading agents, event-driven operations, and immutable broker evidence.">
+  <link rel="stylesheet" href="/city.css">
 </head>
 <body>
-  <div class="grid-bg"></div>
-  <main class="shell">
-    <header class="hero">
-      <div>
-        <p class="eyebrow">AEGIS · AGENT CITY V1</p>
-        <h1>Trading City</h1>
-        <p class="lead">مختبر تنفيذ Paper مبني على بيانات سوق حية، مع Risk Engine، Ghost Trades، وTrade Autopsy. لا أوامر حقيقية.</p>
+  <div class="backdrop-grid" aria-hidden="true"></div>
+  <div id="toastHost" class="toast-host" aria-live="polite"></div>
+  <main class="app-shell">
+    <header class="topbar">
+      <a class="brand" href="/city.html" aria-label="AEGIS home">
+        <span class="brand-mark"><span class="core-dot"></span></span>
+        <span><strong>AEGIS<span class="brand-small">/ CITY</span></strong><small>AUTONOMOUS PAPER RESEARCH</small></span>
+      </a>
+      <div class="nav-tabs" role="navigation" aria-label="Sections">
+        <button class="nav-tab active" data-view="city">THE CITY</button>
+        <button class="nav-tab" data-view="payroll">PAYROLL</button>
+        <button class="nav-tab" data-view="evolution">EVOLUTION</button>
+        <button class="nav-tab" data-view="intel">INTELLIGENCE</button>
       </div>
-      <div class="hero-actions">
-        <a class="ghost-btn" href="/">Control Room</a>
-        <button id="refreshBtn">تحديث الآن</button>
+      <div class="header-right">
+        <span class="top-time" id="utcClock">--:--:-- UTC</span>
+        <span class="status-pill" id="connectionStatus"><span class="led"></span>CONNECTING</span>
+        <button id="refreshBtn" class="icon-button" aria-label="Refresh live data" title="Refresh live data">↻</button>
       </div>
     </header>
 
-    <section class="status-strip">
-      <div><span class="dot"></span><strong id="feedStatus">Connecting…</strong><small>DATA</small></div>
-      <div><strong class="locked" id="firewall">LOCKED</strong><small>CAPITAL FIREWALL</small></div>
-      <div><strong id="mode">—</strong><small>MODE</small></div>
-      <div><strong id="updated">—</strong><small>UPDATED UTC</small></div>
+    <section class="marquee" aria-label="Live market and operations telemetry">
+      <div class="market-ticker" id="marketTicker"><span class="ticker-wait">MARKET LINK CONNECTING · KRAKEN HOURLY CANDLES</span></div>
+      <div class="marquee-right"><span class="tiny-pulse"></span><span id="lastRunLabel">WAITING FOR NEON LEDGER</span></div>
     </section>
 
-    <section class="vault">
-      <div class="section-title">
-        <div><p class="eyebrow">RESEARCH REPLAY</p><h2>Historical Reconstruction</h2></div>
-        <span class="paper-badge">RECONSTRUCTION</span>
-      </div>
-      <div class="vault-grid">
-        <article><span>Marked Equity</span><strong id="equity">—</strong></article>
-        <article><span>Net P&amp;L</span><strong id="netPnl">—</strong></article>
-        <article><span>Realized</span><strong id="realized">—</strong></article>
-        <article><span>Unrealized</span><strong id="unrealized">—</strong></article>
-        <article><span>Max Drawdown</span><strong id="drawdown">—</strong></article>
-        <article><span>Profit Factor</span><strong id="profitFactor">—</strong></article>
-        <article><span>Win Rate</span><strong id="winRate">—</strong></article>
-        <article><span>Fees + Slippage</span><strong id="costs">—</strong></article>
-      </div>
-    </section>
-
-    <section class="forward-vault">
-      <div class="section-title">
-        <div><p class="eyebrow">FORWARD PAPER · NEON</p><h2>Persistent Forward Record</h2></div>
-        <span id="forwardStatus" class="chip green">WAITING FOR LEDGER…</span>
-      </div>
-      <p class="forward-lead">هذا السجل يبدأ من لحظة تشغيل الـbroker فقط. لا backfill ولا إعادة كتابة للماضي، وكل run محفوظ في Neon بمفتاح idempotent.</p>
-      <div class="forward-grid">
-        <article><span>Forward Equity</span><strong id="forwardEquity">—</strong></article>
-        <article><span>Realized P&amp;L</span><strong id="forwardRealized">—</strong></article>
-        <article><span>Unrealized</span><strong id="forwardUnrealized">—</strong></article>
-        <article><span>Closed Trades</span><strong id="forwardTrades">—</strong></article>
-        <article><span>Open Positions</span><strong id="forwardOpen">—</strong></article>
-        <article><span>Win Rate</span><strong id="forwardWin">—</strong></article>
-        <article><span>Profit Factor</span><strong id="forwardPf">—</strong></article>
-        <article><span>Circuit</span><strong id="forwardCircuit">—</strong></article>
-      </div>
-      <div class="forward-bottom">
+    <div id="cityView" class="view active">
+      <div class="command-row">
         <div>
-          <span class="forward-label">LAST PERSISTED RUN</span>
-          <strong id="forwardLastRun">Waiting for first run…</strong>
+          <p class="eyebrow"><span class="sparkle">✦</span> MISSION CONTROL / LIVE OPERATIONS</p>
+          <h1>Every agent has <i>a city to run.</i></h1>
+          <p class="subtitle">Real events drive the action. No invented trades. No real-money execution.</p>
         </div>
-        <div>
-          <span class="forward-label">LIVE MONEY</span>
-          <strong class="locked">OFF · PAPER ONLY</strong>
+        <div class="command-buttons">
+          <button class="outline-action" id="eventsBtn">EVENT LOG <span id="eventCount">0</span></button>
+          <button class="outline-action" id="cameraBtn">↗ EXPLORE VIEW</button>
         </div>
       </div>
-      <div id="forwardPositions" class="forward-positions"></div>
+
+      <div class="top-metrics">
+        <div class="metric"><span class="metric-icon">◈</span><span>FORWARD VAULT</span><strong id="vaultEquity">—</strong><small id="vaultDelta">Paper equity</small></div>
+        <div class="metric"><span class="metric-icon">↗</span><span>REALIZED NET</span><strong id="realizedPnl">—</strong><small>After fees &amp; slippage</small></div>
+        <div class="metric"><span class="metric-icon">♜</span><span>WORKERS ON SHIFT</span><strong id="activeWorkers">—</strong><small id="onShiftDetails">Research-active agents</small></div>
+        <div class="metric"><span class="metric-icon">⏱</span><span>NEXT ENGINE CYCLE</span><strong id="nextScan">—</strong><small>Hourly :05 UTC</small></div>
+        <div class="metric risk-metric"><span class="metric-icon">⬡</span><span>RISK FIREWALL</span><strong id="riskCircuit">—</strong><small>REAL CAPITAL DISCONNECTED</small></div>
+      </div>
+
+      <section class="city-stage" aria-label="Interactive living trading city">
+        <div class="stage-topline">
+          <div><span class="live-chip"><span class="led"></span> LIVING SYSTEM</span><span class="scene-caption">NEON TERMINAL // ALL FINANCIAL EFFECTS FOLLOW RECORDED EVENTS</span></div>
+          <div class="scene-actions"><button class="scene-toggle selected" data-layer="agents">AGENT SIGNALS</button><button class="scene-toggle" data-layer="risk">RISK VIEW</button></div>
+        </div>
+        <div class="city-canvas" id="cityCanvas">
+          <div class="sky-glow sky-glow-a"></div><div class="sky-glow sky-glow-b"></div>
+          <div class="far-city city-silhouette-a"></div><div class="far-city city-silhouette-b"></div>
+          <div class="starfield"></div>
+          <div class="city-intro"><strong>THE AGENT DISTRICTS</strong><small>CLICK ANY TOWER TO INSPECT ITS WORKER</small></div>
+          <svg id="citySvg" viewBox="0 0 1200 620" role="img" aria-label="Interactive city showing genuine paper trading agent states" preserveAspectRatio="xMidYMid meet">
+            <defs>
+              <linearGradient id="ground" x1="0" x2="1" y1="0" y2="1"><stop offset="0" stop-color="#202058"/><stop offset=".6" stop-color="#101536"/><stop offset="1" stop-color="#0a1025"/></linearGradient>
+              <linearGradient id="vaultSkin" x1="0" x2="1"><stop stop-color="#f8c87c"/><stop offset=".38" stop-color="#8a63d7"/><stop offset="1" stop-color="#302469"/></linearGradient>
+              <filter id="cityGlow" x="-110%" y="-110%" width="320%" height="320%"><feGaussianBlur stdDeviation="6"/></filter>
+              <pattern id="floorGrid" width="36" height="36" patternUnits="userSpaceOnUse"><path d="M36 0H0V36" fill="none" stroke="#7664c5" stroke-opacity=".13"/></pattern>
+            </defs>
+            <ellipse cx="600" cy="450" rx="523" ry="142" fill="#100d39" stroke="#58539e" stroke-opacity=".35"/>
+            <ellipse cx="600" cy="460" rx="477" ry="118" fill="url(#ground)" stroke="#9184ef" stroke-opacity=".35"/>
+            <ellipse cx="600" cy="460" rx="477" ry="118" fill="url(#floorGrid)" opacity=".42"/>
+            <ellipse cx="600" cy="448" rx="335" ry="90" fill="none" stroke="#946cff" stroke-opacity=".17" stroke-width="24"/>
+            <ellipse class="orbital-ring" cx="600" cy="455" rx="302" ry="76" fill="none" stroke="#b18eff" stroke-dasharray="2 16" stroke-width="3" stroke-opacity=".6"/>
+            <g id="sceneRoads"></g>
+            <g id="sceneWorkers"></g>
+            <g id="sceneVault" tabindex="0" role="button" aria-label="Open the vault">
+              <ellipse cx="600" cy="463" rx="128" ry="40" fill="#9e7bff" opacity=".14" filter="url(#cityGlow)"/>
+              <ellipse cx="600" cy="463" rx="100" ry="30" fill="#0c0a2b" stroke="#f9cc8d" stroke-width="2"/>
+              <path d="M530 430 L530 461 Q600 490 670 461 L670 430Z" fill="url(#vaultSkin)" stroke="#b08df2" stroke-width="2"/>
+              <ellipse cx="600" cy="431" rx="70" ry="22" fill="#21183a" stroke="#f5c37e" stroke-width="3"/>
+              <ellipse cx="600" cy="428" rx="44" ry="14" fill="#e7cfac"/>
+              <path d="M567 428 L590 411 L610 411 L633 428 L610 446 L590 446Z" fill="#604c9c" stroke="#f8ce86"/>
+              <circle cx="600" cy="428" r="8" fill="#f7ce8b" class="vault-light"/>
+              <text x="600" y="498" class="scene-vault-title" text-anchor="middle">THE VAULT</text>
+            </g>
+            <g id="sceneEffects"></g>
+          </svg>
+          <div class="scene-label left-label"><span>◉</span> BTC DISTRICT</div>
+          <div class="scene-label right-label"><span>◉</span> ETH DISTRICT</div>
+          <div class="vault-display" id="vaultDisplay" role="button" tabindex="0" aria-label="Open vault details"><span>THE VAULT · FORWARD ONLY</span><strong id="floatingVault">—</strong><small id="floatingVaultSub">Realized P&amp;L · Awaiting data</small></div>
+          <div class="city-footer"><span class="scene-key"><b class="key-green"></b> PAPER ACTIVE <b class="key-gold"></b> SHADOW / CHALLENGER <b class="key-red"></b> HALTED</span><span id="stageRefresh">DATA REFRESH: —</span></div>
+        </div>
+        <div class="stage-bottom"><span><span class="led"></span> LIVE SYSTEM FEED <b>·</b> MARKET RESEARCH</span><span id="cycleLabel">SCANNING FOR NEW HOURLY CANDLES</span><span class="stage-disclaimer">AMBIENT ANIMATION ≠ TRADE</span></div>
+      </section>
+
+      <div class="below-city">
+        <section class="module activity-module">
+          <header class="module-head"><div><p class="eyebrow">CITY BROADCAST</p><h2>Operations feed</h2></div><span class="module-tag">NEON EVENT LOG</span></header>
+          <div class="activity-list" id="activityFeed"><div class="await">Waiting for real operational events…</div></div>
+        </section>
+        <section class="module control-module">
+          <header class="module-head"><div><p class="eyebrow">TRADE CONTROL</p><h2>Flight status</h2></div><span class="module-tag danger">CAPITAL LOCKED</span></header>
+          <div class="control-map"><div><span>PAPER POSITIONS</span><strong id="positionsCount">—</strong></div><div><span>CLOSED FORWARD TRADES</span><strong id="tradesCount">—</strong></div><div><span>GHOST SIGNALS</span><strong id="ghostCount">—</strong></div><div><span>PORTFOLIO DRAWDOWN</span><strong id="drawdownValue">—</strong></div></div>
+          <div class="equity-chart-wrap"><div class="mini-head"><span>FORWARD EQUITY CURVE</span><span id="curveRange">—</span></div><svg id="equityChart" viewBox="0 0 540 124" preserveAspectRatio="none" aria-label="Forward equity history chart"></svg></div>
+          <button id="openPayroll" class="full-cta">OPEN WORKER PAYROLL <span>↗</span></button>
+        </section>
+      </div>
+    </div>
+
+    <section id="payrollView" class="view dashboard-view">
+      <div class="section-hero"><p class="eyebrow">THE VAULT // WORKER ACCOUNTING</p><h1>Every shift. <i>Every dollar.</i></h1><p>Only settled, persisted forward paper fills earn payroll. Research replay is excluded.</p></div>
+      <div class="large-pnl"><div><span>FORWARD REALIZED PAYROLL</span><strong id="payrollTotal">—</strong><small>Net of estimated commissions and modeled slippage</small></div><div class="payroll-orbit">✦</div></div>
+      <div class="module"><header class="module-head"><h2>Worker payroll</h2><span class="module-tag">VERIFIED LEDGER</span></header><div class="scroll-table"><table><thead><tr><th>WORKER</th><th>ROLE</th><th>TRADES</th><th>WINS</th><th>EARNED TODAY</th><th>ALL-TIME</th></tr></thead><tbody id="payrollBody"></tbody></table></div></div>
+      <div class="module"><header class="module-head"><h2>Open positions</h2><span class="module-tag">PERSISTED FORWARD</span></header><div id="positionsList" class="position-list"><div class="await">No live paper positions</div></div></div>
     </section>
 
-    <section class="layout">
-      <article class="panel market-panel">
-        <div class="section-title">
-          <div><p class="eyebrow">ROOM 01</p><h2>Market Pulse</h2></div>
-          <span class="chip">LIVE KRAKEN</span>
-        </div>
-        <div id="markets" class="market-grid"><div class="empty">تحميل السوق…</div></div>
-      </article>
-
-      <article class="panel brain-panel">
-        <div class="section-title">
-          <div><p class="eyebrow">ROOM 02</p><h2>Risk Constitution</h2></div>
-          <span class="chip red">HARD RULES</span>
-        </div>
-        <div id="riskRules" class="rules"></div>
-        <p id="paperNote" class="note"></p>
-      </article>
-
-      <article class="panel intel-panel">
-        <div class="section-title">
-          <div><p class="eyebrow">ROOM 03</p><h2>Intelligence HQ</h2></div>
-          <span class="chip violet">SEC + FINRA · FREE</span>
-        </div>
-        <p class="note">Alternative data is context only: it cannot place or size a trade by itself. Scores measure attention/anomaly, not guaranteed direction.</p>
-        <div id="intelHQ" class="intel-grid"><div class="empty">تحميل بيانات SEC وFINRA…</div></div>
-      </article>
-
-      <article class="panel agents-panel">
-        <div class="section-title">
-          <div><p class="eyebrow">ROOM 04</p><h2>Agent Floor</h2></div>
-          <span class="chip green">SURVIVAL GATED</span>
-        </div>
-        <div id="agents" class="agent-grid"><div class="empty">تحميل Agents…</div></div>
-      </article>
-
-      <article class="panel trades-panel">
-        <div class="section-title">
-          <div><p class="eyebrow">ROOM 05</p><h2>Trade Tape</h2></div>
-          <span class="chip green">EXECUTED PAPER</span>
-        </div>
-        <div class="table-wrap">
-          <table>
-            <thead><tr><th>Agent</th><th>Asset</th><th>Result</th><th>Net P&amp;L</th><th>R</th><th>Exit</th></tr></thead>
-            <tbody id="trades"></tbody>
-          </table>
-        </div>
-        <div id="autopsy" class="autopsy empty">اضغط على أي صفقة لفتح Trade Autopsy.</div>
-      </article>
-
-      <article class="panel ghost-panel">
-        <div class="section-title">
-          <div><p class="eyebrow">ROOM 06</p><h2>Ghost Lab</h2></div>
-          <span class="chip amber">REJECTED SIGNALS</span>
-        </div>
-        <p class="note">نسجل الإشارات التي منعها Risk/Survival Gate بدل حذفها، حتى نعرف لاحقًا إذا كان النظام يرفض فرصًا جيدة أو يحمي رأس المال فعلًا.</p>
-        <div id="ghosts" class="ghost-list"></div>
-      </article>
-
-      <article class="panel next-panel">
-        <div class="section-title">
-          <div><p class="eyebrow">NEXT BUILD</p><h2>Persistent Paper Broker</h2></div>
-          <span class="chip violet">STAGE 2</span>
-        </div>
-        <div id="nextStage" class="next-stage"></div>
-      </article>
+    <section id="evolutionView" class="view dashboard-view">
+      <div class="section-hero"><p class="eyebrow">EVIDENCE CHAMBER // HARD GATES</p><h1>Survive first. <i>Evolve later.</i></h1><p>Promotion needs forward evidence and costed shadow fills. Every risk veto remains deterministic.</p></div>
+      <div class="evolution-summary" id="evolutionSummary"></div>
+      <div class="module"><header class="module-head"><h2>Agent evolution chamber</h2><span class="module-tag">NEON · LAST REVIEW</span></header><div id="evolutionCards" class="evolution-grid"></div></div>
+      <div class="module"><header class="module-head"><h2>Role changes</h2><span class="module-tag">AUDIT TRAIL</span></header><div id="evolutionChanges" class="activity-list"></div></div>
     </section>
 
-    <footer>
-      <span>AEGIS Agent City · Research / Paper Execution</span>
-      <span>لا يوجد وعد ربح. الترقية تعتمد على Evidence وRisk Limits.</span>
-    </footer>
+    <section id="intelView" class="view dashboard-view">
+      <div class="section-hero"><p class="eyebrow">INTELLIGENCE HQ // FREE PUBLIC FEEDS</p><h1>Information is <i>not an order.</i></h1><p>Equities watchlist: SPY, QQQ, NVDA, TSLA, AAPL &amp; MSFT. These are not paper-traded yet.</p></div>
+      <div class="source-box"><div><b>◈</b> FINRA SHORT-SALE VOLUME</div><span>CONTEXT ONLY · NOT SHORT INTEREST</span></div>
+      <div id="intelGrid" class="intel-grid"><div class="await">Connecting to intelligence sources…</div></div>
+      <div class="module intel-note">SEC EDGAR filings may be unavailable from serverless IP ranges. Unavailable or stale data are excluded from scores. Quiver API remains optional and is not connected.</div>
+    </section>
+
+    <div id="drawerBackdrop" class="drawer-backdrop" hidden></div>
+    <aside id="detailDrawer" class="detail-drawer" aria-label="Agent details" aria-hidden="true">
+      <div class="drawer-head"><span class="eyebrow" id="drawerEyebrow">AGENT DOSSIER</span><button id="drawerClose" class="icon-button" aria-label="Close details">✕</button></div>
+      <div id="drawerBody"></div>
+    </aside>
+    <footer class="site-footer"><div><strong>AEGIS / AGENT CITY 3.0</strong><span>© Research interface · Forward paper only</span></div><div><span>ENGINE: HOURLY CANDLES</span><span>REAL MONEY: OFF</span><a href="/city-legacy.html">CLASSIC DASHBOARD ↗</a></div></footer>
   </main>
-  <script src="/city.js"></script>
+  <script src="/city.js" defer></script>
 </body>
 </html>
