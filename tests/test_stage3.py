@@ -5,8 +5,8 @@ def test_shadows_can_never_promote_from_ghost_returns_alone():
     role,risk,status,reason=decide_role(
       research_status="PROBATION",prior_role="SHADOW",forward_days=90,
       trade_count=0,profit_factor=99,net_pnl=5000,drawdown=0,shadow_count=200)
-    assert role=="CHALLENGER" and risk==0
-    assert status=="SHADOW_VALIDATION"
+    assert role=="SHADOW" and risk==0
+    assert status=="COLLECTING"
 
 def test_forward_drawdown_overrides_other_evidence():
     role,risk,_,_=decide_role(
@@ -55,3 +55,27 @@ def test_research_gate_can_authorize_new_paper_candidate_only():
       trade_count=0,profit_factor=0,net_pnl=0,drawdown=0)
     assert authorized[0]=="ACTIVE_PAPER"
     assert authorized[2]=="COLLECTING"
+
+def test_costed_shadow_qualifies_for_review_without_paper_allocation():
+    role,risk,status,reason=decide_role(
+      research_status="PROBATION",prior_role="SHADOW",forward_days=45,
+      trade_count=0,profit_factor=0,net_pnl=0,drawdown=0,
+      shadow_costed_trades=52,shadow_pf=1.45,shadow_net=420,
+      shadow_drawdown=0.018,shadow_days=45)
+    assert (role,risk,status)==("CHALLENGER_READY",0,"REVIEW_REQUIRED")
+
+def test_costed_shadow_stress_rejection():
+    role,risk,status,_=decide_role(
+      research_status="PROBATION",prior_role="SHADOW",forward_days=60,
+      trade_count=0,profit_factor=0,net_pnl=0,drawdown=0,
+      shadow_costed_trades=100,shadow_pf=1.8,shadow_net=15000,
+      shadow_drawdown=0.09,shadow_days=60)
+    assert (role,risk,status)==("SHADOW",0,"SHADOW_DRAWDOWN")
+
+def test_shadow_challenger_not_authorized_for_paper():
+    role,risk,status,_=decide_role(
+      research_status="PROBATION",prior_role="CHALLENGER",forward_days=18,
+      trade_count=0,profit_factor=0,net_pnl=0,drawdown=0,
+      shadow_costed_trades=18,shadow_pf=1.4,shadow_net=100,
+      shadow_drawdown=0.02,shadow_days=18)
+    assert (role,risk,status)==("CHALLENGER",0,"COSTED_VALIDATION")
