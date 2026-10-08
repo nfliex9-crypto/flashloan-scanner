@@ -23,6 +23,13 @@ def shadow_id(kind: str, *parts: object) -> str:
     return f"shadow-{kind}-{digest}"
 
 
+def conservative_stop_fill(stop: float, bar_open: float) -> float:
+    """Gap through a long stop fills at the worse open, not the optimistic stop."""
+    if not all(math.isfinite(x) and x > 0 for x in (stop, bar_open)):
+        raise ValueError("Invalid stop or bar open price")
+    return min(stop, bar_open)
+
+
 def shadow_entry_price(raw: float, config: RiskConfig) -> float:
     return _fill_price(raw, "BUY", config.slippage_bps_per_side)
 
@@ -67,9 +74,9 @@ def shadow_bar_exit(position: dict, candles: list) -> tuple[float,str,datetime] 
         target_hit = candle.high >= target
         end = start + timedelta(hours=1)
         if stop_hit and target_hit:
-            return stop,"STOP_AMBIGUOUS_BAR",end
+            return conservative_stop_fill(stop, candle.open),"STOP_AMBIGUOUS_BAR",end
         if stop_hit:
-            return stop,"STOP",end
+            return conservative_stop_fill(stop, candle.open),"STOP",end
         if target_hit:
             return target,"TARGET",end
     return None
