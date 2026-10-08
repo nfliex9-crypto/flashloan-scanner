@@ -232,7 +232,7 @@ def persist_closed_stream_bar(conn, event: CompletedBar, history: list[Candle],
                     cur.execute(
                         "INSERT INTO aegis.stream_positions "
                         "(agent_id,position_id,symbol,interval_minutes,opened_at,"
-                        "entry_price,qty,stop_price,target_price,entry_fee,entry_slippage,last_mark) "
+                        "entry_price,qty,stop_price,target_price,entry_fee,entry_slippage,last_mark,direction) "
                         "VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s) "
                         "ON CONFLICT DO NOTHING RETURNING position_id",
                         (aid,position_id,symbol,minutes,decision["at"],
