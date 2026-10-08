@@ -66,3 +66,33 @@ button,a{font:inherit}button{cursor:pointer}button:focus-visible,a:focus-visible
 .priority-market>span{font:600 9px 'DM Mono';color:#a6a2be;line-height:1.6}
 .gold-market>strong{color:#ffdda9}
 @media(max-width:620px){.priority-assets{grid-template-columns:1fr 1fr;gap:8px}.priority-market{padding:13px 10px;min-height:148px}.priority-title{gap:7px}.priority-title>span{font-size:20px}.priority-title strong{font-size:9px}.priority-title small{font-size:7px}.priority-market>strong{font-size:19px}}
+
+
+/* Neon-backed, independent per-agent OPEN/CLOSE ledger + strategy filters */
+.agent-tape-module{margin:16px 0}
+.agent-tape-toolbar{display:flex;flex-wrap:wrap;gap:12px;align-items:end;margin-bottom:14px}
+.agent-tape-toolbar label{font:600 10px 'DM Mono',monospace;color:#aaa8d2;display:grid;gap:6px;min-width:135px;flex:1}
+.agent-tape-toolbar select{background:#13132f;color:#ebe7ff;border:1px solid #595182;border-radius:8px;padding:10px;max-width:100%;font-size:12px}
+#agentTapeStats{font-size:10px;color:#a7a5c6;padding:10px 2px}
+.agent-trade-feed{max-height:480px;overflow:auto;display:grid;gap:6px}
+.agent-trade-item{display:flex;align-items:center;gap:12px;text-align:left;width:100%;border:1px solid #443e7473;border-radius:10px;background:#16163399;padding:12px;color:#f1efff;cursor:pointer}
+.agent-trade-item:hover,.strategy-rank-row:hover{border-color:#a895fc}
+.trade-state{font:800 10px 'DM Mono',monospace;border-radius:6px;padding:6px 8px;min-width:68px;text-align:center}
+.trade-state.opened{background:#244a4070;color:#85eec8}
+.trade-state.closed{background:#45365490;color:#dfb3fc}
+.trade-ledger-main{display:grid;flex:1;min-width:0;gap:3px}
+.trade-ledger-main strong{font-size:12px}
+.trade-ledger-main small{font-size:10px;color:#afabc9;line-height:1.5;overflow-wrap:anywhere}
+.trade-ledger-pnl{font:800 12px 'DM Mono',monospace;text-align:right;white-space:nowrap}
+.filter-explainer{font-size:12px;color:#bab8d1;line-height:1.6;margin:0 0 14px}
+.strategy-filter-board{display:grid;gap:7px}
+.strategy-rank-row{width:100%;border:1px solid #4d427474;border-radius:10px;background:#1513309e;color:#eee9fc;display:flex;gap:12px;align-items:center;padding:12px;text-align:left;cursor:pointer}
+.strategy-rank-number{font:800 16px 'DM Mono',monospace;min-width:36px;color:#b2a2ee}
+.strategy-rank-name{flex:1;min-width:0;display:grid;gap:5px}
+.strategy-rank-name strong{font-size:12px}
+.strategy-rank-name small{font-size:10px;color:#ada9c8;line-height:1.5}
+.strategy-rank-metrics{display:flex;flex-wrap:wrap;gap:12px;font:700 10px 'DM Mono',monospace}
+.strategy-rank-state{font:800 10px 'DM Mono',monospace;padding:7px 8px;border-radius:7px;background:#302749;color:#c7bcee}
+.strategy-rank-state.quarantine{background:#60283790;color:#ffa3a3}
+.strategy-rank-state.leader{background:#1b534590;color:#8ae8c4}
+@media(max-width:700px){.agent-trade-item,.strategy-rank-row{gap:7px;padding:10px 8px}.strategy-rank-row{flex-wrap:wrap}.strategy-rank-metrics{order:3;width:100%;padding-left:45px}.agent-tape-toolbar label{min-width:calc(50% - 12px)}.trade-ledger-pnl{font-size:10px;white-space:normal}.trade-ledger-main small{font-size:9px}}
