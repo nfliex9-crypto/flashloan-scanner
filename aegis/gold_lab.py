@@ -96,3 +96,35 @@ def gold_agents(closed: list[Candle]) -> list[dict]:
         agent["market_source"] = "Twelve Data XAU/USD 1h indicative"
         agents.append(agent)
     return agents
+
+
+def record_gold_agents(cur, agents: list[dict], run_id: str, now: datetime) -> None:
+    """Append real gold research evaluations; NEVER authorize gold paper-main."""
+    from .stage3 import emit_event
+
+    for agent in agents:
+        evidence = {k: agent[k] for k in (
+            "total_return", "oos_return", "max_drawdown", "profit_factor",
+            "sharpe", "stress_passes", "cost_assumption_bps"
+        )}
+        evidence.update({"source": "Twelve Data XAU/USD 1h",
+                         "market_data": "indicative", "broker_execution": False,
+                         "research_only": True})
+        cur.execute(
+            "INSERT INTO aegis.agent_registry "
+            "(agent_id,asset,strategy,generation,status,survival_score,config,evidence,updated_at) "
+            "VALUES (%s,%s,%s,%s,%s,%s,%s::jsonb,%s::jsonb,%s) "
+            "ON CONFLICT(agent_id) DO UPDATE SET "
+            "status=EXCLUDED.status,survival_score=EXCLUDED.survival_score,"
+            "evidence=EXCLUDED.evidence,updated_at=EXCLUDED.updated_at",
+            (
+                agent["agent_id"], GOLD_SYMBOL, agent["strategy"],
+                agent["generation"], agent["status"], agent["survival_score"],
+                json.dumps({"variant": agent["generation"], "shadow_only": True}),
+                json.dumps(evidence), now,
+            ),
+        )
+    emit_event(cur, key=f"gold-research:{run_id}", kind="GOLD_RESEARCH",
+               scope="SHADOW", title="Gold Squad: 4 XAU research agents evaluated",
+               description="Closed 1h gold candles · costed virtual fills only · live orders OFF",
+               symbol=GOLD_SYMBOL, run_id=run_id, at=now)
