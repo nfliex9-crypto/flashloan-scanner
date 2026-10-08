@@ -282,6 +282,11 @@ def get_stage3_state() -> dict:
         cur.execute("SELECT run_id,started_at,completed_at,status,summary "
                     "FROM aegis.engine_runs WHERE mode='FORWARD_PAPER' ORDER BY started_at DESC LIMIT 24")
         runs=list(cur.fetchall())
+        cur.execute(
+            "SELECT run_id,started_at,completed_at,status,market_snapshot "
+            "FROM aegis.engine_runs WHERE mode='MARKET_MONITOR' "
+            "ORDER BY started_at DESC LIMIT 1")
+        last_monitor = cur.fetchone()
         cur.execute("SELECT count(*) AS total,count(*) FILTER(WHERE settled_at IS NULL) AS pending "
                     "FROM aegis.ghost_trades")
         ghosts=cur.fetchone()
@@ -344,8 +349,8 @@ def get_stage3_state() -> dict:
         "recent_trades":recent_trades,"recent_ghosts":recent_ghosts,
         "shadow_open_positions":sum(bool(r.get("position_id")) for r in shadow_account_rows),
         "shadow_costed_trades":sum(int(v.get("trades",0)) for v in shadow_trade_stats.values()),
-        "last_run":last,
-        "engine_frequency":"HOURLY_AT_05_UTC",
+        "last_run":last,"last_market_monitor":last_monitor,
+        "engine_frequency":"MARKET_CHECK_EVERY_15M__STRATEGY_BARS_1H",
         "live_money":False,
         "promotion_rules":{"min_forward_days":MIN_FORWARD_DAYS,
             "min_costed_trades":MIN_FORWARD_TRADES,"min_pf":PROMOTION_PF,
