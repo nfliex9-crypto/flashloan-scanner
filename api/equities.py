@@ -17,7 +17,7 @@ class handler(BaseHTTPRequestHandler):
             body["priority_markets"] = gold_and_crypto
             status = 200
         except Exception as exc:
-            body={"ok":False,"error":str(exc),"live_execution_enabled":False}
+            body={"ok":False,"error":"market_data_temporarily_unavailable","live_execution_enabled":False}
             status=500
         payload=json.dumps(body).encode("utf-8")
         self.send_response(status)
