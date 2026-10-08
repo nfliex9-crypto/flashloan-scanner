@@ -51,7 +51,10 @@ def rank_forward_horizons(rows:list[dict], *, side:str="LONG")->dict:
             "profit_factor":pf>=MIN_PROFIT_FACTOR,
             "net_positive":net>0,
             "drawdown":dd<MAX_ALLOWED_DRAWDOWN,
-            "direction_supported":side=="LONG" and row.get("side","LONG")=="LONG",
+            "direction_supported":(
+                row.get("side","LONG") in ("LONG","SHORT") and
+                (side=="BOTH" or side==row.get("side","LONG"))
+            ),
         }
         qualified=all(requirements.values())
         # Use costed forward net per trade penalized by drawdown.
@@ -68,14 +71,17 @@ def rank_forward_horizons(rows:list[dict], *, side:str="LONG")->dict:
         })
     ready=sorted((r for r in options if r["qualified"]),
                  key=lambda r:(-r["score"],-r["trades"],r["interval"]))
+    by_side={direction:next((row for row in ready if row["direction"]==direction),None)
+             for direction in ("LONG","SHORT")}
     return {
         "mode":"EVIDENCE_GATED_RESEARCH_ROUTER",
         "direction":side,
         "selected":ready[0] if ready else None,
+        "selected_by_direction":by_side,
         "state":"RESEARCH_LEADER_AVAILABLE" if ready else "INSUFFICIENT_FORWARD_EVIDENCE",
         "candidates":options,
         "live_execution_enabled":False,
         "demo_order_execution_enabled":False,
         "selection_is_not_a_trading_order":True,
-        "limitations":"Only observed LONG-only Kraken micro shadow fills available today; short, gold, 4h/daily/weekly require dedicated forward evidence.",
+        "limitations":"Only persisted costed BTC/ETH micro paper fills at 1m/5m/15m qualify today; gold and 4h/daily/weekly need their own forward evidence.",
     }
