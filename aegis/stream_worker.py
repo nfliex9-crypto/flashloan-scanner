@@ -74,22 +74,21 @@ class KrakenMicroWorker:
         self.stats={"closed_bars":0,"entries":0,"exits":0,"skipped_late":0,
                     "skipped_history":0,"duplicates":0}
 
-    async def bootstrap(self) -> None:
-        self.gate=ClosedBarGate()
-        self.history={}
+    async def bootstrap_interval(self,minute:int)->None:
+        """Resubscribe one timeframe without disturbing other WS sockets."""
+        if minute not in ALLOWED_MINUTES:
+            raise ValueError("Unsupported public OHLC interval")
         now=_now().timestamp()
         for sym in self.symbols:
-            for minute in ALLOWED_MINUTES:
-                try:
-                    raw=await asyncio.to_thread(fetch_ohlc,PAIRS[sym][1],minute)
-                    past=[x for x in raw if x.ts+minute*60<=now]
-                    self.history[(sym,minute)]=deque(past[-720:],maxlen=720)
-                except Exception:
-                    # Missing history => DO NOT guess/fill. Next live bars
-                    # are still recorded, trading resumes only after warmup.
-                    self.history[(sym,minute)]=deque(maxlen=720)
-                    log.warning("Warmup unavailable: %s %dm. New entries disabled.",sym,minute)
-        log.info("Loaded real closed-candle warmup for %d market timeframes",len(self.history))
+            self.gate.current.pop((sym,minute),None)
+            try:
+                raw=await asyncio.to_thread(fetch_ohlc,PAIRS[sym][1],minute)
+                past=[x for x in raw if x.ts+minute*60<=now]
+                self.history[(sym,minute)]=deque(past[-720:],maxlen=720)
+            except Exception:
+                self.history[(sym,minute)]=deque(maxlen=720)
+                log.warning("Warmup unavailable: %s %dm. New entries disabled.",sym,minute)
+        log.info("Loaded real closed-candle warmup for %dm public market feed",minute)
 
     async def _persist(self, event:CompletedBar, bars:list[Candle])->dict:
         def work():
@@ -141,58 +140,77 @@ class KrakenMicroWorker:
                             "bar_start":event.candle.ts,**result})
         return results
 
-    async def stream_once(self) -> None:
+    async def stream_interval_once(self,interval:int)->None:
+        """One interval per socket: Kraken rejects parallel intervals per symbol."""
         from websockets.asyncio.client import connect
-        await self.bootstrap()
+        await self.bootstrap_interval(interval)
+        name=f"kraken-public-micro-{interval}m"
         async with connect(KRAKEN_PUBLIC_WS,open_timeout=12,
                            ping_interval=20,ping_timeout=20,max_size=1_000_000) as ws:
-            for interval in ALLOWED_MINUTES:
-                await ws.send(json.dumps({
-                    "method":"subscribe",
-                    "params":{"channel":"ohlc",
-                              "symbol":[PAIRS[s][0] for s in self.symbols],
-                              "interval":interval,"snapshot":True},
-                    "req_id":interval}))
-            log.info("Connected to Kraken public WS v2; subscriptions submitted")
-            await asyncio.to_thread(_write_status,"kraken-public-micro","CONNECTED")
+            await ws.send(json.dumps({
+                "method":"subscribe",
+                "params":{"channel":"ohlc",
+                          "symbol":[PAIRS[s][0] for s in self.symbols],
+                          "interval":interval,"snapshot":True},
+                "req_id":interval}))
+            log.info("Subscribed to public Kraken %dm candle socket; awaiting ack",interval)
+            await asyncio.to_thread(_write_status,name,"STARTING")
+            verified=False
+            last_heartbeat=0.0
             async for raw in ws:
                 packet=json.loads(raw)
                 if packet.get("method")=="subscribe":
                     if packet.get("success") is False:
-                        # Public subscription errors are safe to classify;
-                        # never log credentials, headers, connection strings,
-                        # or raw service exceptions.
                         explanation=str(packet.get("error","UNKNOWN"))
                         code="".join(ch for ch in explanation if ch.isalnum() or ch in "-_ :.")[:120]
-                        log.warning("Kraken public subscription rejected: %s",code)
-                        raise RuntimeError("Kraken rejected public market-data subscription")
-                    log.info("Kraken accepted public %sm candle subscription",
-                             packet.get("result",{}).get("interval","?"))
+                        log.warning("Kraken %dm subscription rejected: %s",interval,code)
+                        raise RuntimeError("Kraken public data subscription rejected")
+                    if packet.get("success") is True:
+                        ack=packet.get("result") or {}
+                        if ack.get("interval")!=interval:
+                            raise RuntimeError("Kraken acknowledged unexpected candle interval")
+                        if not verified:
+                            verified=True
+                            log.info("Kraken accepted public %dm candle stream",interval)
+                            await asyncio.to_thread(_write_status,name,"CONNECTED")
                 results=await self.handle(packet)
                 for item in results:
-                    log.info("Closed %s %dm bar %s | %d new virtual entries | %d exits",
-                             item["symbol"],item["interval"],item["bar_start"],
+                    if item["interval"]!=interval:
+                        raise RuntimeError("Candle routed to wrong interval socket")
+                    log.info("Verified %s %dm closed bar %s | %d virtual entries | %d exits",
+                             item["symbol"],interval,item["bar_start"],
                              item["entries"],item["exits"])
-                    await asyncio.to_thread(_write_status,"kraken-public-micro",
-                                            "CONNECTED",closed_ts=item["bar_start"])
+                    await asyncio.to_thread(_write_status,name,"CONNECTED",
+                                            closed_ts=item["bar_start"])
+                # A heartbeat should represent actual received market messages,
+                # not just a socket handshake, and should not spam Neon.
+                if verified and packet.get("channel")=="ohlc":
+                    stamp=_now().timestamp()
+                    if stamp-last_heartbeat>=30:
+                        await asyncio.to_thread(_write_status,name,"CONNECTED")
+                        last_heartbeat=stamp
 
-    async def forever(self) -> None:
+    async def interval_forever(self,interval:int)->None:
         delay=2
+        name=f"kraken-public-micro-{interval}m"
         while True:
             try:
-                await self.stream_once()
+                await self.stream_interval_once(interval)
                 delay=2
             except asyncio.CancelledError:
                 raise
             except Exception as exc:
-                log.warning("Streaming connection degraded (%s); reconnect pending; no phantom fills.",
-                            type(exc).__name__)
+                log.warning("Kraken %dm feed degraded (%s); independent reconnect pending.",
+                            interval,type(exc).__name__)
                 try:
-                    await asyncio.to_thread(_write_status,"kraken-public-micro","DEGRADED")
+                    await asyncio.to_thread(_write_status,name,"DEGRADED")
                 except Exception:
-                    log.warning("Database status write unavailable; no synthetic fills.")
+                    log.warning("Neon heartbeat unavailable for %dm; no synthetic fills.",interval)
                 await asyncio.sleep(delay)
                 delay=min(45,delay*2)
+
+    async def forever(self)->None:
+        await asyncio.gather(*(self.interval_forever(n) for n in ALLOWED_MINUTES))
 
 
 async def main()->None:
