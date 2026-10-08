@@ -311,6 +311,77 @@ def get_stage3_state() -> dict:
         )
         intel_snapshots=list(cur.fetchall())
 
+        # Per-agent, real ledger-based open/close feed. Closed trades produce
+        # separate OPEN/CLOSE timeline entries, with no fabricated historical
+        # forward fills. This feed is deliberately independent of ghost trades.
+        cur.execute(
+            "SELECT position_id,agent_id,symbol,opened_at,entry_price,qty,unrealized_pnl "
+            "FROM aegis.shadow_positions ORDER BY opened_at DESC LIMIT 60")
+        shadow_open_feed=list(cur.fetchall())
+        cur.execute(
+            "SELECT position_id,agent_id,symbol,opened_at,closed_at,entry_price,"
+            "exit_price,qty,net_pnl,entry_fee,exit_fee,slippage_cost,reason "
+            "FROM aegis.shadow_trades ORDER BY closed_at DESC LIMIT 75")
+        shadow_closed_feed=list(cur.fetchall())
+        cur.execute(
+            "SELECT position_id,agent_id,symbol,opened_at,entry_price,qty "
+            "FROM aegis.paper_positions WHERE status='OPEN' "
+            "ORDER BY opened_at DESC LIMIT 30")
+        paper_open_feed=list(cur.fetchall())
+        cur.execute(
+            "SELECT trade_id,agent_id,symbol,entry_ts,exit_ts,entry_price,"
+            "exit_price,qty,net_pnl,fees,slippage_cost,exit_reason "
+            "FROM aegis.paper_trades ORDER BY exit_ts DESC LIMIT 75")
+        paper_closed_feed=list(cur.fetchall())
+        from .strategy_filter import strategy_snapshot
+        strategy_ranks = strategy_snapshot(cur)
+
+    trade_feed=[]
+    for p in shadow_open_feed:
+        trade_feed.append({
+            "id":f"shadow-open:{p['position_id']}",
+            "agent_id":p["agent_id"],"symbol":p["symbol"],
+            "market":"SHADOW","action":"OPEN","state":"OPEN",
+            "timestamp":p["opened_at"],"entry_price":_num(p["entry_price"]),
+            "qty":_num(p["qty"]),"unrealized_pnl":_num(p["unrealized_pnl"]),
+            "realized_net_pnl":None,"source":"PERSISTED_SHADOW_POSITION",
+        })
+    for p in shadow_closed_feed:
+        base={"agent_id":p["agent_id"],"symbol":p["symbol"],
+              "market":"SHADOW","state":"CLOSED",
+              "qty":_num(p["qty"]),"entry_price":_num(p["entry_price"]),
+              "exit_price":_num(p["exit_price"]),"realized_net_pnl":_num(p["net_pnl"]),
+              "fee_total":_num(p["entry_fee"])+_num(p["exit_fee"]),
+              "slippage_cost":_num(p["slippage_cost"]),
+              "reason":p["reason"],"source":"COSTED_SHADOW_LEDGER"}
+        trade_feed.append({**base,"id":f"shadow-entry:{p['position_id']}",
+                           "action":"OPEN","timestamp":p["opened_at"]})
+        trade_feed.append({**base,"id":f"shadow-close:{p['position_id']}",
+                           "action":"CLOSE","timestamp":p["closed_at"]})
+    for p in paper_open_feed:
+        trade_feed.append({
+            "id":f"paper-open:{p['position_id']}",
+            "agent_id":p["agent_id"],"symbol":p["symbol"],
+            "market":"PAPER","action":"OPEN","state":"OPEN",
+            "timestamp":p["opened_at"],"entry_price":_num(p["entry_price"]),
+            "qty":_num(p["qty"]),"realized_net_pnl":None,
+            "source":"PERSISTED_PAPER_POSITION",
+        })
+    for p in paper_closed_feed:
+        base={"agent_id":p["agent_id"],"symbol":p["symbol"],
+              "market":"PAPER","state":"CLOSED",
+              "qty":_num(p["qty"]),"entry_price":_num(p["entry_price"]),
+              "exit_price":_num(p["exit_price"]),"realized_net_pnl":_num(p["net_pnl"]),
+              "fee_total":_num(p["fees"]),"slippage_cost":_num(p["slippage_cost"]),
+              "reason":p["exit_reason"],"source":"PAPER_FILL_LEDGER"}
+        trade_feed.append({**base,"id":f"paper-entry:{p['trade_id']}",
+                           "action":"OPEN","timestamp":p["entry_ts"]})
+        trade_feed.append({**base,"id":f"paper-close:{p['trade_id']}",
+                           "action":"CLOSE","timestamp":p["exit_ts"]})
+    trade_feed.sort(key=lambda row:row["timestamp"],reverse=True)
+    trade_feed=trade_feed[:180]
+    rank_by_id={r["agent_id"]:r for r in strategy_ranks}
+
     workers=[]
     for a in agents:
         a=dict(a)
@@ -329,7 +400,8 @@ def get_stage3_state() -> dict:
                   "shadow_max_drawdown":_num(shadow.get("max_drawdown",0)),
                   "shadow_open":bool(shadow.get("position_id")),
                   "shadow_unrealized":_num(shadow.get("unrealized_pnl",0)),
-                  "shadow_started_at":shadow.get("initialized_at")})
+                  "shadow_started_at":shadow.get("initialized_at"),
+                  "strategy_filter":rank_by_id.get(a["agent_id"])})
         workers.append(a)
     last=runs[0] if runs else None
     curve_last=curve[-1] if curve else None
@@ -347,6 +419,7 @@ def get_stage3_state() -> dict:
         "equity_curve":curve,"runs":runs,"ghosts":ghosts,
         "evolution_events":changes,"intel_snapshots":intel_snapshots,
         "recent_trades":recent_trades,"recent_ghosts":recent_ghosts,
+        "trade_feed":trade_feed,"strategy_rankings":strategy_ranks,
         "shadow_open_positions":sum(bool(r.get("position_id")) for r in shadow_account_rows),
         "shadow_costed_trades":sum(int(v.get("trades",0)) for v in shadow_trade_stats.values()),
         "last_run":last,"last_market_monitor":last_monitor,
