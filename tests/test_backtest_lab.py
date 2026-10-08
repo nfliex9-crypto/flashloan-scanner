@@ -27,7 +27,7 @@ def test_request_is_allowlisted_and_bounded():
     assert validate_backtest_request({"asset":"XAU","interval":"15min","bars":"650"})["bars"]==650
     assert validate_backtest_request({})["strategy"]=="EMA Cross"
     for bad in ({"bars":"10000"},{"strategy":"python code"},
-                {"asset":"ETH"},{"interval":"1min"},{"cost":"free"},
+                {"asset":"ETH"},{"interval":"30sec"},{"cost":"free"},
                 {"execution":"live"},{"bars":"1.5"}):
         with pytest.raises(ValueError):
             validate_backtest_request(bad)
@@ -113,3 +113,10 @@ def test_run_backtest_reports_holdout_warnings_without_real_orders(monkeypatch):
     assert result["bars"]==len(candles)
     assert result["holdout"]["trades"]<=result["full"]["trades"]
     assert any("historical reconstruction" in x.lower() for x in result["warnings"])
+
+
+def test_1m_and_5m_risk_model_allowed():
+    from aegis.backtest_lab import INTERVALS
+    assert INTERVALS["1min"]==60
+    assert INTERVALS["5min"]==300
+    assert validate_backtest_request({"interval":"1min"})["interval"]=="1min"
