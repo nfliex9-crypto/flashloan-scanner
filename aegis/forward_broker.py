@@ -387,6 +387,15 @@ def run_forward_tick(scheduled_at: datetime | None = None, config: RiskConfig | 
                 qty, risk_budget, notional = _position_size(
                     marks["equity"], entry, stop, config
                 )
+                cur.execute(
+                    "SELECT role,risk_multiplier FROM aegis.agent_allocations WHERE agent_id=%s",
+                    (agent["agent_id"],),
+                )
+                allocation = cur.fetchone()
+                multiplier = min(1.0, max(0.0, _num(allocation["risk_multiplier"]))) if allocation else (1.0 if agent["status"] == "ACTIVE" else 0.0)
+                qty *= multiplier
+                risk_budget *= multiplier
+                notional *= multiplier
 
                 decision = "ALLOW"
                 reason = None
@@ -394,6 +403,8 @@ def run_forward_tick(scheduled_at: datetime | None = None, config: RiskConfig | 
                     decision, reason = "DUPLICATE_POSITION", "Agent already has an open position."
                 elif agent["status"] != "ACTIVE":
                     decision, reason = "SHADOW", f"Agent status {agent['status']}: shadow-only signal."
+                elif allocation and allocation["role"] != "ACTIVE_PAPER":
+                    decision, reason = "BLOCKED_EVOLUTION", f"Allocation gate: {allocation['role']}."
                 elif circuit != "OPEN":
                     decision, reason = "BLOCKED_RISK", f"Portfolio circuit state {circuit}."
                 elif len(positions) >= MAX_CONCURRENT_POSITIONS:
@@ -633,6 +644,10 @@ def run_forward_tick(scheduled_at: datetime | None = None, config: RiskConfig | 
                     "circuit_state": circuit,
                 }
             )
+            # Stage 3 evaluation and events share this same atomic transaction.
+            # The risk constitution remains the final authority on order sizing.
+            from .stage3 import review_run
+            review_run(cur, run_id, scheduled_at, agents, account, summary)
             cur.execute(
                 "UPDATE aegis.engine_runs "
                 "SET completed_at=now(),status='COMPLETED',summary=%s::jsonb WHERE run_id=%s",
