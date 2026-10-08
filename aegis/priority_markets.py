@@ -38,7 +38,7 @@ def priority_market_board():
             "required_env":"TWELVEDATA_API_KEY","status":"WAITING_FOR_GOLD_FEED","execution_enabled":False})
     else:
         try:
-            query=urllib.parse.urlencode({"symbol":"XAU/USD","interval":"1h","outputsize":"3","apikey":key})
+            query=urllib.parse.urlencode({"symbol":"XAU/USD","interval":"1h","outputsize":"3","timezone":"UTC","apikey":key})
             payload=_fetch_json("https://api.twelvedata.com/time_series?"+query)
             rows=payload.get("values",[])
             if payload.get("status")=="error" or len(rows)<2:
