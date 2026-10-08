@@ -123,3 +123,30 @@ button,a{font:inherit}button{cursor:pointer}button:focus-visible,a:focus-visible
 
 .fast-risk-pulse{border:1px solid #4d608d66;border-radius:10px;padding:10px 14px;margin:-2px 0 12px;background:#131831b8;color:#b5c4f2;font:700 10px 'DM Mono',monospace;line-height:1.7;letter-spacing:.015em}
 @media(max-width:580px){.fast-risk-pulse{font-size:9px;padding:10px 9px}}
+
+
+/* Historical backtest controls and verified costed replay; never broker orders */
+#btResults[hidden]{display:none!important}
+.backtest-control-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:10px 0 15px}
+.backtest-control-grid>label{display:grid;gap:7px;align-content:start;color:#bcb4de;font:700 10px 'DM Mono',monospace;letter-spacing:.02em}
+.backtest-control-grid select{background:#161632;border:1px solid #66568d;color:#ede7ff;border-radius:9px;padding:12px 9px;min-width:0;font:500 12px 'Manrope',sans-serif}
+.bt-button-container{display:flex;align-items:end}
+.bt-button-container>.full-cta{min-width:0;width:100%;margin:0}
+.bt-button-container>.full-cta:disabled{opacity:.55;cursor:wait}
+.bt-headline{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;margin:10px 0 14px}
+.bt-metric{border:1px solid #56477b77;background:#15142fae;border-radius:10px;padding:12px;display:grid;gap:8px}
+.bt-metric small{font:700 9px 'DM Mono',monospace;color:#bbb2dc;letter-spacing:.03em}
+.bt-metric strong{font-size:clamp(13px,2vw,20px);overflow-wrap:anywhere}
+.bt-comparison{display:grid;gap:8px;margin:16px 0}
+.bt-comparison-row{display:flex;flex-wrap:wrap;gap:12px 24px;padding:13px 10px;border-radius:10px;background:#1717319a;align-items:center;font:600 11px 'DM Mono',monospace}
+.bt-comparison-row>strong{min-width:170px;color:#d6c8ff}
+.bt-comparison-row>span{color:#bbb8d1}.bt-comparison-row b{color:#ede7ff}
+.bt-small-note{color:#aaa4cc;font:600 10px 'DM Mono',monospace;line-height:1.6;margin:0 0 8px}
+.bt-chart-wrap{border-radius:12px;border:1px solid #514779;background:#0c0f24;padding:10px 12px;margin:14px 0}
+.bt-chart-caption{display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;color:#bbb8da;font:700 10px 'DM Mono',monospace;padding:7px}
+#btEquityChart{display:block;width:100%;height:240px}
+.bt-warnings{display:grid;gap:8px;margin-bottom:20px}
+.bt-warning{border-left:2px solid #e0b16d;background:#3b2b3452;padding:9px 12px;color:#eac8ac;font-size:11px;line-height:1.5}
+.bt-trade-item{cursor:default}
+@media(max-width:920px){.backtest-control-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.bt-headline{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:580px){.backtest-control-grid{grid-template-columns:1fr}.bt-headline{grid-template-columns:repeat(2,minmax(0,1fr))}.bt-comparison-row{display:grid;grid-template-columns:1fr 1fr;gap:9px}.bt-comparison-row>strong{grid-column:1/-1}.bt-metric{padding:9px}.bt-trade-item{flex-wrap:wrap}}
