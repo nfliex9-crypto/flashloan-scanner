@@ -152,6 +152,30 @@ function paintStrategyFilterBoard(rankings){
     el.addEventListener("click",()=>showAgent(el.dataset.rankagent)));
 }
 
+function renderHorizonRouter(data){
+  const router=data||{};
+  const status=router.state||"INSUFFICIENT_FORWARD_EVIDENCE";
+  $("horizonRouterState").textContent=status.replaceAll("_"," ");
+  const winner=router.selected;
+  const options=router.candidates||[];
+  $("horizonRouterSummary").textContent=winner
+    ?"Best forward-tested candidate: "+winner.asset+" / "+winner.interval+
+      " / "+winner.horizon+" · Not a demo/live order authorization"
+    :"No qualifying timeframe yet · "+options.length+
+      " candidate timeframes · Short and weekly forward evidence still pending";
+  $("horizonRouterBoard").innerHTML=options.length?options.map(o=>
+    '<div class="strategy-rank-row">'+
+      '<strong class="strategy-rank-number">'+safe(o.interval)+'</strong>'+
+      '<span class="strategy-rank-name"><strong>'+safe(o.asset)+' / '+safe(o.horizon)+'</strong>'+
+      '<small>'+Number(o.trades)+' closed costed trades · '+fixed(o.observed_days,1)+
+      ' observation days'+(o.qualified?" · Qualified":" · Pending: "+safe((o.failed_checks||[]).join(", ")))+'</small></span>'+
+      '<span class="strategy-rank-metrics">PF '+fixed(o.profit_factor,2)+
+      ' · <span class="'+sign(o.net_pnl)+'">'+currency(o.net_pnl)+'</span></span>'+
+      '<span class="strategy-rank-state '+(o.qualified?"leader":"observing")+'">'+
+      (o.qualified?"RESEARCH READY":"COLLECTING")+'</span></div>'
+  ).join(""):'<div class="await">No settled costed forward micro trades to rank. Research selection waits for observed performance.</div>';
+}
+
 function renderDemoBrokerLedger(data){
   const d=data||{};
   const accounts=d.connected_accounts||[];
@@ -203,13 +227,14 @@ function renderMicroEngine(data){
     tile("ACTIVE DATA SERIES",bars.length)+tile("EXECUTION","PAPER ONLY");
   $("microTradeTape").innerHTML=closed.length?closed.slice(0,35).map(t=>
     '<div class="agent-trade-item bt-trade-item">'+
-    '<span class="trade-state closed">'+safe(t.reason)+'</span>'+
+    '<span class="trade-state closed">'+safe(t.direction||"LONG")+'</span>'+
     '<span class="trade-ledger-main"><strong>'+safe(t.agent_id)+'</strong>'+
     '<small>'+safe(t.symbol)+' · '+Number(t.interval_minutes)+'m · '+
     utc(t.opened_at)+' → '+utc(t.closed_at)+'</small>'+
     '<small>Entry '+currency(t.entry_price)+' · Exit '+currency(t.exit_price)+
     ' · Qty '+fixed(t.qty,6)+' · Fees '+currency(Number(t.entry_fee)+Number(t.exit_fee))+
-    ' · Slip '+currency(t.slippage_cost)+'</small></span>'+
+    ' · Slip '+currency(t.slippage_cost)+
+    ' · Finance '+currency(t.financing_cost||0)+'</small></span>'+
     '<strong class="trade-ledger-pnl '+sign(t.net_pnl)+'">'+currency(t.net_pnl)+'</strong></div>'
   ).join(""):'<div class="await">No verified micro paper closes recorded. '+(d.is_connected?"Waiting for actual signals and trades.":"Worker is not yet running or is stale.")+'</div>';
 }
@@ -330,9 +355,11 @@ function paintBacktestResult(d){
     '<span>Max DD <b>'+fixed(x.max_drawdown_pct,2)+'%</b></span></div>';
   $("btComparison").innerHTML=
     '<p class="bt-small-note">'+safe(d.asset)+' · '+safe(d.strategy)+' · '+safe(d.interval)+
+    ' · '+safe(d.direction||"LONG")+' / '+safe(d.horizon||"INTRADAY")+
     ' · '+Number(d.bars)+' closed bars · '+utc(d.started_at)+' to '+utc(d.ended_at)+
     ' · fees '+fixed(d.risk_model?.fee_bps_each_side,1)+' bps/side'+
-    ' · slippage '+fixed(d.risk_model?.slippage_bps_each_side,1)+' bps/side</p>'+
+    ' · slippage '+fixed(d.risk_model?.slippage_bps_each_side,1)+' bps/side'+
+    ' · short finance '+fixed(d.risk_model?.short_finance_bps_per_day,1)+' bps/day</p>'+
     line("FULL HISTORY",stats)+line("LAST 30% · NEW ENTRIES ONLY",hold);
   renderBacktestChart(d.equity_curve);
   $("btWarnings").innerHTML=(d.warnings||[]).map(w=>
@@ -356,6 +383,7 @@ async function runBacktest(){
   const params=new URLSearchParams({
     backtest:"1",asset:$("btAsset").value,strategy:$("btStrategy").value,
     interval:$("btInterval").value,cost:$("btCosts").value,
+    direction:$("btDirection").value,
     bars:$("btBars").value});
   try{
     const response=await fetch("/api/stage3?"+params.toString(),{cache:"default"});
@@ -419,6 +447,7 @@ function paintCity(d){
   paintEvolution(workers,d.evolution_events||[],d.promotion_rules||{});
   renderResearchLab(d);
   renderMicroEngine(d.micro_engine);
+  renderHorizonRouter(d.research_horizon_router);
   renderDemoBrokerLedger(d.demo_brokers);
   if(currentSelection?.kind==="agent"){
     const worker=workers.find(w=>w.agent_id===currentSelection.id);
