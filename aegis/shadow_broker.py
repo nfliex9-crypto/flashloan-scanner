@@ -161,6 +161,19 @@ def run_shadow_tick(
         if len(positions)<2 or not (positions[-1]==1 and positions[-2]==0):
             continue
         signal_key = f"shadow:{aid}:{candles[-1].ts}:LONG"
+        from .strategy_filter import shadow_entry_allowed
+        can_enter, filter_reason = shadow_entry_allowed(cur, aid)
+        if not can_enter:
+            emit_event(
+                cur, key=f"strategy-filter:{signal_key}",
+                kind="STRATEGY_QUARANTINED", scope="EVOLUTION",
+                title=f"{symbol} {agent['strategy']} · new shadow entries blocked",
+                agent=aid, symbol=symbol, run_id=run_id, at=now,
+                severity="warning", description=filter_reason,
+                payload={"source":"COSTED_FORWARD_SHADOW",
+                         "live_execution":False,"entry_blocked":True},
+            )
+            continue
         cur.execute("SELECT position_id FROM aegis.shadow_positions WHERE agent_id=%s",(aid,))
         if cur.fetchone():
             continue
