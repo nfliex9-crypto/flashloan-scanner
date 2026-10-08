@@ -114,7 +114,7 @@ def persist_closed_stream_bar(conn, event: CompletedBar, history: list[Candle],
     c=event.candle
     symbol=event.symbol
     minutes=event.interval_minutes
-    counts={"processed":False,"entries":0,"exits":0,"marks":0}
+    counts={"processed":False,"entries":0,"exits":0,"marks":0,"filtered":0}
     with conn.transaction():
         with conn.cursor() as cur:
             cur.execute(
@@ -168,6 +168,28 @@ def persist_closed_stream_bar(conn, event: CompletedBar, history: list[Candle],
                     counts["exits"]+=1
                     pos=None
                 elif action=="ENTER":
+                    # Independent forward evidence gate; historical backtests
+                    # alone NEVER promote micro strategies. Only settled costed
+                    # virtual fills can quarantine an underperformer.
+                    cur.execute(
+                        "SELECT count(*) AS trades,COALESCE(sum(net_pnl),0) AS net,"
+                        "COALESCE(sum(net_pnl) FILTER(WHERE net_pnl>0),0) AS gains,"
+                        "COALESCE(abs(sum(net_pnl) FILTER(WHERE net_pnl<0)),0) AS losses "
+                        "FROM aegis.stream_trades WHERE agent_id=%s",(aid,))
+                    perf=cur.fetchone()
+                    from .strategy_filter import evaluate_strategy
+                    wins=int(perf["trades"])
+                    gains=float(perf["gains"])
+                    losses=float(perf["losses"])
+                    pf=min(99.0,gains/losses) if losses>0 else (99.0 if gains>0 else 0.0)
+                    rank=evaluate_strategy(trades=wins,wins=0,net=float(perf["net"]),
+                                           profit_factor=pf,
+                                           max_drawdown=float(acc["max_drawdown"]))
+                    if rank["state"]=="QUARANTINED":
+                        cur.execute("UPDATE aegis.stream_accounts SET halted=TRUE,updated_at=now() "
+                                    "WHERE agent_id=%s",(aid,))
+                        counts["filtered"]+=1
+                        continue
                     # The deterministic signal can be logged after restart but
                     # never creates two positions for an agent.
                     position_id="stream-"+hashlib.sha256(
