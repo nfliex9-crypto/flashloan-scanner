@@ -167,3 +167,42 @@ def settle_intrabar_shadow(cur, *, run_id:str,now:datetime,
                 "updated_at=%s WHERE agent_id=%s",(peak,dd,now,p["agent_id"]))
             stats["quarter_mark_updates"]+=1
     return stats
+
+
+def settle_intrabar_paper(cur, *, run_id:str, now:datetime,
+                          closed_by_symbol:dict[str,list[Candle]],
+                          config:RiskConfig)->dict:
+    """Risk-only stop/target checks for the MAIN paper account, zero new entries.
+
+    Keeps main trading signals and position sizing anchored to closed 1h bars.
+    The experimental two-hour losing-trade time stop is intentionally NOT
+    applied to paper-main without separate forward validation.
+    """
+    from .forward_broker import _close_position
+    from .stage3 import emit_event
+    stats={"quarter_paper_positions_reviewed":0,"quarter_paper_exits":0}
+    symbols=[x for x in closed_by_symbol if x in CRYPTO_PAIRS]
+    if not symbols:
+        return stats
+    cur.execute(
+        "SELECT * FROM aegis.paper_positions "
+        "WHERE status='OPEN' AND symbol = ANY(%s) "
+        "ORDER BY opened_at FOR UPDATE",(symbols,))
+    for p in cur.fetchall():
+        bars=closed_by_symbol.get(p["symbol"]) or []
+        if not bars:
+            continue
+        stats["quarter_paper_positions_reviewed"]+=1
+        decision=shadow_bar_exit(p,bars,bar_seconds=BAR_SECONDS)
+        if decision is None:
+            continue
+        raw_price,reason,exit_at=decision
+        recorded=_close_position(cur,p,raw_price,reason+"_15M",exit_at,config)
+        emit_event(cur,key=f"paper-exit:{recorded['trade_id']}",kind="PAPER_EXIT",
+            scope="PAPER",title=f"{p['symbol']} paper stop/target checked at 15m",
+            agent=p["agent_id"],symbol=p["symbol"],amount=recorded["net_pnl"],
+            run_id=run_id,at=now,
+            severity="success" if recorded["net_pnl"]>=0 else "danger",
+            description=f"{reason}_15M · completed candle, virtual fill only")
+        stats["quarter_paper_exits"]+=1
+    return stats
