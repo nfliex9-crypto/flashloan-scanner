@@ -21,7 +21,7 @@ MAX_FORWARD_DRAWDOWN = 0.05
 
 def window_stats(rows: list[dict], now: datetime, days: int | None) -> dict:
     threshold = now - timedelta(days=days) if days else None
-    selected = [r for r in rows if threshold is None or r["exit_ts"] >= threshold]
+    selected = [r for r in rows if r["exit_ts"] <= now and (threshold is None or r["exit_ts"] >= threshold)]
     pnls = [_num(r["net_pnl"]) for r in selected]
     positives = sum(v for v in pnls if v > 0)
     negatives = -sum(v for v in pnls if v < 0)
@@ -181,6 +181,20 @@ def review_run(cur, run_id: str, now: datetime, agents: list[dict],
         emit_event(cur,key=f"ghost:{g['ghost_id']}",kind="GHOST_CREATED",scope="GHOST",
                    title=f"{g['symbol']} ghost signal observed",description=g["reason"],
                    agent=g["agent_id"],symbol=g["symbol"],run_id=run_id,at=now)
+    cur.execute(
+        "SELECT ghost_id,agent_id,symbol,forward_return,settled_at "
+        "FROM aegis.ghost_trades WHERE settled_at IS NOT NULL ORDER BY settled_at DESC LIMIT 250"
+    )
+    for ghost in cur.fetchall():
+        move = _num(ghost["forward_return"])
+        emit_event(cur,key=f"ghost-settled:{ghost['ghost_id']}",
+            kind="GHOST_SETTLED",scope="GHOST",
+            title=f"{ghost['symbol']} ghost observation settled",
+            description=f"12-hour shadow return {move*100:+.2f}%; not an executed paper trade",
+            agent=ghost["agent_id"],symbol=ghost["symbol"],
+            severity="info",run_id=run_id,at=now,
+            payload={"return_12h":move,"settled_market_time":ghost["settled_at"].isoformat()})
+
     if circuit != "OPEN":
         emit_event(cur,key=f"risk:{run_id}:{circuit}",kind="RISK_HALT",scope="RISK",
                    title="Portfolio risk circuit activated",description=circuit,
@@ -225,6 +239,11 @@ def get_stage3_state() -> dict:
         cur.execute("SELECT agent_id,created_at,previous_role,next_role,reason "
                     "FROM aegis.evolution_events ORDER BY created_at DESC LIMIT 20")
         changes=list(cur.fetchall())
+        cur.execute(
+            "SELECT symbol,source,source_event_ts,ingested_at,attention_score "
+            "FROM aegis.intelligence_snapshots ORDER BY ingested_at DESC LIMIT 18"
+        )
+        intel_snapshots=list(cur.fetchall())
 
     workers=[]
     for a in agents:
@@ -249,7 +268,7 @@ def get_stage3_state() -> dict:
                  "today":sum(w["today"] for w in workers)},
         "workers":workers,"positions":positions,"events":events,
         "equity_curve":curve,"runs":runs,"ghosts":ghosts,
-        "evolution_events":changes,
+        "evolution_events":changes,"intel_snapshots":intel_snapshots,
         "last_run":last,
         "engine_frequency":"HOURLY_AT_05_UTC",
         "live_money":False,
