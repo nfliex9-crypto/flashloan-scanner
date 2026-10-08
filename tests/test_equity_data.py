@@ -1,4 +1,5 @@
 from datetime import datetime,timezone,timedelta
+import pytest
 from aegis.equity_data import parse_snapshot,get_equity_quotes
 
 def test_missing_credentials_never_invents_stock_prices(monkeypatch):
@@ -18,7 +19,7 @@ def test_iex_recent_print_is_not_consolidated_sip():
     assert result["price"]==502.5
     assert result["feed"]=="IEX_BASIC"
     assert result["market_coverage"]=="IEX only, not consolidated SIP"
-    assert result["change_from_prev_close"]==.005
+    assert result["change_from_prev_close"]==pytest.approx(.005)
 
 def test_old_quote_is_stale_no_matter_if_price_is_positive():
     now=datetime(2026,10,8,13,tzinfo=timezone.utc)
