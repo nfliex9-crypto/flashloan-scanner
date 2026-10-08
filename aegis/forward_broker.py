@@ -216,6 +216,7 @@ def run_forward_tick(scheduled_at: datetime | None = None, config: RiskConfig | 
     gold_live = None
     gold_research_agents = []
     gold_status = "UNAVAILABLE"
+    gold_reason = None
     try:
         from .gold_lab import fetch_gold_research, gold_agents
         gold_closed, gold_live = fetch_gold_research(scheduled_at)
@@ -223,6 +224,7 @@ def run_forward_tick(scheduled_at: datetime | None = None, config: RiskConfig | 
         gold_status = "CLOSED_BAR_READY"
     except (ValueError, KeyError, TypeError, OSError) as exc:
         gold_status = "STALE_OR_FEED_ERROR"
+        gold_reason = str(exc)[:120]
 
 
     summary = {
@@ -678,6 +680,8 @@ def run_forward_tick(scheduled_at: datetime | None = None, config: RiskConfig | 
                     slippage_bps_per_side=GOLD_SLIPPAGE_BPS_PER_SIDE,
                 )
             summary["gold_research_status"] = gold_status
+            summary["gold_feed_reason"] = gold_reason
+            summary["gold_closed_bars"] = len(gold_closed) if gold_closed else 0
             summary["gold_agents_evaluated"] = len(gold_research_agents)
             summary["gold_live_execution"] = False
             # Independent costed shadow broker. All virtual fills and Stage 3
