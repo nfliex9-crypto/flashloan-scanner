@@ -240,6 +240,18 @@ def get_stage3_state() -> dict:
         cur.execute("SELECT count(*) AS total,count(*) FILTER(WHERE settled_at IS NULL) AS pending "
                     "FROM aegis.ghost_trades")
         ghosts=cur.fetchone()
+        cur.execute("SELECT t.trade_id,t.agent_id,t.symbol,t.entry_ts,t.exit_ts,t.entry_price,t.exit_price,"
+                    "t.qty,t.gross_pnl,t.fees,t.slippage_cost,t.net_pnl,t.r_multiple,t.exit_reason,t.evidence,"
+                    "o.stop_price,o.target_price,o.metadata AS order_metadata "
+                    "FROM aegis.paper_trades t "
+                    "LEFT JOIN aegis.paper_orders o ON o.agent_id=t.agent_id AND "
+                    "o.symbol=t.symbol AND o.filled_at=t.entry_ts "
+                    "ORDER BY t.exit_ts DESC LIMIT 60")
+        recent_trades=list(cur.fetchall())
+        cur.execute("SELECT ghost_id,agent_id,symbol,signal_ts,signal_price,reason,"
+                    "settlement_due_at,settled_at,forward_return "
+                    "FROM aegis.ghost_trades ORDER BY signal_ts DESC LIMIT 50")
+        recent_ghosts=list(cur.fetchall())
         cur.execute("SELECT agent_id,created_at,previous_role,next_role,reason "
                     "FROM aegis.evolution_events ORDER BY created_at DESC LIMIT 20")
         changes=list(cur.fetchall())
@@ -273,6 +285,7 @@ def get_stage3_state() -> dict:
         "workers":workers,"positions":positions,"events":events,
         "equity_curve":curve,"runs":runs,"ghosts":ghosts,
         "evolution_events":changes,"intel_snapshots":intel_snapshots,
+        "recent_trades":recent_trades,"recent_ghosts":recent_ghosts,
         "last_run":last,
         "engine_frequency":"HOURLY_AT_05_UTC",
         "live_money":False,
