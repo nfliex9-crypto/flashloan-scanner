@@ -32,10 +32,15 @@ def priority_market_board():
             datetime.fromtimestamp(row.ts,tz=timezone.utc),"Kraken XBTUSD 1h (open bar snapshot)","SPOT_CRYPTO",prev.close))
     except Exception as e:
         results["markets"].append({"symbol":"BTC/USD","connected":False,"error":str(e)[:130],"execution_enabled":False})
+    from .oanda_gold import fetch_practice_gold_price
+    oanda=fetch_practice_gold_price()
+    if oanda.get("connected"):
+        results["markets"].append(oanda)
+        return results
     key=os.getenv("TWELVEDATA_API_KEY")
     if not key:
-        results["markets"].append({"symbol":"XAU/USD","connected":False,"source":"Twelve Data","type":"SPOT_GOLD",
-            "required_env":"TWELVEDATA_API_KEY","status":"WAITING_FOR_GOLD_FEED","execution_enabled":False})
+        results["markets"].append(oanda if oanda.get("status")!="WAITING_FOR_OANDA_PRACTICE_CREDENTIALS" else {
+            **oanda,"preferred_source":"OANDA","note":"Use existing OANDA Practice account; Twelve Data is optional fallback"})
     else:
         try:
             query=urllib.parse.urlencode({"symbol":"XAU/USD","interval":"1h","outputsize":"3","timezone":"UTC","apikey":key})
