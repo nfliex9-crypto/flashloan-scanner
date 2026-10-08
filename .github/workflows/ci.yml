@@ -13,12 +13,14 @@ jobs:
         with:
           python-version: "3.12"
       - name: Install dependencies
-        run: python -m pip install -r requirements.txt -r requirements-aegis.txt
+        run: python -m pip install -r requirements.txt -r requirements-aegis.txt -r requirements-stream.txt
       - name: Compile Python
         run: python -m compileall -q scanner.py aegis api tests
       - name: Import scanner
         run: python -c "import scanner; print('scanner import OK')"
       - name: Check browser JavaScript syntax
         run: node --check city.js
+      - name: Verify standalone streaming worker imports
+        run: python -c "from websockets.asyncio.client import connect; from aegis.stream_worker import KrakenMicroWorker; print('micro worker runtime OK')"
       - name: Run AEGIS tests
         run: PYTHONPATH=. pytest -q
