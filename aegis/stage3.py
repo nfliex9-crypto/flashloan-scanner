@@ -338,6 +338,34 @@ def get_stage3_state() -> dict:
         from .experiments import read_controls
         experiment_controls = read_controls(cur)
 
+        # Independent always-on worker. Empty rows mean NOT DEPLOYED, never
+        # spoof a connected WebSocket or mix micro trades with forward paper.
+        cur.execute(
+            "SELECT stream_name,state,last_message_at,last_closed_bar,updated_at "
+            "FROM aegis.stream_status ORDER BY updated_at DESC LIMIT 4")
+        micro_sources=list(cur.fetchall())
+        cur.execute(
+            "SELECT agent_id,symbol,interval_minutes,strategy,cash,"
+            "peak_equity,max_drawdown,halted,updated_at "
+            "FROM aegis.stream_accounts ORDER BY symbol,interval_minutes,strategy")
+        micro_agents=list(cur.fetchall())
+        cur.execute(
+            "SELECT agent_id,position_id,symbol,interval_minutes,opened_at,"
+            "entry_price,qty,stop_price,target_price,last_mark "
+            "FROM aegis.stream_positions ORDER BY opened_at DESC LIMIT 20")
+        micro_positions=list(cur.fetchall())
+        cur.execute(
+            "SELECT agent_id,symbol,interval_minutes,opened_at,closed_at,"
+            "entry_price,exit_price,qty,entry_fee,exit_fee,slippage_cost,net_pnl,reason "
+            "FROM aegis.stream_trades ORDER BY closed_at DESC LIMIT 45")
+        micro_trades=list(cur.fetchall())
+        cur.execute(
+            "SELECT symbol,interval_minutes,max(bar_start) AS last_closed_bar,"
+            "count(*) AS collected_bars FROM aegis.stream_candles "
+            "WHERE bar_start>=now()-interval '24 hours' "
+            "GROUP BY symbol,interval_minutes ORDER BY symbol,interval_minutes")
+        micro_bar_stats=list(cur.fetchall())
+
     trade_feed=[]
     for p in shadow_open_feed:
         trade_feed.append({
@@ -383,6 +411,25 @@ def get_stage3_state() -> dict:
     trade_feed.sort(key=lambda row:row["timestamp"],reverse=True)
     trade_feed=trade_feed[:180]
     rank_by_id={r["agent_id"]:r for r in strategy_ranks}
+    stream_active=False
+    if micro_sources:
+        latest_heartbeat=micro_sources[0]
+        observed=latest_heartbeat["updated_at"]
+        age=(datetime.now(timezone.utc)-observed).total_seconds() if observed else float("inf")
+        stream_active=latest_heartbeat["state"]=="CONNECTED" and 0<=age<180
+    micro_mode="CONNECTED_PUBLIC_MARKET_PAPER_ONLY" if stream_active else (
+        "WORKER_STALE_OR_STOPPED" if micro_sources else "WORKER_NOT_DEPLOYED")
+    micro_engine={
+        "mode":micro_mode,"is_connected":stream_active,
+        "source":"Kraken public Spot WebSocket v2 (BTC/ETH only)",
+        "live_execution_enabled":False,
+        "sources":micro_sources,
+        "agents":micro_agents,
+        "open_positions":micro_positions,
+        "recent_closed_trades":micro_trades,
+        "bar_stats":micro_bar_stats,
+        "risk_model":"0.25% budgeted stop risk · 20% notional cap · 5% circuit",
+    }
 
     workers=[]
     for a in agents:
@@ -423,6 +470,7 @@ def get_stage3_state() -> dict:
         "recent_trades":recent_trades,"recent_ghosts":recent_ghosts,
         "trade_feed":trade_feed,"strategy_rankings":strategy_ranks,
         "experiment_controls":experiment_controls,
+        "micro_engine":micro_engine,
         "experiment_eligible_shadow_agents":sum(1 for a in agents if a["strategy"] in ("EMA Cross","RSI Pullback","Channel Breakout")),
         "shadow_open_positions":sum(bool(r.get("position_id")) for r in shadow_account_rows),
         "shadow_costed_trades":sum(int(v.get("trades",0)) for v in shadow_trade_stats.values()),
