@@ -11,7 +11,6 @@ import hashlib
 import json
 import math
 from datetime import datetime, timedelta, timezone
-from dataclasses import replace
 
 from .live_lab import strategy_positions
 from .paper_engine import RiskConfig, _atr_at, _fee, _fill_price, _position_size
@@ -216,13 +215,17 @@ def run_shadow_tick(
         aid=agent["agent_id"]
         p=positions_by_agent.get(aid)
         u=0.0
-        if p:
+        if p and p["symbol"] in live_by_symbol:
             mark=live_by_symbol[p["symbol"]].close
             qty=float(p["qty"])
             u=(mark-float(p["entry_price"]))*qty-_fee(mark*qty,config_by_symbol.get(p["symbol"],config).fee_bps_per_side)
             cur.execute(
                 "UPDATE aegis.shadow_positions SET last_mark=%s,unrealized_pnl=%s,updated_at=%s "
                 "WHERE agent_id=%s",(mark,u,now,aid))
+        elif p:
+            # Keep the last persisted valuation when a source goes stale.
+            # Never fabricate a current price or crash the crypto engine.
+            u=float(p["unrealized_pnl"] or 0)
         cur.execute("SELECT cash,peak_equity,max_drawdown FROM aegis.shadow_accounts WHERE agent_id=%s",(aid,))
         a=cur.fetchone()
         equity=float(a["cash"])+u
