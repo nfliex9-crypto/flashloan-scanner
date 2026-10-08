@@ -365,6 +365,17 @@ def get_stage3_state() -> dict:
             "WHERE bar_start>=now()-interval '24 hours' "
             "GROUP BY symbol,interval_minutes ORDER BY symbol,interval_minutes")
         micro_bar_stats=list(cur.fetchall())
+        cur.execute(
+            "SELECT t.symbol,t.interval_minutes,count(*) AS trades,"
+            "COALESCE(sum(t.net_pnl),0) AS net_pnl,"
+            "COALESCE(sum(t.net_pnl) FILTER(WHERE t.net_pnl>0),0) AS gross_gains,"
+            "COALESCE(sum(t.net_pnl) FILTER(WHERE t.net_pnl<0),0) AS gross_losses,"
+            "min(t.opened_at) AS first_trade,max(t.closed_at) AS last_trade,"
+            "COALESCE(max(a.max_drawdown),0) AS max_drawdown "
+            "FROM aegis.stream_trades t "
+            "LEFT JOIN aegis.stream_accounts a ON a.agent_id=t.agent_id "
+            "GROUP BY t.symbol,t.interval_minutes")
+        micro_directional_evidence=list(cur.fetchall())
 
         # These are BROKER-CONFIRMED DEMO records, never computed shadow
         # paper fills. No login, API key, password or account number is stored.
@@ -455,6 +466,8 @@ def get_stage3_state() -> dict:
         "execution_authorized":False,
         "history_source":"Broker demo / exchange demo. Neon contains only compact reconciled execution IDs.",
     }
+    from .horizon_selector import rank_forward_horizons
+    micro_horizon_router=rank_forward_horizons(micro_directional_evidence,side="LONG")
     micro_engine={
         "mode":micro_mode,"is_connected":stream_active,
         "source":"Kraken public Spot WebSocket v2 (BTC/ETH only)",
@@ -508,6 +521,7 @@ def get_stage3_state() -> dict:
         "trade_feed":trade_feed,"strategy_rankings":strategy_ranks,
         "experiment_controls":experiment_controls,
         "micro_engine":micro_engine,
+        "research_horizon_router":micro_horizon_router,
         "demo_brokers":demo_broker_state,
         "experiment_eligible_shadow_agents":sum(1 for a in agents if a["strategy"] in ("EMA Cross","RSI Pullback","Channel Breakout")),
         "shadow_open_positions":sum(bool(r.get("position_id")) for r in shadow_account_rows),
