@@ -7,7 +7,7 @@ const sign = (v) => Number(v||0)>=0?"positive":"negative";
 const safe = (v) => String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const utc = (v) => v ? new Date(v).toLocaleString("en-GB",{month:"short",day:"2-digit",hour:"2-digit",minute:"2-digit",timeZone:"UTC"})+" UTC" : "—";
 const dateTime = (v) => v ? new Date(v).toLocaleString("en-GB",{timeZone:"UTC"})+" UTC" : "—";
-let cityState=null,marketState=null,intelState=null;
+let cityState=null,marketState=null,intelState=null,lastLedgerFeed=[],lastRankings=[];
 let lastEventKeys=null, currentView="city", currentSelection=null, livePolling=false;
 const towers=[
   {x:245,y:385},{x:405,y:338},{x:236,y:489},{x:396,y:484},
@@ -98,6 +98,59 @@ function makeScene(workers){
   syncCamera();
 }
 
+function paintIndividualTradeFeed(feed,workers){
+  lastLedgerFeed=Array.isArray(feed)?feed:[];
+  const select=$("agentTradeFilter");
+  const selected=select.value;
+  select.innerHTML='<option value="all">All agents</option>'+workers
+    .map(w=>'<option value="'+safe(w.agent_id)+'">'+symbolWorker(w)+'</option>').join("");
+  if([...select.options].some(o=>o.value===selected))select.value=selected;
+  applyTradeFilters();
+}
+function applyTradeFilters(){
+  const agent=$("agentTradeFilter").value;
+  const book=$("tradeMarketFilter").value;
+  const action=$("tradeActionFilter").value;
+  const subset=lastLedgerFeed.filter(t=>(agent==="all"||t.agent_id===agent)
+    &&(book==="all"||t.market===book)&&(action==="all"||t.action===action));
+  $("agentTapeStats").textContent=subset.length+" ledger events · "+lastLedgerFeed.length+" returned";
+  $("agentTradeFeed").innerHTML=subset.length?subset.slice(0,65).map(t=>{
+    const isClose=t.action==="CLOSE", openStatus=t.state==="OPEN";
+    const net=isClose&&t.realized_net_pnl!=null?currency(t.realized_net_pnl):
+      openStatus&&t.unrealized_pnl!=null?"UNREALIZED "+currency(t.unrealized_pnl):"—";
+    const cls=isClose?sign(t.realized_net_pnl):"";
+    const fees=isClose?" · Fees "+currency(t.fee_total)+" · Slip "+currency(t.slippage_cost):"";
+    const label=isClose?"CLOSED":"OPENED";
+    return '<button class="agent-trade-item" data-ledgeragent="'+safe(t.agent_id)+'">'+
+      '<span class="trade-state '+(isClose?"closed":"opened")+'">'+label+'</span>'+
+      '<span class="trade-ledger-main"><strong>'+safe(t.agent_id)+'</strong>'+
+      '<small>'+safe(t.symbol)+' · '+safe(t.market)+' · '+utc(t.timestamp)+'</small>'+
+      '<small>Qty '+fixed(t.qty,6)+' · Entry '+currency(t.entry_price)+
+      (isClose?' · Exit '+currency(t.exit_price):"")+
+      (isClose?' · '+safe(t.reason||"CLOSED"):"")+fees+'</small></span>'+
+      '<strong class="trade-ledger-pnl '+cls+'">'+net+'</strong></button>';
+  }).join("")
+  :'<div class="await">No persisted OPEN/CLOSE events match these filters. No trades are invented.</div>';
+  document.querySelectorAll("[data-ledgeragent]").forEach(el=>
+    el.addEventListener("click",()=>showAgent(el.dataset.ledgeragent)));
+}
+function paintStrategyFilterBoard(rankings){
+  lastRankings=Array.isArray(rankings)?rankings:[];
+  $("strategyFilterBoard").innerHTML=lastRankings.length?lastRankings.map((r,i)=>{
+    const cls=r.state==="QUARANTINED"?"quarantine":r.state==="LEADING"?"leader":"observing";
+    return '<button class="strategy-rank-row" data-rankagent="'+safe(r.agent_id)+'">'+
+      '<strong class="strategy-rank-number">#'+(i+1)+'</strong>'+
+      '<span class="strategy-rank-name"><strong>'+safe(r.asset)+' / '+safe(r.strategy)+'</strong>'+
+      '<small>'+safe(r.reason)+'</small></span>'+
+      '<span class="strategy-rank-metrics"><span>Costed '+Number(r.trades||0)+
+      '</span><span>PF '+fixed(r.profit_factor,2)+'</span>'+
+      '<span class="'+sign(r.net_pnl)+'">'+currency(r.net_pnl)+'</span></span>'+
+      '<span class="strategy-rank-state '+cls+'">'+safe(r.state)+'</span></button>';
+  }).join(""):'<div class="await">No rankings yet. Waiting for persisted forward costed fills.</div>';
+  document.querySelectorAll("[data-rankagent]").forEach(el=>
+    el.addEventListener("click",()=>showAgent(el.dataset.rankagent)));
+}
+
 function paintCity(d){
   if(!isReady(d))return;
   const v=d.vault||{},workers=d.workers||[];
@@ -130,6 +183,8 @@ function paintCity(d){
   paintEquity(d.equity_curve||[]);
   paintPayroll(workers,d.positions||[],v);
   paintTradeTape(d.recent_trades||[],d.recent_ghosts||[]);
+  paintIndividualTradeFeed(d.trade_feed||[],workers);
+  paintStrategyFilterBoard(d.strategy_rankings||[]);
   paintEvolution(workers,d.evolution_events||[],d.promotion_rules||{});
   if(currentSelection?.kind==="agent"){
     const worker=workers.find(w=>w.agent_id===currentSelection.id);
@@ -496,6 +551,9 @@ async function pollIntel(){
   catch(err){console.error("Intelligence feed:",err);paintIntelligence(null)}
 }
 function init(){
+  ["agentTradeFilter","tradeMarketFilter","tradeActionFilter"].forEach(id=>{
+    $(id).addEventListener("change",applyTradeFilters);
+  });
   const svg=$("citySvg");
   let touchStart=null;
   svg.addEventListener("pointerdown",e=>{
