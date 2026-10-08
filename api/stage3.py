@@ -3,7 +3,7 @@ import hmac
 import json
 import os
 from http.server import BaseHTTPRequestHandler
-from urllib.parse import urlsplit
+from urllib.parse import urlsplit,parse_qs
 
 from aegis.stage3 import get_stage3_state
 from aegis.experiments import save_controls
@@ -29,16 +29,37 @@ def authorize_control_request(*, expected_token: str, supplied_auth: str, origin
 
 
 class handler(BaseHTTPRequestHandler):
-    def _reply(self,status: int,payload:dict):
+    def _reply(self,status: int,payload:dict,cache:str="no-store"):
         data=json.dumps(payload,default=str).encode("utf-8")
         self.send_response(status)
         self.send_header("Content-Type","application/json; charset=utf-8")
-        self.send_header("Cache-Control","no-store")
+        self.send_header("Cache-Control",cache)
         self.send_header("X-Content-Type-Options","nosniff")
         self.end_headers()
         self.wfile.write(data)
 
     def do_GET(self):
+        # Reuse the existing function slot. Read-only, bounded historical
+        # testing cannot touch a broker or persist simulated fills in Neon.
+        query=parse_qs(urlsplit(self.path).query,keep_blank_values=True)
+        if "backtest" in query:
+            if query.pop("backtest")!=["1"]:
+                self._reply(400,{"ok":False,"error":"invalid_backtest_mode"})
+                return
+            if any(len(v)!=1 for v in query.values()):
+                self._reply(400,{"ok":False,"error":"duplicate_backtest_parameter"})
+                return
+            try:
+                from aegis.backtest_lab import run_backtest
+                report=run_backtest({key:values[0] for key,values in query.items()})
+                self._reply(200,report,cache="public, s-maxage=300, stale-while-revalidate=120")
+            except ValueError as exc:
+                # Only finite, authored validation messages. Never return
+                # upstream network errors or token-bearing URLs.
+                self._reply(422,{"ok":False,"error":str(exc)[:150]})
+            except Exception:
+                self._reply(503,{"ok":False,"error":"backtest_data_temporarily_unavailable"})
+            return
         try:
             self._reply(200,get_stage3_state())
         except Exception:
