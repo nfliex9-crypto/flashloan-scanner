@@ -327,14 +327,15 @@ function paintPriorityMarkets(data){
     meta.textContent=stale+" · "+market.source+" · "+utc(market.observed_at);
   }
 }
-async function pollPriorityMarkets(){
-  try{paintPriorityMarkets({markets:(await fetchJson("/api/equities")).priority_markets||[]})}
-  catch(err){console.error("Priority market data:",err);paintPriorityMarkets(null)}
-}
-
 async function pollEquityQuotes(){
-  try{paintEquityQuotes(await fetchJson("/api/equities"))}
-  catch(err){console.error("Stock data:",err);paintEquityQuotes(null)}
+  try{
+    const marketData=await fetchJson("/api/equities");
+    paintPriorityMarkets({markets:marketData.priority_markets||[]});
+    paintEquityQuotes(marketData);
+  }catch(err){
+    console.error("Market data unavailable:",err);
+    paintPriorityMarkets(null);
+  }
 }
 
 function paintIntelligence(data){
@@ -523,13 +524,12 @@ function init(){
   $("drawerClose").addEventListener("click",closeDrawer);
   $("drawerBackdrop").addEventListener("click",closeDrawer);
   document.addEventListener("keydown",e=>{if(e.key==="Escape")closeDrawer()});
-  $("refreshBtn").addEventListener("click",async()=>{await Promise.all([pollCity(),pollMarket(),pollIntel(),pollEquityQuotes(),pollPriorityMarkets()])});
+  $("refreshBtn").addEventListener("click",async()=>{await Promise.all([pollCity(),pollMarket(),pollIntel(),pollEquityQuotes()])});
   nowClock();setInterval(nowClock,1000);
-  pollCity();pollMarket();pollIntel();pollEquityQuotes();pollPriorityMarkets();
+  pollCity();pollMarket();pollIntel();pollEquityQuotes();
   setInterval(pollCity,15000);
   setInterval(pollMarket,60000);
   setInterval(pollIntel,900000);
   setInterval(pollEquityQuotes,60000);
-  setInterval(pollPriorityMarkets,60000);
 }
 init();
