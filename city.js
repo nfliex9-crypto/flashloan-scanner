@@ -311,6 +311,26 @@ function paintEquityQuotes(data){
     </div>
     ${!a.fresh?'<div class="intel-alert">Last IEX print is stale or the market is closed. This is not a current price.</div>':""}</div>`).join("")||'<div class="await">No equity prints returned by the provider.</div>';
 }
+function paintPriorityMarkets(data){
+  for(const [symbol,priceId,metaId] of [["BTC/USD","btcPriorityPrice","btcPriorityMeta"],["XAU/USD","goldPriorityPrice","goldPriorityMeta"]]){
+    const market=(data?.markets||[]).find(m=>m.symbol===symbol);
+    const price=$(priceId),meta=$(metaId);
+    if(!market || typeof market.price!=="number"){
+      price.textContent=symbol==="XAU/USD"?"FEED NOT CONNECTED":"DATA UNAVAILABLE";
+      meta.textContent=market?.status==="WAITING_FOR_GOLD_FEED"?"XAU/USD requires TWELVEDATA_API_KEY · source not connected":
+        market?.error?"Provider unavailable · no synthetic price":"Waiting for verified market feed";
+      continue;
+    }
+    price.textContent=currency(market.price);
+    const stale=market.fresh?"HOURLY SNAPSHOT":"STALE / CHECK MARKET HOURS";
+    meta.textContent=stale+" · "+market.source+" · "+utc(market.observed_at);
+  }
+}
+async function pollPriorityMarkets(){
+  try{paintPriorityMarkets(await fetchJson("/api/priority_markets"))}
+  catch(err){console.error("Priority market data:",err);paintPriorityMarkets(null)}
+}
+
 async function pollEquityQuotes(){
   try{paintEquityQuotes(await fetchJson("/api/equities"))}
   catch(err){console.error("Stock data:",err);paintEquityQuotes(null)}
@@ -502,12 +522,13 @@ function init(){
   $("drawerClose").addEventListener("click",closeDrawer);
   $("drawerBackdrop").addEventListener("click",closeDrawer);
   document.addEventListener("keydown",e=>{if(e.key==="Escape")closeDrawer()});
-  $("refreshBtn").addEventListener("click",async()=>{await Promise.all([pollCity(),pollMarket(),pollIntel(),pollEquityQuotes()])});
+  $("refreshBtn").addEventListener("click",async()=>{await Promise.all([pollCity(),pollMarket(),pollIntel(),pollEquityQuotes(),pollPriorityMarkets()])});
   nowClock();setInterval(nowClock,1000);
-  pollCity();pollMarket();pollIntel();pollEquityQuotes();
+  pollCity();pollMarket();pollIntel();pollEquityQuotes();pollPriorityMarkets();
   setInterval(pollCity,15000);
   setInterval(pollMarket,60000);
   setInterval(pollIntel,900000);
   setInterval(pollEquityQuotes,60000);
+  setInterval(pollPriorityMarkets,60000);
 }
 init();
