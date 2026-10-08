@@ -133,8 +133,15 @@ def simulate_costed_backtest(candles:list[Candle], *,
     seconds=INTERVALS[interval]
     if len(candles)<MIN_BARS:
         raise ValueError("Not enough closed candles")
-    if any(candles[i].ts>=candles[i+1].ts for i in range(len(candles)-1)):
-        raise ValueError("Candle timestamps not strictly increasing")
+    if any(candles[i].ts + seconds != candles[i+1].ts
+           for i in range(len(candles)-1)):
+        raise ValueError("Backtest history has a missing or nonconsecutive candle; no fills simulated")
+    if any(
+        not all(math.isfinite(x) and x > 0 for x in (b.open,b.high,b.low,b.close))
+        or b.low > min(b.open,b.close) or b.high < max(b.open,b.close)
+        for b in candles
+    ):
+        raise ValueError("Invalid historical OHLC range; results rejected")
     cfg=RiskConfig(starting_equity=starting_equity,
         fee_bps_per_side=(3.0 if asset=="XAU" else 3.0)*cost_multiplier,
         slippage_bps_per_side=(5.0 if asset=="XAU" else 2.0)*cost_multiplier)
