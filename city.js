@@ -166,7 +166,7 @@ function renderHorizonRouter(data){
   $("horizonRouterBoard").innerHTML=options.length?options.map(o=>
     '<div class="strategy-rank-row">'+
       '<strong class="strategy-rank-number">'+safe(o.interval)+'</strong>'+
-      '<span class="strategy-rank-name"><strong>'+safe(o.asset)+' / '+safe(o.horizon)+'</strong>'+
+      '<span class="strategy-rank-name"><strong>'+safe(o.asset)+' / '+safe(o.direction)+' / '+safe(o.horizon)+'</strong>'+
       '<small>'+Number(o.trades)+' closed costed trades · '+fixed(o.observed_days,1)+
       ' observation days'+(o.qualified?" · Qualified":" · Pending: "+safe((o.failed_checks||[]).join(", ")))+'</small></span>'+
       '<span class="strategy-rank-metrics">PF '+fixed(o.profit_factor,2)+
@@ -229,7 +229,7 @@ function renderMicroEngine(data){
     '<div class="agent-trade-item bt-trade-item">'+
     '<span class="trade-state closed">'+safe(t.direction||"LONG")+'</span>'+
     '<span class="trade-ledger-main"><strong>'+safe(t.agent_id)+'</strong>'+
-    '<small>'+safe(t.symbol)+' · '+Number(t.interval_minutes)+'m · '+
+    '<small>'+safe(t.symbol)+' · '+safe(t.direction||"LONG")+' · '+Number(t.interval_minutes)+'m · '+
     utc(t.opened_at)+' → '+utc(t.closed_at)+'</small>'+
     '<small>Entry '+currency(t.entry_price)+' · Exit '+currency(t.exit_price)+
     ' · Qty '+fixed(t.qty,6)+' · Fees '+currency(Number(t.entry_fee)+Number(t.exit_fee))+
@@ -370,7 +370,8 @@ function paintBacktestResult(d){
     '<span class="trade-ledger-main"><strong>OPEN '+utc(t.entry_ts)+' → EXIT '+utc(t.exit_ts)+'</strong>'+
     '<small>Entry '+currency(t.entry_price)+' · Exit '+currency(t.exit_price)+
     ' · Qty '+fixed(t.qty,5)+' · Fee '+currency(t.fees)+
-    ' · Slip '+currency(t.slippage_cost)+'</small></span>'+
+    ' · Slip '+currency(t.slippage_cost)+
+    ' · Finance '+currency(t.financing_cost||0)+'</small></span>'+
     '<strong class="trade-ledger-pnl '+sign(t.net_pnl)+'">'+currency(t.net_pnl)+'</strong></div>'
   ).join(""):'<div class="await">No completed trades on this history. Do not infer profitability from an empty sample.</div>';
 }
