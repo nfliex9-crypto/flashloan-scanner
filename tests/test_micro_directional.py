@@ -78,3 +78,60 @@ def test_forward_research_selector_separates_long_short_evidence():
     assert r["selected_by_direction"]["SHORT"]["interval"]=="5min"
     assert r["selected_by_direction"]["LONG"] is None
     assert not r["demo_order_execution_enabled"]
+
+
+def test_stream_position_insert_has_real_direction_column_and_matching_sql(monkeypatch):
+    """Exercise the database INSERT branch: CI syntax tests alone missed a
+    prior placeholder/column mismatch which would roll back a live paper bar."""
+    from aegis import stream_paper as m
+    class Cursor:
+        def __init__(self):
+            self.calls=[]
+            self.last_sql=""
+            self.last_params=None
+        def __enter__(self):return self
+        def __exit__(self,*args):return False
+        def execute(self,sql,params=None):
+            self.last_sql=sql
+            self.last_params=params
+            self.calls.append((sql,params))
+            if params is not None:
+                assert sql.count("%s")==len(params),sql
+        def fetchone(self):
+            sql=self.last_sql
+            params=self.last_params
+            if "INSERT INTO aegis.stream_bar_ledger" in sql:return {"bar_start":params[2]}
+            if "SELECT * FROM aegis.stream_accounts" in sql:
+                aid=params[0]
+                return {"agent_id":aid,"strategy":"Channel Breakout" if "channel-breakout" in aid else "EMA Cross",
+                        "direction":"SHORT" if aid.endswith("-short") else "LONG",
+                        "cash":100000,"peak_equity":100000,"max_drawdown":0,"halted":False}
+            if "SELECT * FROM aegis.stream_positions" in sql:return None
+            if "count(*) AS trades" in sql:return {"trades":0,"net":0,"gains":0,"losses":0}
+            if "INSERT INTO aegis.stream_positions" in sql:return {"position_id":params[1]}
+            return None
+    class Conn:
+        def __init__(self):self.cur=Cursor()
+        def transaction(self):return self
+        def cursor(self):return self.cur
+        def __enter__(self):return self
+        def __exit__(self,*args):return False
+    def enter(_account,_position,_history,event,*,config=m.RISK):
+        direction=_account["direction"]
+        price=event.next_open
+        return {"action":"ENTER","direction":direction,"entry":price,
+                "stop":price*(.98 if direction=="LONG" else 1.02),
+                "target":price*(1.04 if direction=="LONG" else .96),
+                "qty":1.0,"entry_fee":.03,"entry_slippage":0.0,"at":datetime.fromtimestamp(event.next_start,timezone.utc)}
+    monkeypatch.setattr(m,"fill_decision",enter)
+    bars=falling_history(n=145)
+    event=CompletedBar("BTC",1,bars[-1],100.0,bars[-1].ts+60)
+    conn=Conn()
+    out=m.persist_closed_stream_bar(conn,event,bars)
+    assert out["processed"] and out["entries"]==4
+    inserts=[(q,params) for q,params in conn.cur.calls if "INSERT INTO aegis.stream_positions" in q]
+    assert len(inserts)==4
+    for query,params in inserts:
+        assert "last_mark,direction)" in query
+        assert len(params)==13
+        assert params[-1] in ("LONG","SHORT")
