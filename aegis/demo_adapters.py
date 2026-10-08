@@ -167,7 +167,7 @@ class BinanceSpotDemoReader:
             "qty":float(o["origQty"]),"filled":float(o["executedQty"]),
             "price":float(o["price"]),"status":str(o["status"])
         } for o in orders]
-        account_id=_account_ref("binance-demo",str(info.get("accountType"))+":BTCUSDT")
+        account_id=_account_ref("binance-demo",self._key+":"+str(info.get("uid","SPOT"))+":BTCUSDT")
         return {
             "provider":"BINANCE_SPOT_DEMO","account_ref":account_id,
             "market":symbol,"account_type":"DEMO",
