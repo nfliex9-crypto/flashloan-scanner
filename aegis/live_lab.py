@@ -129,6 +129,49 @@ def strategy_positions(
                     current = 0
             pos[i] = current
 
+    elif strategy == "EMA Cross":
+        fast_len = 10 + variant * 2
+        slow_len = 36 + variant * 4
+        fast = slow = None
+        alpha_f = 2.0/(fast_len+1)
+        alpha_s = 2.0/(slow_len+1)
+        for i,price in enumerate(closes):
+            fast = price if fast is None else alpha_f*price+(1-alpha_f)*fast
+            slow = price if slow is None else alpha_s*price+(1-alpha_s)*slow
+            # Avoid ranking an initialization artifact as a real signal.
+            if i>=slow_len*2:
+                pos[i]=int(fast>slow and price>slow)
+
+    elif strategy == "RSI Pullback":
+        lookback=14+variant*2
+        current=0
+        for i in range(lookback+1,n):
+            gains=0.0
+            losses=0.0
+            for j in range(i-lookback+1,i+1):
+                diff=closes[j]-closes[j-1]
+                gains+=max(0.0,diff)
+                losses+=max(0.0,-diff)
+            rs=gains/losses if losses>0 else (100.0 if gains>0 else 1.0)
+            rsi=100.0-100.0/(1.0+rs)
+            baseline=sma(closes,i,60)
+            if not current and rsi<32 and baseline is not None and closes[i]>=baseline*.96:
+                current=1
+            elif current and (rsi>56 or (baseline is not None and closes[i]<baseline*.94)):
+                current=0
+            pos[i]=current
+
+    elif strategy == "Channel Breakout":
+        length=40+variant*5
+        exit_length=14+variant*2
+        current=0
+        for i in range(length,n):
+            if not current and closes[i]>max(closes[i-length:i]):
+                current=1
+            elif current and closes[i]<min(closes[i-exit_length:i]):
+                current=0
+            pos[i]=current
+
     else:
         raise ValueError(f"Unknown strategy: {strategy}")
 
