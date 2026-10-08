@@ -39,6 +39,21 @@ def _monitor_slot_id(scheduled_at: datetime) -> str:
     return f"monitor:{int(scheduled_at.timestamp() // 900)}"
 
 
+def _require_fresh_crypto_hourly(symbol: str, candles: list, scheduled_at: datetime) -> None:
+    """Fail closed on stale/missing hourly broker prices before any paper fill.
+
+    Strategy input is the last fully closed bar; fill observation is the current
+    open bar. No missing-hour jump can be treated as an immediate fill.
+    """
+    if len(candles) < 3:
+        raise RuntimeError(f"{symbol} market history unavailable; paper entries blocked")
+    current = int(candles[-1].ts)
+    previous = int(candles[-2].ts)
+    age = scheduled_at.timestamp() - current
+    if current - previous != 3600 or not 0 <= age < 3600:
+        raise RuntimeError(f"{symbol} hourly candles stale or discontinuous; paper entries blocked")
+
+
 def _num(value: Any) -> float:
     if value is None:
         return 0.0
@@ -213,6 +228,8 @@ def run_forward_tick(scheduled_at: datetime | None = None, config: RiskConfig | 
         scheduled_at = scheduled_at.astimezone(timezone.utc)
 
     all_by_symbol = {symbol: fetch_ohlc(pair) for symbol, pair in ASSETS.items()}
+    for symbol, candles in all_by_symbol.items():
+        _require_fresh_crypto_hourly(symbol, candles, scheduled_at)
     closed_by_symbol = {symbol: candles[:-1] for symbol, candles in all_by_symbol.items()}
     live_by_symbol = {symbol: candles[-1] for symbol, candles in all_by_symbol.items()}
     latest_closed = {symbol: candles[-1].ts for symbol, candles in closed_by_symbol.items()}
