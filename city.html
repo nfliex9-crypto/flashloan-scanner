@@ -22,6 +22,7 @@
         <button class="nav-tab" data-view="payroll">PAYROLL</button>
         <button class="nav-tab" data-view="evolution">EVOLUTION</button>
         <button class="nav-tab" data-view="lab">RESEARCH LAB</button>
+        <button class="nav-tab" data-view="backtest">BACKTEST</button>
         <button class="nav-tab" data-view="intel">INTELLIGENCE</button>
       </div>
       <div class="header-right">
@@ -216,6 +217,65 @@
         <div id="labCandidateSummary" class="lab-topline">Waiting for the next verified hourly cycle…</div>
         <div id="labCandidateBoard" class="strategy-filter-board"><div class="await">No new candidates have been registered yet.</div></div>
         <p class="filter-explainer">Experimental variations are tested separately in Shadow. Good backtest results do not count as successful forward learning, and quarantined candidates cannot open new shadow positions.</p>
+      </div>
+    </section>
+
+    <section id="backtestView" class="view dashboard-view">
+      <div class="section-hero">
+        <p class="eyebrow">HISTORICAL SIMULATION // SOURCE-BACKED CANDLES</p>
+        <h1>Backtest. <i>Then verify forward.</i></h1>
+        <p>Test BTC or gold on genuine closed 15-minute or hourly bars, accounting for trading costs, stop loss, slippage and pessimistic same-bar fills. Historical performance does not authorize real orders.</p>
+      </div>
+      <div class="module">
+        <header class="module-head">
+          <div><p class="eyebrow">RUN PARAMETERS · RESEARCH ONLY</p><h2>Backtest control panel</h2></div>
+          <span class="module-tag">NO BROKER ORDER ROUTES</span>
+        </header>
+        <div class="backtest-control-grid">
+          <label>MARKET<select id="btAsset">
+            <option value="BTC">BTC / USD · Kraken</option>
+            <option value="XAU">XAU / USD · Twelve Data</option>
+          </select></label>
+          <label>TIMEFRAME<select id="btInterval">
+            <option value="15min">15 minutes</option>
+            <option value="1h">1 hour</option>
+          </select></label>
+          <label>STRATEGY<select id="btStrategy">
+            <option value="EMA Cross">EMA Cross</option>
+            <option value="RSI Pullback">RSI Pullback</option>
+            <option value="Channel Breakout">Channel Breakout</option>
+            <option value="Trend">Trend</option>
+            <option value="Momentum">Momentum</option>
+            <option value="Mean Reversion">Mean Reversion</option>
+            <option value="Breakout">Breakout</option>
+          </select></label>
+          <label>EXECUTION COSTS<select id="btCosts">
+            <option value="base">Base fees + slippage</option>
+            <option value="stress">2× cost stress test</option>
+          </select></label>
+          <label>HISTORY<select id="btBars">
+            <option value="200">200 closed bars</option>
+            <option value="400" selected>400 closed bars</option>
+            <option value="650">650 closed bars</option>
+          </select></label>
+          <div class="bt-button-container">
+            <button class="full-cta" id="btRun">RUN VERIFIED BACKTEST ↗</button>
+          </div>
+        </div>
+        <p class="filter-explainer">No lookahead: signals form at closed-bar prices, orders are simulated at the next opening price. Stops are pessimistic if the same bar touches both stop and target. Cost parameters are hypothetical, not executable broker quotes.</p>
+        <div id="btStatus" class="lab-result" role="status">Choose your settings and run a historical test. Results are not saved as forward fills.</div>
+      </div>
+      <div id="btResults" class="module" hidden>
+        <header class="module-head"><div><p class="eyebrow">REAL HISTORY · SIMULATED FILLS</p><h2>Results &amp; out-of-sample</h2></div><span class="module-tag" id="btDataSource">Historical reconstruction</span></header>
+        <div id="btHeadline" class="bt-headline"></div>
+        <div id="btComparison" class="bt-comparison"></div>
+        <div class="bt-chart-wrap">
+          <div class="bt-chart-caption"><strong>Simulated equity (USD)</strong><span>Historical only · virtual $100k starting equity</span></div>
+          <svg id="btEquityChart" viewBox="0 0 900 240" role="img" aria-label="Historical simulated account equity chart" preserveAspectRatio="none"></svg>
+        </div>
+        <div id="btWarnings" class="bt-warnings"></div>
+        <div class="module-head"><div><p class="eyebrow">AUDITABLE SIMULATED FILLS</p><h2>Backtest trade log</h2></div><span class="module-tag">NOT FORWARD PAPER TRADES</span></div>
+        <div id="btTrades" class="agent-trade-feed"></div>
       </div>
     </section>
 
