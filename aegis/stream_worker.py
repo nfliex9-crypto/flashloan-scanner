@@ -117,7 +117,8 @@ class KrakenMicroWorker:
                 history.clear()
                 history.append(event.candle)
                 self.stats["skipped_history"]+=1
-                continue
+                # Keep one verified closed candle for existing stop/target
+                # protection; missing 95-bar history disables NEW entries.
             self.stats["closed_bars"]+=1
             age=now.timestamp()-event.next_start
             if not (0<=age<=MAX_ENTRY_OBSERVATION_LAG_S):
@@ -127,7 +128,9 @@ class KrakenMicroWorker:
                 continue
             if not fresh_closed_history(list(history),event.interval_minutes):
                 self.stats["skipped_history"]+=1
-                continue
+                # Do not skip the atomic ledger entirely: existing stops
+                # can still be evaluated on the newly CLOSED valid bar.
+                # fill_decision itself vetoes fresh entries without warmup.
             result=await self._persist(event,list(history))
             if not result["processed"]:
                 self.stats["duplicates"]+=1
