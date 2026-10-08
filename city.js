@@ -291,6 +291,31 @@ function paintEvolution(workers,changes,rules){
     :'<div class="await">No role transitions verified yet. Agents are collecting forward evidence.</div>';
 }
 
+function paintEquityQuotes(data){
+  const box=$("equityLiveGrid");
+  const label=$("equityDataStatus");
+  if(!data?.connected){
+    label.textContent="NOT CONNECTED · IEX FREE DATA";
+    box.innerHTML='<div class="await">Alpaca Paper Only feed is not connected yet. To display genuine SPY / QQQ / NVDA / TSLA quotes, configure ALPACA_API_KEY_ID and ALPACA_API_SECRET_KEY as Vercel server-only secrets. No real-money account needed.</div>';
+    return;
+  }
+  label.textContent="IEX · LIMITED MARKET COVERAGE · PAPER-ONLY";
+  box.innerHTML=(data.stocks||[]).map(a=>`<div class="intel-card">
+    <div class="intel-top"><div><h3>${safe(a.symbol)}</h3><small>${safe(a.status)}</small></div>
+      <div class="intel-score">${a.price==null?"—":currency(a.price)}<small>IEX LAST AVAILABLE TRADE</small></div></div>
+    <div class="intel-details">
+      <div><span>FROM PREV CLOSE</span><strong class="${sign(a.change_from_prev_close)}">${a.change_from_prev_close==null?"—":percent(a.change_from_prev_close)}</strong></div>
+      <div><span>PRINT TIME</span><strong>${utc(a.last_trade_at)}</strong></div>
+      <div><span>MARKET COVERAGE</span><strong>IEX ONLY</strong></div>
+      <div><span>ELIGIBLE FOR ORDERS</span><strong>NO · RESEARCH</strong></div>
+    </div>
+    ${!a.fresh?'<div class="intel-alert">Last IEX print is stale or the market is closed. This is not a current price.</div>':""}</div>`).join("")||'<div class="await">No equity prints returned by the provider.</div>';
+}
+async function pollEquityQuotes(){
+  try{paintEquityQuotes(await fetchJson("/api/equities"))}
+  catch(err){console.error("Stock data:",err);paintEquityQuotes(null)}
+}
+
 function paintIntelligence(data){
   if(!data?.ok){$("intelGrid").innerHTML='<div class="await">Intelligence API temporarily unavailable; no scores used for execution.</div>';return}
   $("intelGrid").innerHTML=(data.assets||[]).map(a=>{
@@ -477,11 +502,12 @@ function init(){
   $("drawerClose").addEventListener("click",closeDrawer);
   $("drawerBackdrop").addEventListener("click",closeDrawer);
   document.addEventListener("keydown",e=>{if(e.key==="Escape")closeDrawer()});
-  $("refreshBtn").addEventListener("click",async()=>{await Promise.all([pollCity(),pollMarket(),pollIntel()])});
+  $("refreshBtn").addEventListener("click",async()=>{await Promise.all([pollCity(),pollMarket(),pollIntel(),pollEquityQuotes()])});
   nowClock();setInterval(nowClock,1000);
-  pollCity();pollMarket();pollIntel();
+  pollCity();pollMarket();pollIntel();pollEquityQuotes();
   setInterval(pollCity,15000);
   setInterval(pollMarket,60000);
   setInterval(pollIntel,900000);
+  setInterval(pollEquityQuotes,60000);
 }
 init();
