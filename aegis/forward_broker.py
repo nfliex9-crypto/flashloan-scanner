@@ -32,6 +32,13 @@ def _dt(ts: int | float) -> datetime:
     return datetime.fromtimestamp(float(ts), tz=timezone.utc)
 
 
+def _monitor_slot_id(scheduled_at: datetime) -> str:
+    """Idempotent, UTC quarter-hour observation ID; not a trade run ID."""
+    if scheduled_at.tzinfo is None:
+        raise ValueError("Market monitoring timestamps must be timezone-aware")
+    return f"monitor:{int(scheduled_at.timestamp() // 900)}"
+
+
 def _num(value: Any) -> float:
     if value is None:
         return 0.0
@@ -239,7 +246,7 @@ def run_forward_tick(scheduled_at: datetime | None = None, config: RiskConfig | 
         with conn.cursor() as cur:
             # Quarter-hour monitoring is separate from the 1h trading strategy.
             # A heartbeat never opens/closes a position or reprocesses an hourly bar.
-            monitor_id = f"monitor:{int(scheduled_at.timestamp() // 900)}"
+            monitor_id = _monitor_slot_id(scheduled_at)
             monitor_snapshot = {
                 "observation_type": "PARTIAL_HOURLY_CANDLE_SNAPSHOT",
                 "crypto": {
