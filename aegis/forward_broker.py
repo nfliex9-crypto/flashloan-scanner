@@ -266,13 +266,26 @@ def run_forward_tick(scheduled_at: datetime | None = None, config: RiskConfig | 
                 "paper_trading_15min": False,
                 "live_execution": False,
             }
+            # Snapshot empirical strategy standings on each genuine 15m pulse.
+            # Rankings never authorize positions; only closed costed fills count.
+            from .strategy_filter import strategy_snapshot
+            current_rankings = strategy_snapshot(cur)
+            monitor_snapshot["strategy_rankings"] = current_rankings
+            monitor_summary = {
+                "cadence_minutes": 15,
+                "filter_checked_at": scheduled_at.isoformat(),
+                "agents_ranked": len(current_rankings),
+                "quarantined": sum(x["state"] == "QUARANTINED" for x in current_rankings),
+                "no_order_execution": True,
+                "real_money": False,
+            }
             cur.execute(
                 "INSERT INTO aegis.engine_runs"
                 "(run_id,started_at,completed_at,mode,status,market_snapshot,summary) "
                 "VALUES (%s,%s,now(),'MARKET_MONITOR','COMPLETED',%s::jsonb,%s::jsonb) "
                 "ON CONFLICT (run_id) DO NOTHING",
                 (monitor_id, scheduled_at, json.dumps(monitor_snapshot),
-                 json.dumps({"cadence_minutes": 15, "no_order_execution": True})),
+                 json.dumps(monitor_summary)),
             )
             cur.execute(
                 "INSERT INTO aegis.engine_runs(run_id,started_at,mode,status,market_snapshot) "
