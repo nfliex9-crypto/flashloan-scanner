@@ -4,7 +4,7 @@ import pytest
 
 from aegis.live_lab import Candle
 from aegis.intrabar_guard import (
-    BAR_SECONDS,closed_fresh_quarters,intrabar_exit_reason,settle_intrabar_shadow
+    BAR_SECONDS,closed_fresh_quarters,intrabar_exit_reason,settle_intrabar_shadow,settle_intrabar_paper
 )
 from aegis.paper_engine import RiskConfig
 
@@ -79,3 +79,27 @@ def test_no_symbols_means_no_database_writes_or_live_order():
        closed_by_symbol={},config=RiskConfig())
     assert result["quarter_exits"]==0
     assert result["quarter_mark_updates"]==0
+
+
+def test_main_paper_only_checks_stops_not_adverse_two_hour_time_exit():
+    now=datetime(2026,10,8,15,20,tzinfo=timezone.utc)
+    bars=closed_fresh_quarters(make_quarters(now,[100,100,100,100]),now)
+    position={"agent_id":"btc-test","symbol":"BTC",
+              "opened_at":datetime(2026,10,8,13,5,tzinfo=timezone.utc),
+              "entry_price":102,"stop_price":90,"target_price":115}
+    class Cur:
+        def execute(self,*args):pass
+        def fetchall(self):return [position]
+    r=settle_intrabar_paper(Cur(),run_id="monitor:example",now=now,
+         closed_by_symbol={"BTC":bars},config=RiskConfig())
+    assert r["quarter_paper_positions_reviewed"]==1
+    assert r["quarter_paper_exits"]==0
+
+
+def test_main_paper_no_new_positions_when_no_quote():
+    class Cursor:
+        def execute(self,*a):raise AssertionError("Unexpected broker database write")
+    r=settle_intrabar_paper(Cursor(),run_id="monitor:empty",
+         now=datetime(2026,10,8,15,20,tzinfo=timezone.utc),
+         closed_by_symbol={},config=RiskConfig())
+    assert r["quarter_paper_exits"]==0
