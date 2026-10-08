@@ -644,8 +644,19 @@ def run_forward_tick(scheduled_at: datetime | None = None, config: RiskConfig | 
                     "circuit_state": circuit,
                 }
             )
-            # Stage 3 evaluation and events share this same atomic transaction.
-            # The risk constitution remains the final authority on order sizing.
+            # Independent costed shadow broker. All virtual fills and Stage 3
+            # evidence share one atomic transaction with the paper account.
+            # A repeated hourly run cannot duplicate fills.
+            from .shadow_broker import run_shadow_tick
+            shadow = run_shadow_tick(
+                cur, run_id=run_id, now=scheduled_at, agents=agents,
+                closed_by_symbol=closed_by_symbol,
+                live_by_symbol=live_by_symbol, config=config,
+            )
+            summary.update(shadow)
+
+            # Evolution is reviewed AFTER costed shadow fills are persisted.
+            # The deterministic portfolio risk constitution remains authoritative.
             from .stage3 import review_run
             review_run(cur, run_id, scheduled_at, agents, account, summary)
             cur.execute(
