@@ -21,6 +21,7 @@
         <button class="nav-tab active" data-view="city">THE CITY</button>
         <button class="nav-tab" data-view="payroll">PAYROLL</button>
         <button class="nav-tab" data-view="evolution">EVOLUTION</button>
+        <button class="nav-tab" data-view="lab">RESEARCH LAB</button>
         <button class="nav-tab" data-view="intel">INTELLIGENCE</button>
       </div>
       <div class="header-right">
@@ -162,6 +163,58 @@
       </section>
       <div class="module"><header class="module-head"><h2>Agent evolution chamber</h2><span class="module-tag">NEON · LAST REVIEW</span></header><div id="evolutionCards" class="evolution-grid"></div></div>
       <div class="module"><header class="module-head"><h2>Role changes</h2><span class="module-tag">AUDIT TRAIL</span></header><div id="evolutionChanges" class="activity-list"></div></div>
+    </section>
+
+    <section id="labView" class="view dashboard-view">
+      <div class="section-hero">
+        <p class="eyebrow">CONTINUOUS SHADOW RESEARCH / CONFIGURABLE</p>
+        <h1>Try more. <i>Trust evidence.</i></h1>
+        <p>Novel strategies are trialed on closed hourly bars and ranked using future, costed shadow fills. No auto-promotions, live execution, or unsupervised brokerage actions.</p>
+      </div>
+      <div class="module">
+        <header class="module-head">
+          <div><p class="eyebrow">ENGINE CONTROL / PERSISTED IN NEON</p><h2>Experiment controls</h2></div>
+          <span class="module-tag">OWNER-KEY PROTECTED · RESEARCH ONLY</span>
+        </header>
+        <div class="lab-topline">
+          <span id="labEngineStatus">Loading experiment state…</span>
+          <span id="labEngineUpdated">Awaiting persisted configuration</span>
+        </div>
+        <label class="lab-switch"><input id="expEnabled" type="checkbox" data-exp-input checked><span>Run bounded strategy experiments during hourly research cycles</span></label>
+        <div class="lab-control-grid">
+          <div class="lab-field"><strong>MARKETS TO TEST</strong>
+            <label><input type="checkbox" id="expAssetBTC" data-exp-input checked> BTC / USD · Kraken</label>
+            <label><input type="checkbox" id="expAssetXAU" data-exp-input checked> XAU / USD · Twelve Data</label>
+          </div>
+          <div class="lab-field"><strong>NEW CANDIDATE STRATEGIES</strong>
+            <label><input type="checkbox" id="expEMA" data-exp-input checked> EMA Cross</label>
+            <label><input type="checkbox" id="expRSI" data-exp-input checked> RSI Pullback</label>
+            <label><input type="checkbox" id="expChannel" data-exp-input checked> Channel Breakout</label>
+          </div>
+          <div class="lab-field">
+            <strong>MAX CONCURRENT CANDIDATES</strong>
+            <select id="expLimit" data-exp-input>
+              <option value="2">2 experiments</option>
+              <option value="4">4 experiments</option>
+              <option value="6" selected>6 experiments</option>
+            </select>
+            <small>Never changes paper-main sizing, live broker access, or the risk firewall.</small>
+          </div>
+        </div>
+        <div class="lab-save-row">
+          <label class="lab-owner-label">OWNER CONTROL KEY
+            <input id="expOwnerToken" type="password" autocomplete="off" spellcheck="false" placeholder="Enter separate AEGIS_CONTROL_TOKEN to save">
+          </label>
+          <button class="full-cta lab-save-button" id="expSave">SAVE RESEARCH CONTROLS ↗</button>
+        </div>
+        <div class="lab-result" id="expSaveStatus" role="status">Changes are proposals until saved with the owner key. The key is kept in this page only and cleared after each request.</div>
+      </div>
+      <div class="module">
+        <header class="module-head"><div><p class="eyebrow">FORWARD EXPERIMENT EVIDENCE</p><h2>Candidate progress</h2></div><span class="module-tag">AUTO-FILTER AFTER ENOUGH COSTED FILLS</span></header>
+        <div id="labCandidateSummary" class="lab-topline">Waiting for the next verified hourly cycle…</div>
+        <div id="labCandidateBoard" class="strategy-filter-board"><div class="await">No new candidates have been registered yet.</div></div>
+        <p class="filter-explainer">Experimental variations are tested separately in Shadow. Good backtest results do not count as successful forward learning, and quarantined candidates cannot open new shadow positions.</p>
+      </div>
     </section>
 
     <section id="intelView" class="view dashboard-view">
