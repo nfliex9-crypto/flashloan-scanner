@@ -258,7 +258,9 @@ def run_forward_tick(scheduled_at: datetime | None = None, config: RiskConfig | 
     quarter_feed_status = {}
     from .intrabar_guard import fetch_quarter_bars
     with _connect() as feed_conn, feed_conn.cursor() as feed_cur:
-        feed_cur.execute("SELECT DISTINCT symbol FROM aegis.shadow_positions")
+        feed_cur.execute(
+            "SELECT symbol FROM aegis.shadow_positions "
+            "UNION SELECT symbol FROM aegis.paper_positions WHERE status='OPEN'")
         open_shadow_symbols = sorted(r["symbol"] for r in feed_cur.fetchall())
     for symbol in open_shadow_symbols:
         try:
@@ -335,10 +337,14 @@ def run_forward_tick(scheduled_at: datetime | None = None, config: RiskConfig | 
             # Never run virtual risk exits twice in the same quarter-hour
             # trigger. Entries remain hourly; quarter supervision is exit-only.
             if cur.fetchone() is not None:
-                from .intrabar_guard import settle_intrabar_shadow
+                from .intrabar_guard import settle_intrabar_shadow,settle_intrabar_paper
                 quarter_stats = settle_intrabar_shadow(
                     cur,run_id=monitor_id,now=scheduled_at,
                     closed_by_symbol=quarter_bars,config=config)
+                paper_quarter = settle_intrabar_paper(
+                    cur,run_id=monitor_id,now=scheduled_at,
+                    closed_by_symbol=quarter_bars,config=config)
+                quarter_stats.update(paper_quarter)
                 monitor_summary.update(quarter_stats)
                 monitor_summary["quarter_symbols_checked"]=len(quarter_bars)
                 monitor_summary["quarter_missing_sources"]=[
