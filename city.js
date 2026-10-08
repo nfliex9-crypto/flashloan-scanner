@@ -232,6 +232,85 @@ async function saveResearchSettings(){
   finally{experimentSaving=false;$("expSave").disabled=false;}
 }
 
+function renderBacktestChart(curve){
+  const svg=$("btEquityChart");
+  const values=(curve||[]).map(r=>Number(r.equity)).filter(Number.isFinite);
+  if(values.length<2){svg.innerHTML="";return;}
+  const min=Math.min(...values),max=Math.max(...values);
+  const margin=Math.max(1,(max-min)*.07);
+  const bottom=min-margin,top=max+margin;
+  const path=values.map((v,i)=>{
+    const x=15+870*i/(values.length-1);
+    const y=223-204*(v-bottom)/(top-bottom);
+    return (i?"L":"M")+x.toFixed(2)+","+y.toFixed(2);
+  }).join(" ");
+  const stroke=values.at(-1)>=values[0]?"#75efd1":"#fb8dcf";
+  const grid=[.25,.5,.75].map(frac=>{
+    const y=223-204*frac;
+    return '<line x1="15" x2="885" y1="'+y+'" y2="'+y+'" stroke="#665789" stroke-opacity=".24"/>';
+  }).join("");
+  svg.innerHTML=grid+'<path d="'+path+'" stroke="'+stroke+'" stroke-width="2.4" fill="none" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>';
+}
+function paintBacktestResult(d){
+  const stats=d.full,hold=d.holdout;
+  $("btResults").hidden=false;
+  $("btDataSource").textContent=safe(d.source);
+  $("btHeadline").innerHTML=
+    '<div class="bt-metric"><small>SIMULATED NET P&L</small><strong class="'+sign(stats.net_pnl)+'">'+currency(stats.net_pnl)+'</strong></div>'+
+    '<div class="bt-metric"><small>CLOSED TRADES</small><strong>'+Number(stats.trades)+'</strong></div>'+
+    '<div class="bt-metric"><small>WIN RATE</small><strong>'+percent(stats.win_rate)+'</strong></div>'+
+    '<div class="bt-metric"><small>MAX DRAWNDOWN</small><strong>'+fixed(stats.max_drawdown_pct,2)+'%</strong></div>'+
+    '<div class="bt-metric"><small>PROFIT FACTOR</small><strong>'+fixed(stats.profit_factor,2)+'</strong></div>';
+  const line=(title,x)=>'<div class="bt-comparison-row"><strong>'+title+'</strong>'+
+    '<span>Net <b class="'+sign(x.net_pnl)+'">'+currency(x.net_pnl)+'</b></span>'+
+    '<span>Trades <b>'+Number(x.trades)+'</b></span>'+
+    '<span>Win <b>'+percent(x.win_rate)+'</b></span>'+
+    '<span>PF <b>'+fixed(x.profit_factor,2)+'</b></span>'+
+    '<span>Max DD <b>'+fixed(x.max_drawdown_pct,2)+'%</b></span></div>';
+  $("btComparison").innerHTML=
+    '<p class="bt-small-note">'+safe(d.asset)+' · '+safe(d.strategy)+' · '+safe(d.interval)+
+    ' · '+Number(d.bars)+' closed bars · '+utc(d.started_at)+' to '+utc(d.ended_at)+
+    ' · fees '+fixed(d.risk_model?.fee_bps_each_side,1)+' bps/side'+
+    ' · slippage '+fixed(d.risk_model?.slippage_bps_each_side,1)+' bps/side</p>'+
+    line("FULL HISTORY",stats)+line("LAST 30% · NEW ENTRIES ONLY",hold);
+  renderBacktestChart(d.equity_curve);
+  $("btWarnings").innerHTML=(d.warnings||[]).map(w=>
+    '<div class="bt-warning">⚠ '+safe(w)+'</div>').join("");
+  $("btTrades").innerHTML=d.trades?.length?d.trades.slice().reverse().map(t=>
+    '<div class="agent-trade-item bt-trade-item">'+
+    '<span class="trade-state closed">'+safe(t.reason)+'</span>'+
+    '<span class="trade-ledger-main"><strong>OPEN '+utc(t.entry_ts)+' → EXIT '+utc(t.exit_ts)+'</strong>'+
+    '<small>Entry '+currency(t.entry_price)+' · Exit '+currency(t.exit_price)+
+    ' · Qty '+fixed(t.qty,5)+' · Fee '+currency(t.fees)+
+    ' · Slip '+currency(t.slippage_cost)+'</small></span>'+
+    '<strong class="trade-ledger-pnl '+sign(t.net_pnl)+'">'+currency(t.net_pnl)+'</strong></div>'
+  ).join(""):'<div class="await">No completed trades on this history. Do not infer profitability from an empty sample.</div>';
+}
+async function runBacktest(){
+  const btn=$("btRun");
+  if(btn.disabled)return;
+  btn.disabled=true;
+  $("btResults").hidden=true;
+  $("btStatus").textContent="Fetching historical closed candles and calculating costed fills…";
+  const params=new URLSearchParams({
+    backtest:"1",asset:$("btAsset").value,strategy:$("btStrategy").value,
+    interval:$("btInterval").value,cost:$("btCosts").value,
+    bars:$("btBars").value});
+  try{
+    const response=await fetch("/api/stage3?"+params.toString(),{cache:"default"});
+    const body=await response.json();
+    if(!response.ok||body.ok!==true)
+      throw new Error(body.error||("Backtest endpoint returned "+response.status));
+    paintBacktestResult(body);
+    $("btStatus").textContent="Completed on source-backed historical candles. "+
+      body.full.trades+" closed trades; OOS "+body.holdout.trades+
+      " closed trades. No forward orders were placed.";
+  }catch(err){
+    $("btStatus").textContent="Backtest unavailable: "+err.message+
+      ". Your existing paper trading continues separately.";
+  }finally{btn.disabled=false;}
+}
+
 function paintCity(d){
   if(!isReady(d))return;
   const v=d.vault||{},workers=d.workers||[];
@@ -643,6 +722,7 @@ async function pollIntel(){
   catch(err){console.error("Intelligence feed:",err);paintIntelligence(null)}
 }
 function init(){
+  $("btRun").addEventListener("click",runBacktest);
   document.querySelectorAll("[data-exp-input]").forEach(el=>
     el.addEventListener("change",()=>{
       experimentDirty=true;
