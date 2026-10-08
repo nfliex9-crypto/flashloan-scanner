@@ -32,3 +32,14 @@ button,a{font:inherit}button{cursor:pointer}button:focus-visible,a:focus-visible
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
 
 @media(max-width:620px){#citySvg{touch-action:pan-y}.city-canvas{cursor:grab}.city-canvas:active{cursor:grabbing}.worker-shortcuts{margin:0 -1px}.worker-chip{min-width:142px}}
+
+.deep-decks{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px}
+.tape-list,.ghost-lab-list{max-height:380px;overflow:auto;display:grid;gap:9px}
+.tape-item,.ghost-item{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:13px;background:#0d112bbf;border:1px solid #494073;border-radius:12px;min-width:0}
+.tape-item{width:100%;color:var(--ink);text-align:left;cursor:pointer}
+.tape-item:hover{background:#242048;border-color:#a48bfd}
+.tape-item strong,.ghost-item strong{display:block;font-size:11px}
+.tape-item small,.ghost-item small{display:block;font:500 9px 'DM Mono';color:#9693b3;line-height:1.7;margin-top:4px}
+.tape-item .amount,.ghost-item .amount{font:800 13px 'DM Mono';white-space:nowrap}
+.ghost-item .pending{font:700 9px 'DM Mono';color:#f2c888}
+@media(max-width:920px){.deep-decks{grid-template-columns:1fr}}
