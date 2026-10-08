@@ -42,12 +42,16 @@ def decide_role(*, research_status: str, prior_role: str | None,
         return ("HALTED", 0.0, "RISK_HALT", "Portfolio forward drawdown >= 5%; capital frozen")
     if prior_role == "HALTED":
         return ("HALTED", 0.0, "MANUAL_REVIEW", "Risk halt is latched; never auto-rearm")
-    if research_status == "ACTIVE" and prior_role in (None, "ACTIVE_PAPER"):
+    if research_status == "ACTIVE":
         if trade_count >= 10 and profit_factor < 0.75 and net_pnl < 0:
             return ("HALTED", 0.0, "FORWARD_DEMOTION", "10+ forward trades and PF below 0.75")
-        return ("ACTIVE_PAPER", 1.0, "COLLECTING", "Research-approved incumbent; paper risk stays capped at 0.25%")
-    if research_status == "ACTIVE" and prior_role not in (None, "ACTIVE_PAPER"):
-        return ("SHADOW", 0.0, "REVIEW_REQUIRED", "Incumbent cannot bypass prior shadow restriction")
+        # ACTIVE here means paper-research authorization, not champion status.
+        # The research gate remains mandatory on every single entry.
+        return ("ACTIVE_PAPER", 1.0, "COLLECTING", "Research gate ACTIVE; paper-only, hard-capped 0.25% per trade")
+    if prior_role == "ACTIVE_PAPER":
+        # Suspend orders via the independent research-status gate; keep approved
+        # paper authorization so it can resume if research improves.
+        return ("ACTIVE_PAPER", 1.0, "RESEARCH_HOLD", "Paper authorization retained; execution blocked by research probation")
 
     # Shadow signals have a different execution / fee model; never promote
     # from 12h ghost return alone even if they look profitable.
