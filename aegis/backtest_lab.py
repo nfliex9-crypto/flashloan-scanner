@@ -24,7 +24,7 @@ from .shadow_broker import conservative_stop_fill
 STRATEGIES=("Trend","Momentum","Mean Reversion","Breakout",
             "EMA Cross","RSI Pullback","Channel Breakout")
 SYMBOLS=("BTC","XAU")
-INTERVALS={"15min":900,"1h":3600}
+INTERVALS={"1min":60,"5min":300,"15min":900,"1h":3600}
 COST_MODES={"base":1.0,"stress":2.0}
 MIN_BARS=120
 MAX_BARS=720
@@ -75,7 +75,7 @@ def _parse_td(rows:list[dict])->list[Candle]:
 def load_backtest_bars(asset:str,interval:str,bars:int,now:datetime|None=None)->tuple[list[Candle],str]:
     now=now or datetime.now(timezone.utc)
     if asset=="BTC":
-        raw=fetch_ohlc("XBTUSD",interval=15 if interval=="15min" else 60)
+        raw=fetch_ohlc("XBTUSD",interval=({"1min":1,"5min":5,"15min":15,"1h":60}[interval]))
         source="Kraken XBTUSD OHLC"
     elif asset=="XAU":
         key=os.getenv("TWELVEDATA_API_KEY")
@@ -244,8 +244,8 @@ def run_backtest(params:dict,now:datetime|None=None)->dict:
     warnings=[]
     if len(holdout["trades"])<20:
         warnings.append("Small out-of-sample trade count: insufficient evidence to trust a profitable result")
-    if len(data)<400:
-        warnings.append("Short historical window; results can change materially with market regime")
+    if len(data)<400 or len(data)*INTERVALS[p["interval"]]<7*86400:
+        warnings.append("Historical window shorter than one trading week or 400 bars: insufficient regime coverage")
     if p["asset"]=="XAU":
         warnings.append("Gold candles are indicative Twelve Data prices, not executable OANDA quotes")
     warnings.append("This is historical reconstruction, NOT forward paper performance or proof of a profitable strategy")
