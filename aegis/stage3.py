@@ -335,6 +335,8 @@ def get_stage3_state() -> dict:
         paper_closed_feed=list(cur.fetchall())
         from .strategy_filter import strategy_snapshot
         strategy_ranks = strategy_snapshot(cur)
+        from .experiments import read_controls
+        experiment_controls = read_controls(cur)
 
     trade_feed=[]
     for p in shadow_open_feed:
@@ -420,6 +422,8 @@ def get_stage3_state() -> dict:
         "evolution_events":changes,"intel_snapshots":intel_snapshots,
         "recent_trades":recent_trades,"recent_ghosts":recent_ghosts,
         "trade_feed":trade_feed,"strategy_rankings":strategy_ranks,
+        "experiment_controls":experiment_controls,
+        "experiment_eligible_shadow_agents":sum(1 for a in agents if a["strategy"] in ("EMA Cross","RSI Pullback","Channel Breakout")),
         "shadow_open_positions":sum(bool(r.get("position_id")) for r in shadow_account_rows),
         "shadow_costed_trades":sum(int(v.get("trades",0)) for v in shadow_trade_stats.values()),
         "last_run":last,"last_market_monitor":last_monitor,
