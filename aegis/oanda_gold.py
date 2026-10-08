@@ -1,6 +1,6 @@
 """Read-only OANDA v20 gold price adapter.
 
-Practice environment ONLY. This module never sends POST/PATCH/PUT/DELETE
+Supports Live for MARKET DATA ONLY. This module never sends POST/PATCH/PUT/DELETE
 and cannot submit an order. XAU_USD availability depends on account region.
 """
 from __future__ import annotations
@@ -8,9 +8,10 @@ import json,math,os,urllib.error,urllib.parse,urllib.request
 from datetime import datetime,timezone
 
 PRACTICE_URL="https://api-fxpractice.oanda.com"
+LIVE_URL="https://api-fxtrade.oanda.com"
 
 
-def parse_gold_price(payload:dict,now:datetime|None=None)->dict:
+def parse_gold_price(payload:dict,now:datetime|None=None,environment:str="practice")->dict:
     now=now or datetime.now(timezone.utc)
     entries=[p for p in payload.get("prices",[]) if p.get("instrument")=="XAU_USD"]
     if not entries:raise ValueError("XAU_USD not returned; instrument may be unavailable for this account")
@@ -29,28 +30,34 @@ def parse_gold_price(payload:dict,now:datetime|None=None)->dict:
             "observed_at":ts.isoformat(),"age_seconds":round(age),
             "fresh":0<=age<=120 and status=="tradeable",
             "tradeable":status=="tradeable",
-            "status":"RECENT_PRACTICE_QUOTE" if 0<=age<=120 and status=="tradeable" else "STALE_OR_MARKET_CLOSED",
-            "source":"OANDA fxTrade Practice XAU_USD bid/ask",
+            "status":"RECENT_BROKER_QUOTE" if 0<=age<=120 and status=="tradeable" else "STALE_OR_MARKET_CLOSED",
+            "source":f"OANDA fxTrade {environment.upper()} XAU_USD bid/ask",
             "type":"SPOT_GOLD_BROKER_QUOTE","execution_enabled":False}
 
 
 def fetch_practice_gold_price()->dict:
+    """Read XAU_USD broker bid/ask via GET only; never place an order."""
+    environment=os.getenv("OANDA_ENVIRONMENT","practice").strip().lower()
+    if environment not in ("practice","live"):
+        return {"symbol":"XAU/USD","connected":False,"status":"INVALID_OANDA_ENVIRONMENT","execution_enabled":False}
+    endpoint=LIVE_URL if environment=="live" else PRACTICE_URL
+    source=f"OANDA fxTrade {environment.upper()}"
     token=os.getenv("OANDA_API_TOKEN","").strip()
     account=os.getenv("OANDA_ACCOUNT_ID","").strip()
     if not token or not account:
-        return {"symbol":"XAU/USD","connected":False,"source":"OANDA fxTrade Practice",
+        return {"symbol":"XAU/USD","connected":False,"source":source,
                 "type":"SPOT_GOLD_BROKER_QUOTE","required_env":["OANDA_API_TOKEN","OANDA_ACCOUNT_ID"],
-                "status":"WAITING_FOR_OANDA_PRACTICE_CREDENTIALS","execution_enabled":False}
+                "status":"WAITING_FOR_OANDA_CREDENTIALS","execution_enabled":False}
     if not all(ch.isascii() and (ch.isalnum() or ch=="-") for ch in account):
         return {"symbol":"XAU/USD","connected":False,"source":"OANDA fxTrade Practice",
                 "status":"INVALID_ACCOUNT_ID","execution_enabled":False}
-    url=f"{PRACTICE_URL}/v3/accounts/{account}/pricing?"+urllib.parse.urlencode({"instruments":"XAU_USD"})
+    url=f"{endpoint}/v3/accounts/{account}/pricing?"+urllib.parse.urlencode({"instruments":"XAU_USD"})
     req=urllib.request.Request(url,headers={"Authorization":"Bearer "+token,"Accept":"application/json",
         "User-Agent":"AEGIS-Paper-Research/1.0"},method="GET")
     try:
         with urllib.request.urlopen(req,timeout=9) as res:
             result=json.loads(res.read().decode("utf-8"))
-        quote=parse_gold_price(result)
+        quote=parse_gold_price(result,environment=environment)
         quote["connected"]=True
         return quote
     except urllib.error.HTTPError as e:
