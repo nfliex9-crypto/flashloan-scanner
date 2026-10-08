@@ -1,0 +1,10 @@
+# Standalone public Kraken market streaming process — no Vercel deployment needed.
+FROM python:3.12-slim
+ENV PYTHONUNBUFFERED=1 PYTHONDONTWRITEBYTECODE=1
+WORKDIR /app
+COPY requirements-stream.txt .
+RUN pip install --no-cache-dir -r requirements-stream.txt \
+    && useradd -r -u 10001 stream
+COPY aegis/ ./aegis/
+USER stream
+CMD ["python", "-m", "aegis.stream_worker"]
