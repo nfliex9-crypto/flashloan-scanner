@@ -111,6 +111,8 @@ function paintCity(d){
   $("positionsCount").textContent=String(d.positions?.length||0);
   $("tradesCount").textContent=String(workers.reduce((sum,w)=>sum+(Number(w.paper_trades)||0),0));
   $("ghostCount").textContent=String(Number(d.ghosts?.total||0))+" · "+String(Number(d.ghosts?.pending||0))+" pending";
+  $("shadowCostedCount").textContent=String(d.shadow_costed_trades||0);
+  $("shadowOpenCount").textContent=String(d.shadow_open_positions||0);
   $("drawdownValue").textContent=percent(v.drawdown);
   $("eventCount").textContent=String(d.events?.length||0);
   $("stageRefresh").textContent="SNAPSHOT: "+utc(d.generated_at);
@@ -254,21 +256,27 @@ function showTrade(t){
 
 function paintEvolution(workers,changes,rules){
   const active=workers.filter(w=>effectiveRole(w)==="ACTIVE_PAPER").length;
-  const challengers=workers.filter(w=>effectiveRole(w)==="CHALLENGER").length;
+  const challengers=workers.filter(w=>["CHALLENGER","CHALLENGER_READY"].includes(effectiveRole(w))).length;
   const halted=workers.filter(w=>effectiveRole(w)==="HALTED").length;
   const eligible=workers.filter(w=>w.eligible).length;
   $("evolutionSummary").innerHTML=[
     ["PAPER INCUMBENTS",active],["CHALLENGERS",challengers],["ELIGIBLE TO REVIEW",eligible],["HALTED",halted]
   ].map(([label,n])=>`<div class="ev-metric"><span>${label}</span><strong>${n}</strong></div>`).join("");
   $("evolutionCards").innerHTML=workers.map(w=>{
-    const role=effectiveRole(w),windows=w.windows||{},life=windows.lifetime||{};
-    const progress=Math.min(100,100*Number(w.closed_trades||0)/(rules.min_costed_trades||40));
+    const role=effectiveRole(w),windows=w.windows||{},life=windows.lifetime||{},shadow=windows.shadow?.lifetime||{};
+    const progress=Math.min(100,100*Number(w.shadow_trades||0)/(rules.min_costed_trades||40));
     return `<article class="evolution-card" tabindex="0" data-evagent="${safe(w.agent_id)}">
       <h3>${symbolWorker(w)}</h3><span class="role-tag ${statusClass(role)}">${safe(role)}</span>
       <div class="eval-stats"><div><span>FORWARD TRADES</span><strong>${w.closed_trades??0}</strong></div>
         <div><span>FORWARD DAYS</span><strong>${fixed(w.forward_days,1)}</strong></div>
         <div><span>NET P&L</span><strong class="${sign(life.net_pnl)}">${currency(life.net_pnl)}</strong></div>
         <div><span>PROFIT FACTOR</span><strong>${fixed(life.profit_factor,2)}</strong></div></div>
+      <div class="shadow-figures">
+        <div><span>SHADOW COSTED TRADES</span><strong>${w.shadow_trades||0} / ${rules.min_costed_trades||40}</strong></div>
+        <div><span>SHADOW NET</span><strong class="${sign(w.shadow_net_pnl)}">${currency(w.shadow_net_pnl)}</strong></div>
+        <div><span>SHADOW PF</span><strong>${fixed(shadow.profit_factor,2)}</strong></div>
+        <div><span>SHADOW MAX DD</span><strong>${percent(w.shadow_max_drawdown)}</strong></div>
+      </div>
       <div class="eval-progress"><div style="width:${progress}%"></div></div>
       <p>${safe(w.reason||"First forward evaluation pending. Paper trading remains gated.")}</p>
       </article>`;
@@ -329,6 +337,7 @@ function closeDrawer(){
 function fillAgentDrawer(worker){
   const role=effectiveRole(worker),pos=(cityState?.positions||[]).filter(p=>p.agent_id===worker.agent_id);
   const life=worker.windows?.lifetime||{};
+  const shadow=worker.windows?.shadow?.lifetime||{};
   const html=`
     <p class="eyebrow">WORKER ID · ${safe(worker.agent_id)}</p>
     <h2 class="drawer-agent-symbol">${symbolWorker(worker)}</h2>
@@ -346,6 +355,18 @@ function fillAgentDrawer(worker){
       <div><span>RISK MULTIPLIER</span><strong>${worker.risk_multiplier==null?"PENDING":fixed(worker.risk_multiplier,2)+"x"}</strong></div>
       <div><span>SURVIVAL</span><strong>${fixed(worker.survival_score,0)}/100</strong></div>
       </div></div>
+    <div class="drawer-box"><h4>INDEPENDENT COSTED SHADOW ACCOUNT</h4>
+       <p class="drawer-small">This separate virtual $100K account observes the same closed-bar signals even while Paper allocation is zero. It never places real orders.</p>
+       <div class="drawer-pairs">
+         <div><span>COSTED CLOSED TRADES</span><strong>${worker.shadow_trades||0}</strong></div>
+         <div><span>SHADOW NET P&L</span><strong class="${sign(worker.shadow_net_pnl)}">${currency(worker.shadow_net_pnl)}</strong></div>
+         <div><span>SHADOW OPEN</span><strong>${worker.shadow_open?"YES":"NO"}</strong></div>
+         <div><span>MARKED UNREALIZED</span><strong class="${sign(worker.shadow_unrealized)}">${currency(worker.shadow_unrealized)}</strong></div>
+         <div><span>MAX SHADOW DD</span><strong>${percent(worker.shadow_max_drawdown)}</strong></div>
+         <div><span>COSTED PF</span><strong>${fixed(shadow.profit_factor,2)}</strong></div>
+         <div><span>7D SHADOW NET</span><strong class="${sign(worker.shadow_week_pnl)}">${currency(worker.shadow_week_pnl)}</strong></div>
+         <div><span>30D SHADOW NET</span><strong class="${sign(worker.shadow_month_pnl)}">${currency(worker.shadow_month_pnl)}</strong></div>
+       </div></div>
     <div class="drawer-box"><h4>ACTIVE POSITION</h4>${pos.length?pos.map(p=>`
       <div class="drawer-pairs"><div><span>ENTRY</span><strong>${currency(p.entry_price)}</strong></div>
       <div><span>QUANTITY</span><strong>${fixed(p.qty,5)}</strong></div>
