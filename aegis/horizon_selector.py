@@ -18,7 +18,7 @@ TIMEFRAME_MINUTES={1:"1min",5:"5min",15:"15min",60:"1h",
 
 
 def rank_forward_horizons(rows:list[dict], *, side:str="LONG")->dict:
-    """Rows from stream ledger are LONG-only until short virtual fills exist."""
+    """Rank settled virtual trade results by independent strategy, side and timeframe."""
     if side not in ("LONG","SHORT","BOTH"):
         raise ValueError("Unsupported side selection")
     options=[]
@@ -61,6 +61,7 @@ def rank_forward_horizons(rows:list[dict], *, side:str="LONG")->dict:
         # This is a *relative research score*, not a risk allocation.
         score=net/max(n,1)-dd*1000 if qualified else None
         options.append({
+            "agent_id":row.get("agent_id"),"strategy":row.get("strategy"),
             "asset":row["symbol"],"interval":interval,"horizon":horizon,
             "direction":row.get("side","LONG"),"trades":n,
             "observed_days":round(duration,2),"net_pnl":round(net,4),
