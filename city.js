@@ -8,6 +8,7 @@ const safe = (v) => String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;"
 const utc = (v) => v ? new Date(v).toLocaleString("en-GB",{month:"short",day:"2-digit",hour:"2-digit",minute:"2-digit",timeZone:"UTC"})+" UTC" : "—";
 const dateTime = (v) => v ? new Date(v).toLocaleString("en-GB",{timeZone:"UTC"})+" UTC" : "—";
 let cityState=null,marketState=null,intelState=null,lastLedgerFeed=[],lastRankings=[];
+let experimentDirty=false,experimentSaving=false;
 let lastEventKeys=null, currentView="city", currentSelection=null, livePolling=false;
 const towers=[
   {x:245,y:385},{x:405,y:338},{x:236,y:489},{x:396,y:484},
@@ -151,6 +152,86 @@ function paintStrategyFilterBoard(rankings){
     el.addEventListener("click",()=>showAgent(el.dataset.rankagent)));
 }
 
+const EXPERIMENT_NAMES=["EMA Cross","RSI Pullback","Channel Breakout"];
+function renderResearchLab(d){
+  const c=d.experiment_controls;
+  if(!c)return;
+  if(!experimentDirty){
+    $("expEnabled").checked=Boolean(c.enabled);
+    $("expAssetBTC").checked=c.assets.includes("BTC");
+    $("expAssetXAU").checked=c.assets.includes("XAU");
+    $("expEMA").checked=c.strategies.includes("EMA Cross");
+    $("expRSI").checked=c.strategies.includes("RSI Pullback");
+    $("expChannel").checked=c.strategies.includes("Channel Breakout");
+    $("expLimit").value=String(c.max_candidates);
+  }
+  $("labEngineStatus").textContent=c.enabled?"EXPERIMENTS ENABLED · SHADOW ONLY":"EXPERIMENTS PAUSED · NO NEW CANDIDATES";
+  $("labEngineUpdated").textContent="Last saved "+utc(c.updated_at)+(experimentDirty?" · UNSAVED CHANGES":"");
+  const workers=(d.workers||[]).filter(w=>EXPERIMENT_NAMES.includes(w.strategy));
+  const counts={quarantined:workers.filter(w=>w.strategy_filter?.state==="QUARANTINED").length,
+    collecting:workers.filter(w=>w.strategy_filter?.state==="COLLECTING").length};
+  const count=d.last_run?.summary?.experiment_candidates_evaluated;
+  $("labCandidateSummary").textContent=
+    workers.length+" persistent candidates · "+counts.collecting+" collecting · "+counts.quarantined+
+    " quarantined · "+(count==null?"Next verified hourly trial pending":count+" evaluated last hourly cycle");
+  $("labCandidateBoard").innerHTML=workers.length?workers.map(w=>{
+    const filter=w.strategy_filter||{},st=filter.state||"COLLECTING";
+    const cls=st==="QUARANTINED"?"quarantine":st==="LEADING"?"leader":"observing";
+    return '<button class="strategy-rank-row" data-experimentagent="'+safe(w.agent_id)+'">'+
+      '<strong class="strategy-rank-number">◈</strong>'+
+      '<span class="strategy-rank-name"><strong>'+symbolWorker(w)+'</strong>'+
+      '<small>'+safe(filter.reason||"Waiting for forward shadow evaluation")+'</small></span>'+
+      '<span class="strategy-rank-metrics"><span>'+Number(filter.trades||0)+' costed</span>'+
+      '<span>PF '+fixed(filter.profit_factor||0,2)+'</span>'+
+      '<span class="'+sign(filter.net_pnl)+'">'+currency(filter.net_pnl)+'</span></span>'+
+      '<span class="strategy-rank-state '+cls+'">'+safe(st)+'</span></button>';
+  }).join(""):'<div class="await">No experimental agents registered yet. The first research run after activation creates them.</div>';
+  $("labCandidateBoard").querySelectorAll("[data-experimentagent]").forEach(el=>
+    el.addEventListener("click",()=>showAgent(el.dataset.experimentagent)));
+}
+function selectedExperimentSettings(){
+  const assets=[];
+  if($("expAssetBTC").checked)assets.push("BTC");
+  if($("expAssetXAU").checked)assets.push("XAU");
+  const strategies=[];
+  if($("expEMA").checked)strategies.push("EMA Cross");
+  if($("expRSI").checked)strategies.push("RSI Pullback");
+  if($("expChannel").checked)strategies.push("Channel Breakout");
+  if(!assets.length||!strategies.length)throw new Error("Choose at least one market and one strategy.");
+  return {enabled:$("expEnabled").checked,assets,strategies,
+    max_candidates:Number($("expLimit").value)};
+}
+async function saveResearchSettings(){
+  if(experimentSaving)return;
+  const token=$("expOwnerToken").value.trim();
+  $("expOwnerToken").value="";
+  if(!token){
+    $("expSaveStatus").textContent="Enter the separate owner control key. Never paste OANDA or Alpaca credentials.";
+    return;
+  }
+  let data;
+  try{data=selectedExperimentSettings();}
+  catch(err){$("expSaveStatus").textContent=err.message;return;}
+  experimentSaving=true;
+  $("expSave").disabled=true;
+  $("expSaveStatus").textContent="Saving verified research-only settings…";
+  try{
+    const res=await fetch("/api/stage3",{method:"POST",credentials:"same-origin",
+      cache:"no-store",headers:{"Content-Type":"application/json",
+        "Authorization":"Bearer "+token},body:JSON.stringify(data)});
+    const answer=await res.json();
+    if(!res.ok||answer.ok!==true)throw new Error(
+      res.status===503 && answer.error==="owner_control_key_not_configured"
+      ?"Set AEGIS_CONTROL_TOKEN (24+ characters) in Vercel Preview first."
+      :res.status===401?"Owner key rejected; check the exact value."
+      :answer.error||"Unable to save research settings.");
+    experimentDirty=false;
+    $("expSaveStatus").textContent="Saved in Neon ✓ · Takes effect at the next verified hourly cycle. Live orders remain OFF.";
+    await pollCity();
+  }catch(err){$("expSaveStatus").textContent="Not saved: "+err.message;}
+  finally{experimentSaving=false;$("expSave").disabled=false;}
+}
+
 function paintCity(d){
   if(!isReady(d))return;
   const v=d.vault||{},workers=d.workers||[];
@@ -186,6 +267,7 @@ function paintCity(d){
   paintIndividualTradeFeed(d.trade_feed||[],workers);
   paintStrategyFilterBoard(d.strategy_rankings||[]);
   paintEvolution(workers,d.evolution_events||[],d.promotion_rules||{});
+  renderResearchLab(d);
   if(currentSelection?.kind==="agent"){
     const worker=workers.find(w=>w.agent_id===currentSelection.id);
     if(worker)fillAgentDrawer(worker);
@@ -551,6 +633,13 @@ async function pollIntel(){
   catch(err){console.error("Intelligence feed:",err);paintIntelligence(null)}
 }
 function init(){
+  document.querySelectorAll("[data-exp-input]").forEach(el=>
+    el.addEventListener("change",()=>{
+      experimentDirty=true;
+      $("expSaveStatus").textContent="Unsaved research settings. Enter your owner key to apply on the next research cycle.";
+      $("labEngineUpdated").textContent="UNSAVED CHANGES";
+    }));
+  $("expSave").addEventListener("click",saveResearchSettings);
   ["agentTradeFilter","tradeMarketFilter","tradeActionFilter"].forEach(id=>{
     $(id).addEventListener("change",applyTradeFilters);
   });
