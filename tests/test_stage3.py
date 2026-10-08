@@ -38,3 +38,20 @@ def test_window_stats_never_includes_future_or_outside_window():
     rows=[r for r in rows if r["exit_ts"] <= now]
     assert window_stats(rows,now,1)["trades"]==1
     assert window_stats(rows,now,30)["net_pnl"]==10
+
+def test_research_probation_suspends_orders_without_permanent_shadow_lock():
+    role,risk,status,_=decide_role(
+      research_status="PROBATION",prior_role="ACTIVE_PAPER",forward_days=2,
+      trade_count=0,profit_factor=0,net_pnl=0,drawdown=0)
+    assert (role,risk,status)==("ACTIVE_PAPER",1,"RESEARCH_HOLD")
+    recovered=decide_role(
+      research_status="ACTIVE",prior_role=role,forward_days=3,
+      trade_count=0,profit_factor=0,net_pnl=0,drawdown=0)
+    assert recovered[0]=="ACTIVE_PAPER"
+
+def test_research_gate_can_authorize_new_paper_candidate_only():
+    authorized=decide_role(
+      research_status="ACTIVE",prior_role="SHADOW",forward_days=2,
+      trade_count=0,profit_factor=0,net_pnl=0,drawdown=0)
+    assert authorized[0]=="ACTIVE_PAPER"
+    assert authorized[2]=="COLLECTING"
