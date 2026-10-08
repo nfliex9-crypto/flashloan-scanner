@@ -250,6 +250,16 @@ function paintCity(d){
     : d.last_run?.completed_at
       ? "STRATEGY 1H VERIFIED "+utc(d.last_run.completed_at)
       : "WAITING FOR FIRST MARKET CYCLE";
+  const micro=d.last_market_monitor?.summary||{};
+  const source=d.last_market_monitor?.market_snapshot?.quarter_data||{};
+  const unavailable=Object.entries(source).filter(([,v])=>v!=="CLOSED_15M_VERIFIED").map(([k])=>k);
+  $("fastRiskPulse").textContent=marketPulse
+    ? "15M CLOSED-BAR RISK · "+utc(marketPulse)+
+      " · "+Number(micro.quarter_positions_reviewed||0)+" shadow positions checked"+
+      " · "+Number(micro.quarter_exits||0)+" costed exits"+
+      (unavailable.length?" · DATA DELAYED: "+unavailable.join(", "):"")+
+      " · ENTRY SIGNALS: 1H · LIVE ORDERS: OFF"
+    : "15M SHADOW RISK · Awaiting a verified monitored cycle · No live orders";
   $("positionsCount").textContent=String(d.positions?.length||0);
   $("tradesCount").textContent=String(workers.reduce((sum,w)=>sum+(Number(w.paper_trades)||0),0));
   $("ghostCount").textContent=String(Number(d.ghosts?.total||0))+" · "+String(Number(d.ghosts?.pending||0))+" pending";
