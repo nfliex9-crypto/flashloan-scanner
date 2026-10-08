@@ -283,7 +283,7 @@ def get_stage3_state() -> dict:
                     "FROM aegis.engine_runs WHERE mode='FORWARD_PAPER' ORDER BY started_at DESC LIMIT 24")
         runs=list(cur.fetchall())
         cur.execute(
-            "SELECT run_id,started_at,completed_at,status,market_snapshot "
+            "SELECT run_id,started_at,completed_at,status,market_snapshot,summary "
             "FROM aegis.engine_runs WHERE mode='MARKET_MONITOR' "
             "ORDER BY started_at DESC LIMIT 1")
         last_monitor = cur.fetchone()
