@@ -39,3 +39,33 @@ def test_rejects_unknown_audit_action_without_side_effects():
                          direction="LONG",action="REAL_ORDER",
                          reason="bad",reference_price=101)
     assert not cur.queries
+
+
+
+def test_arabic_command_filters_and_decision_counters_are_real_controls():
+    from pathlib import Path
+    from html.parser import HTMLParser
+
+    class Ids(HTMLParser):
+        def __init__(self):
+            super().__init__()
+            self.ids=set()
+        def handle_starttag(self,tag,attrs):
+            for key,value in attrs:
+                if key=="id":
+                    self.ids.add(value)
+
+    page=Path("city.html").read_text(encoding="utf-8")
+    script=Path("mission.js").read_text(encoding="utf-8")
+    reader=Ids()
+    reader.feed(page)
+    ids={"marketFilter","directionFilter","horizonFilter",
+         "entryVetoCount","entryVetoNote","crewFilterStatus",
+         "decisionFeed","crewGrid"}
+    assert ids.issubset(reader.ids)
+    assert "function matchesActiveScope(row)" in script
+    assert "raw.filter(d=>(activeAction" in script
+    assert "all.filter(matchesActiveScope)" in script
+    assert "renderCrew(state);renderTimeline(state)" in script
+    assert 'data-action="ENTER"' in page
+    assert "REAL ORDERS OFF" in page
