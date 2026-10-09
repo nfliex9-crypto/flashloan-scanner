@@ -6,6 +6,5 @@ COPY requirements-stream.txt .
 RUN pip install --no-cache-dir -r requirements-stream.txt \
     && useradd -r -u 10001 stream
 COPY aegis/ ./aegis/
-COPY sql/ ./sql/
 USER stream
 CMD ["sh", "-c", "python -m aegis.stream_schema && exec python -m aegis.stream_worker"]
