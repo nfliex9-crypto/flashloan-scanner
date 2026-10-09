@@ -85,13 +85,20 @@ class KrakenMicroWorker:
                 raw=await asyncio.to_thread(fetch_ohlc,PAIRS[sym][1],minute)
                 past=[x for x in raw if x.ts+minute*60<=now]
                 self.history[(sym,minute)]=deque(past[-720:],maxlen=720)
-                # Freeze first historical result; reconnects cannot optimize
-                # the holdout or overwrite a failed screen after seeing PnL.
-                if sym=='BTC':
-                    await asyncio.to_thread(self.record_screen,sym,minute,past[-720:])
             except Exception:
                 self.history[(sym,minute)]=deque(maxlen=720)
-                log.warning("Warmup unavailable: %s %dm. New entries disabled.",sym,minute)
+                log.warning("Market warmup unavailable: %s %dm. New entries disabled.",sym,minute)
+                continue
+            # Historical OOS receipts are optional research metadata. A
+            # missing table, slow DB, or screening exception must NOT erase
+            # valid market candles or disable all risk supervision.
+            if sym=="BTC":
+                try:
+                    await asyncio.to_thread(self.record_screen,sym,minute,past[-720:])
+                except Exception as exc:
+                    log.warning("OOS receipt unavailable for %s %dm (%s); "
+                                "forward fills remain independent of backtests.",
+                                sym,minute,type(exc).__name__)
         log.info("Loaded real closed-candle warmup for %dm public market feed",minute)
 
     @staticmethod
