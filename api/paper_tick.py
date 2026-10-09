@@ -2,12 +2,15 @@ from __future__ import annotations
 
 import hmac
 import json
+import logging
 import os
 from datetime import datetime, timezone
 from http.server import BaseHTTPRequestHandler
 
 from aegis.forward_broker import run_forward_tick
 
+
+log = logging.getLogger('aegis.paper_scheduler')
 
 MAX_REQUEST_BYTES = 4096
 MAX_SCHEDULE_DRIFT_SECONDS = 7200
@@ -54,9 +57,14 @@ class handler(BaseHTTPRequestHandler):
             self._reply(200, body)
         except (ValueError, TypeError, json.JSONDecodeError):
             self._reply(400, {"ok": False, "error": "invalid_scheduler_payload"})
-        except Exception:
-            # Database/provider exception strings can contain connection data.
-            # Do not return them from a public API.
+        except Exception as exc:
+            # Exception messages may contain credentials, signed URLs, SQL
+            # values or account identifiers. Log only a safe type and the
+            # standardized PostgreSQL SQLSTATE, NEVER the exception text.
+            state = getattr(exc, "sqlstate", None)
+            safe_state = state if isinstance(state, str) and len(state) == 5 and state.isalnum() else "NONE"
+            log.error("Forward tick aborted safely: exception_type=%s sqlstate=%s",
+                      type(exc).__name__, safe_state)
             self._reply(503, {"ok": False, "error": "paper_tick_temporarily_unavailable"})
 
     def do_GET(self):
