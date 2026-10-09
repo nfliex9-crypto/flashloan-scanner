@@ -177,10 +177,11 @@ function renderHorizonRouter(data){
   ).join(""):'<div class="await">No settled costed forward micro trades to rank. Research selection waits for observed performance.</div>';
 }
 
-function renderDemoBrokerLedger(data){
+function renderDemoBrokerLedger(data,micro){
   const d=data||{};
-  const accounts=d.connected_accounts||[];
-  const fills=d.recent_fills||[];
+  const m=micro||{};
+  const accounts=(d.connected_accounts||[]).filter(a=>a.provider==="MT5_DEMO");
+  const fills=(d.recent_fills||[]).filter(t=>t.provider==="MT5_DEMO");
   const provider=(name)=>accounts.find(x=>x.provider===name);
   const tile=(label,name)=>{
     const a=provider(name);
@@ -190,12 +191,19 @@ function renderDemoBrokerLedger(data){
       '<span class="bt-small-note">'+(a?"Last broker sync "+utc(a.last_synced)+" · "+safe(a.market):
       "Waiting for demo-only account connection")+'</span></div>';
   };
-  $("demoBrokerSummary").innerHTML=tile("MT5 GOLD","MT5_DEMO")+
-    tile("BINANCE SPOT BTC","BINANCE_SPOT_DEMO");
+  const btcAgents=(m.agents||[]).filter(a=>a.symbol==="BTC");
+  const intervals=m.active_intervals_minutes||[];
+  const btcPaper=btcAgents.length && intervals.length
+    ?"KRAKEN PAPER · "+intervals.length+" FRESH FEEDS"
+    :btcAgents.length?"PAPER · WAITING FOR FRESH FEEDS":"PAPER · NOT INITIALIZED";
+  $("demoBrokerSummary").innerHTML=tile("MT5 GOLD DEMO","MT5_DEMO")+
+    '<div class="bt-metric"><small>BTC · KRAKEN PAPER</small><strong>'+safe(btcPaper)+
+    '</strong><span class="bt-small-note">'+btcAgents.length+
+    ' persisted BTC research agents · No exchange demo or real orders</span></div>';
   $("demoBrokerStatus").textContent=accounts.length
     ? accounts.length+" broker demo sources · "+fills.length+
       " recent confirmed execution rows · Order automation: OFF"
-    : "No demo broker account linked. Independent shadow-paper agent activity continues separately.";
+    : "Gold MT5 Demo not linked yet. Bitcoin remains in independent Kraken Paper research; no broker orders.";
   $("demoBrokerFeed").innerHTML=fills.length?fills.map(t=>
     '<div class="agent-trade-item bt-trade-item">'+
     '<span class="trade-state closed">'+safe(t.side)+'</span>'+
@@ -568,7 +576,7 @@ function paintCity(d){
   renderResearchLab(d);
   renderMicroEngine(d.micro_engine);
   renderHorizonRouter(d.research_horizon_router);
-  renderDemoBrokerLedger(d.demo_brokers);
+  renderDemoBrokerLedger(d.demo_brokers,d.micro_engine);
   if(currentSelection?.kind==="agent"){
     const worker=workers.find(w=>w.agent_id===currentSelection.id);
     if(worker)fillAgentDrawer(worker);
