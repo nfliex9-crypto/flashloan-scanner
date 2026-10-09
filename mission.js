@@ -75,9 +75,11 @@ function matchesActiveScope(row){
   const market=$("marketFilter").value;
   const direction=$("directionFilter").value;
   const horizon=$("horizonFilter").value;
+  const interval=$("intervalFilter").value;
   return (market==="ALL"||row.symbol===market)&&
     (direction==="ALL"||(row.direction||"LONG")===direction)&&
-    (horizon==="ALL"||horizonFamily(row.interval_minutes)===horizon);
+    (horizon==="ALL"||horizonFamily(row.interval_minutes)===horizon)&&
+    (interval==="ALL"||Number(row.interval_minutes)===Number(interval));
 }
 function feedConnected(micro){
   const required=micro?.required_intervals_minutes||[1,5,15];
@@ -258,7 +260,7 @@ document.addEventListener("click",e=>{
     if(state)renderTimeline(state);
   }
 });
-["marketFilter","directionFilter","horizonFilter"].forEach(id=>
+["marketFilter","directionFilter","horizonFilter","intervalFilter"].forEach(id=>
   $(id).addEventListener("change",()=>{
     if(state){renderCrew(state);renderTimeline(state);}
   }));
