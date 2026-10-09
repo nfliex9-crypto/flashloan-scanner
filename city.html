@@ -47,13 +47,22 @@
         <div class="signal-metric"><span>قرارات الساعة</span><strong id="decisionsCount">—</strong><small>أحداث محفوظة بالفعل</small></div>
         <div class="signal-metric"><span>المراكز المفتوحة</span><strong id="openCount">—</strong><small>Micro Paper فقط</small></div>
         <div class="signal-metric"><span>آخر شمعة مؤكدة</span><strong id="lastBarAge">—</strong><small>لا قرارات على شمعة قيد التشكّل</small></div>
+        <div class="signal-metric"><span>دخول / رفض · آخر ساعة</span><strong id="entryVetoCount">—</strong><small id="entryVetoNote">من قرارات Neon الموثّقة</small></div>
       </section>
 
       <section class="operations">
         <div class="crew-zone">
           <div class="section-heading"><div><span class="overline">THE CREW / REAL WORKER STATE</span><h2>الفريق في غرفة التداول</h2><p>كل شخصية تمثّل خوارزمية حقيقية. تفاصيلها تأتي من قاعدة البيانات، وليس من رسوم متحركة وهمية.</p></div>
-            <div class="section-tools"><label class="sr-only" for="marketFilter">السوق</label><select id="marketFilter" aria-label="فلترة السوق"><option value="ALL">كل الأسواق</option><option value="BTC">Bitcoin</option><option value="ETH">Ethereum</option></select></div>
+            <div class="section-tools">
+              <label class="sr-only" for="marketFilter">السوق</label>
+              <select id="marketFilter" aria-label="فلترة السوق"><option value="ALL">كل الأسواق</option><option value="BTC">Bitcoin</option><option value="ETH">Ethereum</option></select>
+              <label class="sr-only" for="directionFilter">الاتجاه</label>
+              <select id="directionFilter" aria-label="فلترة الاتجاه"><option value="ALL">Long + Short</option><option value="LONG">Long فقط</option><option value="SHORT">Short فقط</option></select>
+              <label class="sr-only" for="horizonFilter">أسلوب التداول</label>
+              <select id="horizonFilter" aria-label="فلترة أسلوب التداول"><option value="ALL">كل الفواصل</option><option value="SCALPING">سكالبينغ 1m / 5m</option><option value="INTRADAY">يومي 15m / 1h</option><option value="SWING">سوينغ 4h / يومي</option><option value="POSITION">أسبوعي 1w</option></select>
+            </div>
           </div>
+          <div class="crew-filter-status" id="crewFilterStatus" role="status">بانتظار الوكلاء والفلترة الفعلية…</div>
           <div class="crew-grid" id="crewGrid"><div class="empty-state">نقرأ أعضاء الفريق وحالة المحرك من Neon…</div></div>
           <div class="crew-footnote"><span class="key-dot cyan"></span> القرار من شمعة مكتملة <span class="key-dot amber"></span> مراقبة/انتظار <span class="key-dot green"></span> دخول أو خروج ورقي موثّق</div>
         </div>
