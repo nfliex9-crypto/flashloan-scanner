@@ -121,3 +121,20 @@ test("MT5 demo ledger excludes BTC exchange demo and displays real BTC paper sta
   assert.match(fs.readFileSync("mission.js","utf8"),/BTC PAPER/);
   assert.match(fs.readFileSync("city.html","utf8"),/MT5 Gold Demo \+ Bitcoin Paper/);
 });
+
+
+test("mobile MT5 Demo onboarding uses MetaApi cloud, not Windows", () => {
+  const commandCenter = fs.readFileSync("city.html","utf8");
+  const bridge = fs.readFileSync("mt5-connect-ui.js","utf8");
+  assert.doesNotThrow(() => new vm.Script(bridge));
+  assert.match(commandCenter,/href="https:\/\/app\.metaapi\.cloud\/accounts"/);
+  assert.match(commandCenter,/id="mt5CloudPanel"/);
+  assert.match(commandCenter,/id="mt5CloudSync"/);
+  assert.match(commandCenter,/id="mt5CloudRefresh"/);
+  assert.match(commandCenter,/src="\/mt5-connect-ui\.js"/);
+  assert.match(commandCenter,/بيتكوين بيبقى Kraken Paper/);
+  assert.doesNotMatch(commandCenter,/mt5-connect\.cmd|mt5PairCreate/);
+  assert.match(bridge,/\/api\/mt5_cloud/);
+  assert.match(bridge,/doc\.state === "CONNECTED_DEMO"/);
+  assert.doesNotMatch(bridge,/mt5PairToken|pairingCode|brokerPassword/);
+});
