@@ -17,24 +17,39 @@
       const response = await fetch("/api/stage3?mt5_cloud=1",{cache:"no-store",headers:{"Accept":"application/json"}});
       const doc = await response.json();
       if(!response.ok || doc.ok !== true)throw new Error("service_unavailable");
-      configured = doc.state === "CONNECTED_DEMO";
-      if(doc.state === "CONNECTED_DEMO"){
-        status.textContent = "متصل · حساب MT5 Demo مؤكد (قراءة فقط)";
-        detail.textContent = "اتصال سحابي مؤكد من MetaApi؛ آخر سجل محفوظ يظهر في صفحة الصفقات.";
-        if(!preserveMessage)setMessage("لجلب آخر صفقات الذهب إلى Neon، أدخل مفتاح المالك واضغط المزامنة.");
+      configured = doc.state === "READY_FOR_VERIFICATION";
+      if(doc.state === "READY_FOR_VERIFICATION"){
+        status.textContent = "MetaApi مهيّأ · بانتظار التحقق من Demo وInvestor";
+        detail.textContent = "تجهيز API لا يثبت الاتصال؛ اضغط المزامنة بترخيص المالك لفحص حساب MT5 التجريبي.";
+        // Display only broker evidence actually persisted in Neon, never
+        // interpret a configured API token as a verified MT5 connection.
+        try{
+          const ledgerRes=await fetch("/api/stage3",{cache:"no-store"});
+          if(ledgerRes.ok){
+            const ledger=await ledgerRes.json();
+            const mt5=(ledger.demo_brokers?.connected_accounts||[])
+              .find(a=>a.provider==="MT5_DEMO");
+            if(mt5?.last_synced){
+              const delta=Date.now()-Date.parse(mt5.last_synced);
+              const date=new Date(mt5.last_synced).toLocaleString("ar-BE");
+              if(Number.isFinite(delta) && delta>=0 && delta<300000){
+                status.textContent="سجل MT5 Demo متزامن · قراءة فقط";
+              } else {
+                status.textContent="آخر سجل MT5 Demo قديم · يلزم مزامنة";
+              }
+              detail.textContent="آخر سجل وسيط محفوظ: "+date;
+            }
+          }
+        }catch(error){ /* Fail closed: no synthetic broker status. */ }
+        if(!preserveMessage)setMessage("أدخل مفتاح المالك ثم اضغط المزامنة للتحقق من Investor Mode وحساب Demo قبل حفظ أي صفقة.");
       } else if(doc.state === "SETUP_REQUIRED"){
         status.textContent = "بانتظار إعداد MetaApi في Vercel Preview";
         detail.textContent = "لم تُضبط بيانات AEGIS_METAAPI_TOKEN و AEGIS_METAAPI_ACCOUNT_ID بعد.";
-        setMessage("اربط حسابك أولًا في MetaApi، ثم ضع رمز MetaApi ومعرّف الحساب في أسرار Vercel. لا تلصقها هنا.");
-      } else if(doc.state === "NOT_VERIFIED"){
-        status.textContent = "غير مؤكد · لا توجد موافقة لتداول MT5";
-        detail.textContent = doc.reason === "not_verified_demo_account"
-          ? "الحساب ليس Demo بحسب MetaApi. تم رفض الاتصال." : "الخدمة السحابية غير متصلة أو بيانات الاعتماد غير صحيحة.";
-        setMessage("راجع اتصال الحساب التجريبي في MetaApi ومنطقة حسابك (london أو new-york).");
+        if(!preserveMessage)setMessage("اربط حسابك أولًا في MetaApi، ثم ضع رمز MetaApi ومعرّف الحساب في أسرار Vercel. لا تلصقها هنا.");
       } else{
         status.textContent = "إعداد MetaApi غير صالح";
         detail.textContent = "راجع متغيرات Vercel Preview، ولا تحاول استخدام حساب Real.";
-        setMessage("لا يمكن مزامنة حساب غير موثّق.");
+        if(!preserveMessage)setMessage("لا يمكن مزامنة حساب غير موثّق.");
       }
     } catch(error){
       configured = false;
@@ -62,6 +77,7 @@
           unauthorized:"مفتاح المالك غير صحيح.",
           metaapi_not_configured:"حساب MetaApi غير مربوط في Vercel.",
           not_verified_demo_account:"تم رفض الحساب لأنه ليس MT5 Demo موثقًا.",
+          investor_mode_not_verified:"تم رفض الربط: يجب الاتصال في MetaApi بكلمة مرور Investor للقراءة فقط، لا كلمة مرور التداول.",
           demo_ledger_sync_unavailable:"لم نتمكن من حفظ سجل الصفقات في Neon. تحقق من الجداول والصلاحيات.",
           metaapi_read_unavailable:"تعذر قراءة بيانات MetaApi. تحقق من الحساب والمنطقة."
         };
