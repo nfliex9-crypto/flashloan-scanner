@@ -20,6 +20,8 @@ jobs:
         run: python -c "import scanner; print('scanner import OK')"
       - name: Check browser JavaScript syntax
         run: node --check city.js && node --check mission.js
+      - name: Verify Dashboard routes, deep links and hidden research evidence
+        run: node --test tests/test_city_navigation.cjs
       - name: Verify standalone streaming worker imports
         run: python -c "from websockets.asyncio.client import connect; from aegis.stream_worker import KrakenMicroWorker; print('micro worker runtime OK')"
       - name: Run AEGIS tests
