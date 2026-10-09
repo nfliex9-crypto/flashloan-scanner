@@ -425,12 +425,60 @@ function paintBacktestResult(d){
     '<strong class="trade-ledger-pnl '+sign(t.net_pnl)+'">'+currency(t.net_pnl)+'</strong></div>'
   ).join(""):'<div class="await">No completed trades on this history. Do not infer profitability from an empty sample.</div>';
 }
+function paintWalkforwardReport(d){
+  $("btWalkforwardResults").hidden=false;
+  $("btWalkforwardState").textContent=(d.state||"INSUFFICIENT_EVIDENCE").replaceAll("_"," ");
+  $("btWalkforwardStats").textContent=
+    safe(d.asset)+" / "+safe(d.strategy)+" · "+safe(d.direction)+" · "+safe(d.interval)+
+    " · "+Number(d.folds_passed||0)+"/3 folds meet research gates · "+
+    Number(d.closed_trades||0)+" closed virtual trades · NO BROKER EXECUTION";
+  const folds=d.folds||[];
+  $("btWalkforwardFolds").innerHTML=folds.map(f=>
+    '<div class="strategy-rank-row">'+
+    '<strong class="strategy-rank-number">F'+Number(f.fold)+'</strong>'+
+    '<span class="strategy-rank-name"><strong>'+utc(f.start)+' → '+utc(f.end)+'</strong>'+
+    '<small>'+Number(f.bars)+' bars · '+fixed(f.days,2)+' days · '+
+      Number(f.base.trades)+' closed trades'+
+      (f.blockers.length?' · '+safe(f.blockers.join(", ")):' · Research gates met')+'</small></span>'+
+    '<span class="strategy-rank-metrics">Closed net <span class="'+sign(f.base_closed_net_pnl)+'">'+
+      currency(f.base_closed_net_pnl)+'</span> · 2x cost <span class="'+sign(f.stress_closed_net_pnl)+'">'+
+      currency(f.stress_closed_net_pnl)+'</span></span>'+
+    '<span class="strategy-rank-state '+(f.passed?'leader':'observing')+'">'+
+    (f.passed?"SCREEN PASS":"INSUFFICIENT")+'</span></div>').join("");
+}
+async function runWalkforward(){
+  const btn=$("btWalkforwardRun");
+  if(btn.disabled)return;
+  btn.disabled=true;
+  $("btWalkforwardResults").hidden=true;
+  $("btResults").hidden=true;
+  $("btCompareResults").hidden=true;
+  $("btStatus").textContent="Checking three chronological history windows with cost stress…";
+  const params=new URLSearchParams({
+    backtest:"walkforward",asset:$("btAsset").value,strategy:$("btStrategy").value,
+    interval:$("btInterval").value,cost:$("btCosts").value,
+    direction:$("btDirection").value,bars:$("btBars").value});
+  try{
+    const response=await fetch("/api/stage3?"+params.toString());
+    const data=await response.json();
+    if(!response.ok||data.ok!==true)
+      throw new Error(data.error||("Historical verification unavailable ("+response.status+")"));
+    paintWalkforwardReport(data);
+    $("btStatus").textContent="Walk-forward complete: "+Number(data.folds_passed)+
+      "/3 folds passed historical screens. Repeated tuning on this history is NOT independent forward proof.";
+  }catch(err){
+    $("btStatus").textContent="Walk-forward unavailable: "+err.message+
+      ". Existing paper/demo systems were not touched.";
+  }finally{btn.disabled=false;}
+}
+
 async function runBacktest(){
   const btn=$("btRun");
   if(btn.disabled)return;
   btn.disabled=true;
   $("btCompareResults").hidden=true;
   $("btResults").hidden=true;
+  $("btWalkforwardResults").hidden=true;
   $("btStatus").textContent="Fetching historical closed candles and calculating costed fills…";
   const params=new URLSearchParams({
     backtest:"1",asset:$("btAsset").value,strategy:$("btStrategy").value,
@@ -867,6 +915,7 @@ async function pollIntel(){
 }
 function init(){
   $("btRun").addEventListener("click",runBacktest);
+  $("btWalkforwardRun").addEventListener("click",runWalkforward);
   $("btCompare").addEventListener("click",compareBacktestStrategies);
   document.querySelectorAll("[data-exp-input]").forEach(el=>
     el.addEventListener("change",()=>{
