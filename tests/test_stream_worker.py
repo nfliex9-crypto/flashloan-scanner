@@ -109,3 +109,42 @@ def test_kraken_interval_subscriptions_use_three_separate_sockets(monkeypatch):
     assert all(msg["req_id"]==msg["params"]["interval"] for msg in sent)
     for interval in (1,5,15):
         assert (f"kraken-public-micro-{interval}m","CONNECTED") in statuses
+
+
+
+def test_optional_historical_screen_failure_preserves_verified_warmup(monkeypatch):
+    """Missing OOS receipt table must not wipe closed candles or cancel risk exits."""
+    from aegis import stream_worker as worker_module
+    now=datetime(2026,10,9,12,0,0,tzinfo=timezone.utc)
+    monkeypatch.setattr(worker_module,"_now",lambda:now)
+    start=int(now.timestamp())-201*60
+    source=[Candle(ts=start+i*60,open=100,high=101,low=99,close=100,volume=1)
+            for i in range(200)]
+    monkeypatch.setattr(worker_module,"fetch_ohlc",
+                        lambda pair,minute:list(source))
+    w=KrakenMicroWorker(["BTC"])
+    def bad_receipt(*args):
+        raise RuntimeError("Optional OOS receipt unavailable")
+    w.record_screen=bad_receipt
+    asyncio.run(w.bootstrap_interval(1))
+    assert len(w.history[("BTC",1)])==200
+    assert w.history[("BTC",1)][-1].ts==source[-1].ts
+
+
+def test_weekly_kraken_candle_accepts_monday_utc_and_closes_next_week():
+    from aegis.stream_core import ClosedBarGate
+    monday=datetime(2026,10,5,0,0,tzinfo=timezone.utc)
+    next_monday=monday+timedelta(days=7)
+    def weekly(at):
+        return {"symbol":"BTC/USD","interval":10080,
+                "interval_begin":at.isoformat().replace("+00:00","Z"),
+                "open":"100","high":"103","low":"98","close":"101",
+                "volume":"5"}
+    gate=ClosedBarGate()
+    assert gate.consume({"channel":"ohlc","type":"snapshot","data":[weekly(monday)]},
+                        monday+timedelta(days=1))==[]
+    events=gate.consume({"channel":"ohlc","type":"update","data":[weekly(next_monday)]},
+                        next_monday+timedelta(seconds=2))
+    assert len(events)==1
+    assert events[0].candle.ts==int(monday.timestamp())
+    assert events[0].interval_minutes==10080
