@@ -316,10 +316,23 @@
           <div class="bt-button-container">
             <button class="full-cta" id="btRun">RUN VERIFIED BACKTEST ↗</button>
           </div>
+          <div class="bt-button-container">
+            <button class="full-cta" id="btCompare">COMPARE ALL 7 ↗</button>
+          </div>
         </div>
         <p class="filter-explainer">No lookahead: signals form at bar close, with next-open virtual fills and pessimistic OHLC stops. SHORT includes hypothetical financing. BTC short results cannot be placed on Binance Spot Demo; a separate verified derivatives demo would be required.</p>
         <div id="btStatus" class="lab-result" role="status">Choose your settings and run a historical test. Results are not saved as forward fills.</div>
       </div>
+      <section id="btCompareResults" class="module" hidden>
+        <header class="module-head">
+          <div><p class="eyebrow">SAME SOURCE · SAME DATE RANGE · COST-STRESSED</p>
+          <h2>7-strategy historical comparison</h2></div>
+          <span class="module-tag">RESEARCH · NO AUTO-PROMOTION</span>
+        </header>
+        <p id="btCompareDetails" class="filter-explainer">A comparison uses identical historical closed candles for every strategy.</p>
+        <div id="btCompareRows" class="strategy-filter-board"></div>
+        <p id="btCompareWarnings" class="filter-explainer"></p>
+      </section>
       <div id="btResults" class="module" hidden>
         <header class="module-head"><div><p class="eyebrow">REAL HISTORY · SIMULATED FILLS</p><h2>Results &amp; out-of-sample</h2></div><span class="module-tag" id="btDataSource">Historical reconstruction</span></header>
         <div id="btHeadline" class="bt-headline"></div>

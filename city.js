@@ -338,6 +338,55 @@ function renderBacktestChart(curve){
   }).join("");
   svg.innerHTML=grid+'<path d="'+path+'" stroke="'+stroke+'" stroke-width="2.4" fill="none" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>';
 }
+function renderHistoricalLeaderboard(d){
+  $("btResults").hidden=true;
+  $("btCompareResults").hidden=false;
+  $("btCompareDetails").textContent=d.strategies_tested+" strategies · "+d.asset+
+    " · "+d.direction+" · "+d.interval+" · "+d.bars+" verified bars · "+
+    d.holdout_bars+" OOS bars ("+fixed(d.holdout_days,2)+" calendar days). "+
+    "Historical screen needs at least "+d.minimum_screen_days+" OOS days.";
+  $("btCompareRows").innerHTML=(d.results||[]).map((r,i)=>{
+    const ok=r.historical_screen_passed, h=r.holdout||{},sh=r.stress_holdout||{};
+    const state=ok?"HISTORICAL SCREEN ONLY":"NOT QUALIFIED";
+    return '<button class="strategy-rank-row" data-comparestrategy="'+safe(r.strategy)+'">'+
+      '<strong class="strategy-rank-number">#'+(i+1)+'</strong>'+
+      '<span class="strategy-rank-name"><strong>'+safe(r.strategy)+'</strong>'+
+      '<small>'+safe(ok?"Still requires untouched forward evidence":(r.blockers||[]).join(" · "))+'</small></span>'+
+      '<span class="strategy-rank-metrics"><span>OOS '+Number(h.trades||0)+' fills</span>'+
+      '<span class="'+sign(h.net_pnl)+'">OOS '+currency(h.net_pnl)+'</span>'+
+      '<span class="'+sign(sh.net_pnl)+'">2× '+currency(sh.net_pnl)+'</span>'+
+      '<span>DD '+fixed(h.max_drawdown_pct,2)+'%</span></span>'+
+      '<span class="strategy-rank-state '+(ok?"leader":"observing")+'">'+state+'</span></button>';
+  }).join("");
+  $("btCompareWarnings").textContent=(d.warnings||[]).join(" ");
+  $("btCompareRows").querySelectorAll("[data-comparestrategy]").forEach(el=>
+    el.addEventListener("click",()=>{
+      $("btStrategy").value=el.dataset.comparestrategy;
+      runBacktest();
+    }));
+}
+async function compareBacktestStrategies(){
+  const run=$("btRun"),btn=$("btCompare");
+  if(run.disabled||btn.disabled)return;
+  run.disabled=true;btn.disabled=true;
+  $("btStatus").textContent="Comparing 7 strategies on the SAME closed candles and 2× cost stress…";
+  const q=new URLSearchParams({
+    backtest:"compare",asset:$("btAsset").value,interval:$("btInterval").value,
+    direction:$("btDirection").value,cost:$("btCosts").value,
+    bars:$("btBars").value});
+  try{
+    const res=await fetch("/api/stage3?"+q,{cache:"default"});
+    const data=await res.json();
+    if(!res.ok||data.ok!==true)throw new Error(data.error||"Historical comparison unavailable");
+    renderHistoricalLeaderboard(data);
+    $("btStatus").textContent=data.strategies_tested+
+      " costed historical comparisons completed. "+data.historical_shortlist.length+
+      " pass historical screening; NONE are approved for trading.";
+  }catch(err){
+    $("btStatus").textContent="Comparison unavailable: "+err.message;
+  }finally{run.disabled=false;btn.disabled=false;}
+}
+
 function paintBacktestResult(d){
   const stats=d.full,hold=d.holdout;
   $("btResults").hidden=false;
@@ -380,6 +429,7 @@ async function runBacktest(){
   const btn=$("btRun");
   if(btn.disabled)return;
   btn.disabled=true;
+  $("btCompareResults").hidden=true;
   $("btResults").hidden=true;
   $("btStatus").textContent="Fetching historical closed candles and calculating costed fills…";
   const params=new URLSearchParams({
@@ -817,6 +867,7 @@ async function pollIntel(){
 }
 function init(){
   $("btRun").addEventListener("click",runBacktest);
+  $("btCompare").addEventListener("click",compareBacktestStrategies);
   document.querySelectorAll("[data-exp-input]").forEach(el=>
     el.addEventListener("change",()=>{
       experimentDirty=true;

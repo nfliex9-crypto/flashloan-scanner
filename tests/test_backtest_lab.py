@@ -150,3 +150,36 @@ def test_gold_short_backtest_warnings_do_not_claim_binance_short_is_gold():
     assert result["live_execution_enabled"] is False
     assert any("MT5 Demo" in w for w in result["warnings"])
     assert not any("Binance Spot Demo" in w for w in result["warnings"])
+
+
+def test_compare_all_strategies_fetches_real_history_once(monkeypatch):
+    from aegis import backtest_lab as bt
+    calls=[]
+    xs=samples(n=320,period=3600)
+    def loader(asset,interval,bars,now=None):
+        calls.append((asset,interval,bars))
+        return xs,"UNIT TEST CLOSED HISTORICAL CANDLES"
+    monkeypatch.setattr(bt,"load_backtest_bars",loader)
+    report=bt.run_strategy_comparison(
+        {"asset":"BTC","interval":"1h","direction":"BOTH","bars":"320"})
+    assert len(calls)==1
+    assert report["mode"]=="HISTORICAL_STRATEGY_COMPARISON"
+    assert report["strategies_tested"]==7
+    assert len({row["strategy"] for row in report["results"]})==7
+    assert report["live_execution_enabled"] is False
+    assert report["auto_promotion_enabled"] is False
+    assert all(row["order_execution_authorized"] is False for row in report["results"])
+    assert report["holdout_bars"]==96
+
+
+def test_comparison_never_shortlists_without_real_holdout_evidence(monkeypatch):
+    from aegis import backtest_lab as bt
+    xs=samples(n=200,period=300)
+    monkeypatch.setattr(bt,"load_backtest_bars",
+        lambda asset,interval,bars,now=None:(xs,"UNIT TEST ONLY"))
+    report=bt.run_strategy_comparison(
+        {"asset":"BTC","interval":"5min","direction":"SHORT","bars":"200"})
+    assert report["historical_shortlist"]==[]
+    assert report["state"]=="INSUFFICIENT_HISTORICAL_EVIDENCE"
+    assert all("held-out calendar window too short" in r["blockers"]
+               for r in report["results"])

@@ -150,3 +150,10 @@ button,a{font:inherit}button{cursor:pointer}button:focus-visible,a:focus-visible
 .bt-trade-item{cursor:default}
 @media(max-width:920px){.backtest-control-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.bt-headline{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media(max-width:580px){.backtest-control-grid{grid-template-columns:1fr}.bt-headline{grid-template-columns:repeat(2,minmax(0,1fr))}.bt-comparison-row{display:grid;grid-template-columns:1fr 1fr;gap:9px}.bt-comparison-row>strong{grid-column:1/-1}.bt-metric{padding:9px}.bt-trade-item{flex-wrap:wrap}}
+
+/* Compare 7 strategies in one read-only source fetch; no extra dashboard functions. */
+#btCompareResults[hidden]{display:none!important}
+#btCompareRows{max-height:640px;overflow:auto}
+#btCompareRows .strategy-rank-row{cursor:pointer}
+#btCompareRows .strategy-rank-metrics{font-size:10px;line-height:1.6}
+#btCompareRows .strategy-rank-name small{white-space:normal;overflow-wrap:anywhere}

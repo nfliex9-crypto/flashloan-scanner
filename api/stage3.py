@@ -43,15 +43,17 @@ class handler(BaseHTTPRequestHandler):
         # testing cannot touch a broker or persist simulated fills in Neon.
         query=parse_qs(urlsplit(self.path).query,keep_blank_values=True)
         if "backtest" in query:
-            if query.pop("backtest")!=["1"]:
+            mode=query.pop("backtest")
+            if mode not in (["1"],["compare"]):
                 self._reply(400,{"ok":False,"error":"invalid_backtest_mode"})
                 return
             if any(len(v)!=1 for v in query.values()):
                 self._reply(400,{"ok":False,"error":"duplicate_backtest_parameter"})
                 return
             try:
-                from aegis.backtest_lab import run_backtest
-                report=run_backtest({key:values[0] for key,values in query.items()})
+                from aegis.backtest_lab import run_backtest,run_strategy_comparison
+                params={key:values[0] for key,values in query.items()}
+                report=run_backtest(params) if mode==["1"] else run_strategy_comparison(params)
                 self._reply(200,report,cache="public, s-maxage=300, stale-while-revalidate=120")
             except ValueError as exc:
                 # Only finite, authored validation messages. Never return

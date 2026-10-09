@@ -334,3 +334,78 @@ def run_backtest(params:dict,now:datetime|None=None)->dict:
             "last_open_position":full["open_position"],
             "risk_model":full["parameters"],"trades":full["trades"][-75:],
             "equity_curve":full["equity_curve"][-300:],"warnings":warnings}
+
+
+def run_strategy_comparison(params:dict, now:datetime|None=None)->dict:
+    """Evaluate every strategy on SAME real source history, fetched once.
+
+    This is an exploratory historical ranking, not a strategy promotion.
+    Even an apparently strong holdout becomes biased if repeatedly optimized.
+    Candidate checks require meaningful held-out sample, diverse time range
+    and survival after doubled modeled transaction/financing costs.
+    """
+    p=validate_backtest_request(params)
+    candles,source=load_backtest_bars(p["asset"],p["interval"],p["bars"],now=now)
+    split=max(65,int(len(candles)*.70))
+    oos_days=(len(candles)-split)*INTERVALS[p["interval"]]/86400.0
+    horizon=classify_horizon(p["interval"])
+    required_days={"SCALPING":7,"INTRADAY":14,"SWING":60,"POSITION":120}[horizon]
+    base_cost=COST_MODES[p["cost"]]
+    results=[]
+    for strategy in STRATEGIES:
+        common={"asset":p["asset"],"strategy":strategy,"interval":p["interval"],
+                "direction":p["direction"]}
+        full=simulate_costed_backtest(candles,**common,cost_multiplier=base_cost)
+        hold=simulate_costed_backtest(candles,**common,cost_multiplier=base_cost,
+                                     entry_from=split)
+        stressed=simulate_costed_backtest(candles,**common,
+                                         cost_multiplier=max(2.0,base_cost),
+                                         entry_from=split)
+        h=hold["stats"]
+        sh=stressed["stats"]
+        blockers=[]
+        if h["trades"]<20:
+            blockers.append("fewer than 20 held-out closed trades")
+        if oos_days<required_days:
+            blockers.append("held-out calendar window too short")
+        if h["net_pnl"]<=0 or h["profit_factor"]<1.25:
+            blockers.append("insufficient net profit after modeled costs")
+        if sh["net_pnl"]<=0:
+            blockers.append("fails 2x execution cost stress")
+        if h["max_drawdown_pct"]>=4.0 or sh["max_drawdown_pct"]>=4.0:
+            blockers.append("at least 4% held-out drawdown")
+        # This is solely a historical research screening gate, NOT a
+        # statistically independent final validation or live/paper promotion.
+        passes=len(blockers)==0
+        results.append({
+            "strategy":strategy,"full":full["stats"],"holdout":h,
+            "stress_holdout":sh,"historical_screen_passed":passes,
+            "blockers":blockers,"order_execution_authorized":False,
+        })
+    results.sort(key=lambda r:(r["historical_screen_passed"],
+                                r["holdout"]["net_pnl"],
+                                r["holdout"]["trades"]),reverse=True)
+    screened=[r["strategy"] for r in results if r["historical_screen_passed"]]
+    return {
+        "ok":True,"mode":"HISTORICAL_STRATEGY_COMPARISON",
+        "asset":p["asset"],"direction":p["direction"],
+        "interval":p["interval"],"horizon":horizon,
+        "cost_mode":p["cost"],"source":source,
+        "bars":len(candles),"holdout_bars":len(candles)-split,
+        "holdout_days":round(oos_days,2),
+        "holdout_start":datetime.fromtimestamp(candles[split].ts,timezone.utc).isoformat(),
+        "minimum_screen_days":required_days,
+        "strategies_tested":len(results),
+        "historical_shortlist":screened,
+        "state":"HISTORICAL_SCREEN_ONLY" if screened else "INSUFFICIENT_HISTORICAL_EVIDENCE",
+        "live_execution_enabled":False,
+        "demo_order_execution_enabled":False,
+        "auto_promotion_enabled":False,
+        "results":results,
+        "warnings":[
+            "All strategies were compared using the same historical candle set and held-out dates.",
+            "Repeated strategy selection on this holdout causes selection bias: require untouched future forward results.",
+            "Fees, slippage and short financing are assumptions, not executable exchange quotes.",
+            "No strategy is enabled for live or broker-demo execution by this comparison.",
+        ],
+    }
