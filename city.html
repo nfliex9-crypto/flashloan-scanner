@@ -90,28 +90,26 @@
         <div class="rail-card"><div class="rail-header"><span class="overline">GOLD DEMO + BTC PAPER / VERIFIED SOURCES</span><span class="rail-chip">READ ONLY</span></div><h3>MT5 Gold Demo + Bitcoin Paper</h3><p>الذهب: سجل صفقات MT5 Demo موثّق من الوسيط عند الربط. البيتكوين: قرارات وصفقات Paper فقط من محرك Kraken؛ لا أوامر Binance أو أموال حقيقية.</p><div class="demo-rows" id="demoStatus"><span>MT5 Gold Demo</span><strong>غير متصل</strong><span>Bitcoin Paper</span><strong>جاري فحص Kraken</strong></div><a href="/city-research.html#labView" class="text-link">فتح سجل الحسابات التفصيلي ↗</a></div>
         <div class="rail-card"><div class="rail-header"><span class="overline">RESEARCH / HORIZON SELECTION</span><span class="rail-chip">EVIDENCE ONLY</span></div><h3>مين الأفضل؟</h3><p>اختيار السكالبينغ أو اليومي أو السوينغ يحتاج صفقات مغلقة كافية بعد التكاليف. لا نعطي تصنيفًا رابحًا بناءً على اختبار تاريخي وحده.</p><div id="horizonSummary" class="horizon-state">بانتظار أدلة Forward كافية</div><a href="/city-research.html#backtestView" class="text-link">نتائج الاستراتيجيات والـBacktest ↗</a></div>
       </section>
-      <section class="rail-card mt5-connect-panel" id="mt5ConnectPanel" aria-labelledby="mt5ConnectHeading">
-        <div class="rail-header"><span class="overline">MT5 DEMO / ACCOUNT CONNECTION</span><span class="rail-chip safe">DEMO READ ONLY</span></div>
-        <h2 id="mt5ConnectHeading">ربط حساب MT5 Demo للذهب</h2>
-        <p>ربط آمن من الموقع برمز مؤقت؛ لا تدخل كلمة مرور MT5 أو رقم الحساب هنا. موصل صغير على Windows يقرأ صفقات الذهب المؤكدة ويرسلها للوحة، ولا يرسل أوامر للوسيط. Bitcoin يبقى Kraken Paper.</p>
-        <div class="mt5-connect-state" role="status" aria-live="polite"><span>حالة MT5 Demo</span><strong id="mt5LinkStatus">جاري التحقق…</strong><small id="mt5LinkLastSync">بانتظار قراءة حالة الاقتران من Neon</small></div>
+      <section class="rail-card mt5-connect-panel" id="mt5CloudPanel" aria-labelledby="mt5ConnectHeading">
+        <div class="rail-header"><span class="overline">MT5 DEMO · CLOUD CONNECTOR</span><span class="rail-chip safe">NO WINDOWS · READ ONLY</span></div>
+        <h2 id="mt5ConnectHeading">ربط MT5 Demo من الموبايل</h2>
+        <p>ما بتحتاج Windows ولا تشغيل برنامج محلي. نستخدم خدمة MetaApi السحابية للاتصال بحساب MT5 Demo الخاص بالذهب فقط. ما منطلب كلمة مرور الوسيط هون، والبيتكوين بيبقى Kraken Paper.</p>
+        <div class="mt5-connect-state" role="status" aria-live="polite"><span>حالة اتصال MT5 السحابي</span><strong id="mt5LinkStatus">جارٍ فحص اتصال MetaApi…</strong><small id="mt5LinkLastSync">لن يظهر اتصال أخضر إلا بعد التحقق من نوع الحساب Demo فعليًا.</small></div>
         <div class="mt5-connect-steps">
-          <div class="mt5-connect-step"><b>١</b><div><strong>أنشئ رمز ربط مؤقت</strong><p>يتطلب مفتاح تحكم AEGIS الخاص بالمالك في بيئة Vercel، ولا يُخزن في المتصفح.</p></div></div>
-          <div class="mt5-connect-step"><b>٢</b><div><strong>نزّل موصل Windows مرة واحدة</strong><p>شغّل الملف على جهاز MT5؛ سيطلب الرمز فقط ويتأكد تلقائيًا من أن الحساب Demo.</p><a class="mt5-download" href="/mt5-connect.cmd" download="mt5-connect.cmd">↓ تحميل موصل MT5 Demo لـWindows</a></div></div>
-          <div class="mt5-connect-step"><b>٣</b><div><strong>شاهد الاتصال والصفقات هنا</strong><p>تظهر المزامنة من سجل حقيقي كل دقيقة عند اكتمال اقتران الحساب، دون كلمة مرور Neon على جهازك.</p></div></div>
+          <div class="mt5-connect-step"><b>١</b><div><strong>اربط MT5 Demo في MetaApi</strong><p>من المتصفح افتح منصة MetaApi، أضف حساب MT5 عند وسيطك باستخدام كلمة مرور المستثمر Investor للقراءة فقط. لا تدخل كلمة مرور التداول الرئيسية في AEGIS.</p><a class="mt5-download" href="https://app.metaapi.cloud/accounts" target="_blank" rel="noopener noreferrer">فتح منصة MetaApi السحابية ↗</a></div></div>
+          <div class="mt5-connect-step"><b>٢</b><div><strong>احفظ بيانات API في Vercel Preview</strong><p>بعد الاتصال، خزّن AEGIS_METAAPI_TOKEN و AEGIS_METAAPI_ACCOUNT_ID، والمنطقة AEGIS_METAAPI_REGION (new-york أو london) في Vercel Environment Variables، لا في هذا الموقع أو GitHub.</p></div></div>
+          <div class="mt5-connect-step"><b>٣</b><div><strong>افحص الاتصال وزامن سجل الذهب</strong><p>عند تهيئة المفتاح والتحقق من أن الحساب Demo فعليًا، استخدم زر المزامنة. يقرأ النظام صفقات XAUUSD فقط ويحفظها في Neon بعد التكاليف.</p></div></div>
         </div>
         <div class="mt5-link-actions">
-          <label for="mt5OwnerKey">مفتاح تحكم المالك (ليس كلمة مرور MT5)</label>
-          <input type="password" id="mt5OwnerKey" autocomplete="off" spellcheck="false" placeholder="AEGIS_CONTROL_TOKEN" aria-describedby="mt5PairHelp">
-          <div class="mt5-action-buttons"><button id="mt5PairCreate" type="button" class="refresh-button" disabled>إنشاء رمز ربط 15 دقيقة</button><button id="mt5PairRevoke" type="button" class="refresh-button" disabled>فصل MT5 Demo</button></div>
-          <p id="mt5PairHelp" role="status">لن يُنشأ رمز قبل تحققنا من جدول الربط ومفتاح المالك.</p>
-          <div class="mt5-pair-secret" id="mt5PairSecret" hidden>
-            <span>رمز مؤقت — يُعرض مرة واحدة فقط؛ لا تشاركه ولا ترسله في المحادثة.</span>
-            <code id="mt5PairToken" dir="ltr"></code>
-            <button id="mt5PairCopy" type="button" class="refresh-button">نسخ الرمز</button>
+          <label for="mt5OwnerKey">مفتاح تحكم AEGIS الخاص بالمالك (وليس كلمة مرور MT5 أو MetaApi)</label>
+          <input type="password" id="mt5OwnerKey" autocomplete="off" spellcheck="false" placeholder="AEGIS_CONTROL_TOKEN">
+          <div class="mt5-action-buttons">
+            <button id="mt5CloudSync" type="button" class="refresh-button" disabled>التحقق ومزامنة صفقات MT5 Demo</button>
+            <button id="mt5CloudRefresh" type="button" class="refresh-button">تحديث حالة الربط</button>
           </div>
+          <p id="mt5PairHelp" role="status">التحقق من الحساب وقراءة صفقاته يتطلبان إعداد MetaApi في Vercel أولًا.</p>
         </div>
-        <p class="mt5-security">الربط هنا قراءة فقط. يجب أن يظل MT5 مفتوحًا على Windows، ويُخزَّن رمز الاتصال اللاحق في Windows Credential Manager. لا يعمل هذا الربط مع حساب Real.</p>
+        <p class="mt5-security">لا ندخل كلمات المرور على موقع AEGIS. MetaApi خدمة مستقلة قد تفرض رسومًا حسب الاشتراك؛ احرص على استخدام حساب MT5 تجريبي وكلمة مرور مستثمر للقراءة فقط. لا توجد أوامر تنفيذ MT5 في هذا التكامل.</p>
       </section>
       <section class="rail-card evidence-panel">
         <span class="overline">ADAPTIVE TIMEFRAME SELECTOR</span><h2>الفواصل والأدلة الفعلية</h2>
