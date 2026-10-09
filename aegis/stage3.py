@@ -366,6 +366,17 @@ def get_stage3_state() -> dict:
             "GROUP BY symbol,interval_minutes ORDER BY symbol,interval_minutes")
         micro_bar_stats=list(cur.fetchall())
         cur.execute(
+            "SELECT agent_id,bar_start,observed_at,symbol,interval_minutes,"
+            "strategy,direction,action,reason,reference_price,position_id,"
+            "qty,risk_stop,risk_target,net_pnl "
+            "FROM aegis.stream_decisions "
+            "ORDER BY observed_at DESC,bar_start DESC LIMIT 160")
+        micro_decision_journal=list(cur.fetchall())
+        cur.execute(
+            "SELECT action,count(*) AS count FROM aegis.stream_decisions "
+            "WHERE observed_at>=now()-interval '1 hour' GROUP BY action")
+        micro_decision_totals=list(cur.fetchall())
+        cur.execute(
             "SELECT t.agent_id,a.strategy,t.symbol,t.interval_minutes,t.direction AS side,count(*) AS trades,"
             "COALESCE(sum(t.net_pnl),0) AS net_pnl,"
             "COALESCE(sum(t.net_pnl) FILTER(WHERE t.net_pnl>0),0) AS gross_gains,"
@@ -477,6 +488,8 @@ def get_stage3_state() -> dict:
         "agents":micro_agents,
         "open_positions":micro_positions,
         "recent_closed_trades":micro_trades,
+        "decision_journal":micro_decision_journal,
+        "decision_counts_last_hour":micro_decision_totals,
         "bar_stats":micro_bar_stats,
         "risk_model":"0.25% budgeted stop risk · 20% notional cap · 5% circuit",
     }
