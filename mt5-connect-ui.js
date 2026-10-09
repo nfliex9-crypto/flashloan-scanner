@@ -1,102 +1,82 @@
-/* Owner-gated MT5 DEMO onboarding; browser never receives broker credentials.
- * A pairing key authorizes READ-ONLY bridge snapshots, not trade orders.
+/* MT5 MetaApi cloud connection UI. No broker login/password ever reaches AEGIS.
+ * The browser may submit only the separate owner control key to trigger a
+ * read-only snapshot, never an order.
  */
 "use strict";
 (() => {
-  const el = id => document.getElementById(id);
-  const state = el("mt5LinkStatus"), last = el("mt5LinkLastSync");
-  const hint = el("mt5PairHelp"), owner = el("mt5OwnerKey");
-  const create = el("mt5PairCreate"), revoke = el("mt5PairRevoke");
-  const panel = el("mt5PairSecret"), tokenLabel = el("mt5PairToken");
-  let pairingCode = "", schemaReady = false, busy = false, connected = false;
-
-  const setHint = message => { hint.textContent = message; };
-  const time = value => value ? new Date(value).toLocaleString("ar-BE") : "—";
+  const $ = id => document.getElementById(id);
+  const status = $("mt5LinkStatus"), detail = $("mt5LinkLastSync");
+  const help = $("mt5PairHelp"), owner = $("mt5OwnerKey");
+  const sync = $("mt5CloudSync"), refreshButton = $("mt5CloudRefresh");
+  let configured = false, busy = false;
+  const setMessage = message => { help.textContent = message; };
+  const update = () => {sync.disabled = busy || !configured || owner.value.trim().length < 24;};
   async function refresh() {
-    try {
-      const response = await fetch("/api/mt5_link",{cache:"no-store",headers:{"Accept":"application/json"}});
-      const data = await response.json();
-      if (!response.ok || data.ok !== true) throw Error(data.error || "connection_status_unavailable");
-      schemaReady = data.state !== "SETUP_REQUIRED";
-      connected = data.state === "CONNECTED_DEMO" || data.state === "STALE_DEMO";
-      const labels = {
-        CONNECTED_DEMO:"متصل بحساب MT5 Demo · قراءة فقط",
-        STALE_DEMO:"المزامنة متأخرة · افحص موصل Windows",
-        AWAITING_CONNECTOR:"بانتظار تشغيل موصل Windows",
-        UNLINKED:"لا يوجد حساب MT5 Demo مربوط",
-        SETUP_REQUIRED:"إعداد قاعدة البيانات مطلوب"
-      };
-      state.textContent = labels[data.state] || "حالة اتصال غير معروفة";
-      last.textContent = data.last_synced
-        ? "آخر مزامنة: " + time(data.last_synced) + (data.market ? " · " + data.market : "")
-        : "لا توجد صفقات مزامنة معتمدة بعد";
-      if (!schemaReady) setHint("يجب تطبيق sql/007_demo_accounts.sql و sql/012_mt5_pairings.sql على قاعدة Neon المخصصة أولًا. لا يمكن إتمام الربط حتى يتم ذلك.");
-      else if(!pairingCode) setHint("لإنشاء رمز الربط، أدخل مفتاح AEGIS_CONTROL_TOKEN الخاص بالموقع (وليس بيانات MT5).");
-    } catch(error) {
-      schemaReady = false;
-      connected = false;
-      state.textContent = "تعذر التحقق من خدمة MT5";
-      last.textContent = "لا يمكن الادعاء بأن الحساب متصل دون قراءة موثقة";
-      setHint("خدمة ربط MT5 غير متاحة حاليًا. تحقق من نشر Vercel واتصال Neon.");
+    if(busy)return;
+    try{
+      const response = await fetch("/api/mt5_cloud",{cache:"no-store",headers:{"Accept":"application/json"}});
+      const doc = await response.json();
+      if(!response.ok || doc.ok !== true)throw new Error("service_unavailable");
+      configured = doc.state !== "SETUP_REQUIRED" && doc.state !== "CONFIG_INVALID";
+      if(doc.state === "CONNECTED_DEMO"){
+        status.textContent = "متصل · حساب MT5 Demo مؤكد (قراءة فقط)";
+        detail.textContent = "اتصال سحابي مؤكد من MetaApi؛ آخر سجل محفوظ يظهر في صفحة الصفقات.";
+        setMessage("لجلب آخر صفقات الذهب إلى Neon، أدخل مفتاح المالك واضغط المزامنة.");
+      } else if(doc.state === "SETUP_REQUIRED"){
+        status.textContent = "بانتظار إعداد MetaApi في Vercel Preview";
+        detail.textContent = "لم تُضبط بيانات AEGIS_METAAPI_TOKEN و AEGIS_METAAPI_ACCOUNT_ID بعد.";
+        setMessage("اربط حسابك أولًا في MetaApi، ثم ضع رمز MetaApi ومعرّف الحساب في أسرار Vercel. لا تلصقها هنا.");
+      } else if(doc.state === "NOT_VERIFIED"){
+        status.textContent = "غير مؤكد · لا توجد موافقة لتداول MT5";
+        detail.textContent = doc.reason === "not_verified_demo_account"
+          ? "الحساب ليس Demo بحسب MetaApi. تم رفض الاتصال." : "الخدمة السحابية غير متصلة أو بيانات الاعتماد غير صحيحة.";
+        setMessage("راجع اتصال الحساب التجريبي في MetaApi ومنطقة حسابك (london أو new-york).");
+      } else{
+        status.textContent = "إعداد MetaApi غير صالح";
+        detail.textContent = "راجع متغيرات Vercel Preview، ولا تحاول استخدام حساب Real.";
+        setMessage("لا يمكن مزامنة حساب غير موثّق.");
+      }
+    } catch(error){
+      configured = false;
+      status.textContent = "فحص MT5 السحابي غير متاح";
+      detail.textContent = "لا نعرض أي صفقات غير موثقة أو بيانات تجريبية.";
+      setMessage("تحقق من نشر Vercel واتصال MetaApi؛ لم يتم إرسال أي أمر تداول.");
     }
-    updateActions();
+    update();
   }
-  function updateActions() {
-    const authorized = owner.value.trim().length >= 24;
-    create.disabled = busy || !schemaReady || !authorized;
-    revoke.disabled = busy || !schemaReady || !authorized || !connected;
-  }
-  async function request(action) {
-    if (busy || !schemaReady || owner.value.trim().length < 24) return;
-    if(action === "revoke" && !window.confirm("فصل جميع موصلات MT5 Demo لهذا المشروع؟ سيُرفض أي تحديث لاحق حتى يتم ربط جديد."))return;
-    busy = true; updateActions();
-    panel.hidden = true; tokenLabel.textContent = ""; pairingCode = "";
-    setHint("جاري التحقق من طلب المالك…");
-    try {
-      const res = await fetch("/api/mt5_link",{
+  async function syncNow(){
+    if(sync.disabled)return;
+    busy=true;update();
+    setMessage("جاري قراءة معلومات MT5 Demo ومراكزه وسجل صفقات الذهب من MetaApi والتحقق من Neon…");
+    try{
+      const response=await fetch("/api/mt5_cloud",{
         method:"POST",cache:"no-store",credentials:"same-origin",
         headers:{"Content-Type":"application/json","Authorization":"Bearer "+owner.value.trim()},
-        body:JSON.stringify({action})
+        body:JSON.stringify({action:"sync"})
       });
-      const data = await res.json();
-      if(!res.ok || data.ok !== true)throw Error(data.error || "operation_failed");
-      if(action==="create"){
-        pairingCode = String(data.pairing_token || "");
-        if(!/^[a-zA-Z0-9_-]{40,60}$/.test(pairingCode))throw Error("invalid_server_pairing_code");
-        tokenLabel.textContent = pairingCode;
-        panel.hidden = false;
-        setHint("الرمز صالح 15 دقيقة قبل أول اقتران. افتح MT5 Demo على Windows ثم شغّل موصل الربط.");
-      } else {
-        setHint("تم إلغاء صلاحية الربط. لا يُسمح بأي مزامنة جديدة بهذا الرمز.");
+      const data=await response.json();
+      owner.value="";
+      if(!response.ok || data.ok !== true){
+        const reasons={
+          owner_control_key_not_configured:"أضف AEGIS_CONTROL_TOKEN إلى Vercel Preview أولًا.",
+          unauthorized:"مفتاح المالك غير صحيح.",
+          metaapi_not_configured:"حساب MetaApi غير مربوط في Vercel.",
+          not_verified_demo_account:"تم رفض الحساب لأنه ليس MT5 Demo موثقًا.",
+          demo_ledger_sync_unavailable:"لم نتمكن من حفظ سجل الصفقات في Neon. تحقق من الجداول والصلاحيات.",
+          metaapi_read_unavailable:"تعذر قراءة بيانات MetaApi. تحقق من الحساب والمنطقة."
+        };
+        throw new Error(reasons[data.error]||"فشلت المزامنة بأمان دون إرسال أوامر تداول.");
       }
-      owner.value = "";
+      setMessage("تمت مزامنة "+Number(data.new_fills||0)+" صفقة جديدة من MT5 Demo و"+Number(data.open_positions||0)+" مراكز مفتوحة في Neon. لا توجد أوامر وسيط.");
     } catch(error){
-      const codes = {
-        owner_control_key_not_configured:"مفتاح AEGIS_CONTROL_TOKEN غير مُعدّ في Vercel Preview.",
-        unauthorized:"مفتاح المالك غير صحيح.",
-        mt5_pairing_schema_missing:"جدول الربط في Neon غير جاهز بعد.",
-        mt5_pairing_service_unavailable:"خدمة MT5 أو قاعدة Neon غير متاحة حاليًا."
-      };
-      setHint(codes[error.message] || "تعذر إتمام عملية الربط. لم تُرسل أي أوامر MT5.");
-    } finally {
-      busy = false;
-      updateActions();
-      // Retain the one-time code on screen while its value is still needed.
-      await refresh();
+      setMessage(error.message || "فشل الاتصال السحابي. لم تُرسل صفقات.");
+    }finally{
+      busy=false;update();await refresh();
     }
   }
-  owner.addEventListener("input",updateActions);
-  create.addEventListener("click",()=>request("create"));
-  revoke.addEventListener("click",()=>request("revoke"));
-  el("mt5PairCopy").addEventListener("click", async () => {
-    if(!pairingCode)return;
-    try {
-      await navigator.clipboard.writeText(pairingCode);
-      setHint("تم نسخ الرمز. الصقه فقط داخل موصل MT5 على Windows.");
-    } catch(error) {
-      setHint("النسخ التلقائي غير متاح في هذا المتصفح؛ ظلّل الرمز وانسخه يدويًا.");
-    }
-  });
+  owner.addEventListener("input",update);
+  sync.addEventListener("click",syncNow);
+  refreshButton.addEventListener("click",refresh);
   refresh();
-  window.setInterval(()=>{if(!document.hidden&&!busy)refresh()},15000);
+  window.setInterval(()=>{if(!document.hidden&&!busy)refresh()},60000);
 })();
