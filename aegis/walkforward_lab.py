@@ -22,9 +22,9 @@ REQUIRED_HORIZON_DAYS={"SCALPING":7,"INTRADAY":14,"SWING":60,"POSITION":120}
 def verify_walkforward(candles, *, asset:str,strategy:str,interval:str,
                        direction:str,cost_multiplier:float=1.0)->dict:
     n=len(candles)
-    if n<120:
-        raise ValueError("At least 120 closed bars are required")
-    first=max(72,int(n*.40))
+    if n<180:
+        raise ValueError("At least 180 closed bars are required for three nonempty folds")
+    first=max(120,int(n*.40))
     remaining=n-first
     bounds=[first, first+remaining//3, first+(remaining*2)//3,n]
     seconds=INTERVALS[interval]
@@ -42,13 +42,15 @@ def verify_walkforward(candles, *, asset:str,strategy:str,interval:str,
                                       cost_multiplier=max(2.,cost_multiplier))
         b=base["stats"]
         s=stressed["stats"]
+        base_closed_net=round(sum(x["net_pnl"] for x in base["trades"]),4)
+        stress_closed_net=round(sum(x["net_pnl"] for x in stressed["trades"]),4)
         days=(end-start)*seconds/86400
         blockers=[]
         if b["trades"]<MIN_FOLD_TRADES:
             blockers.append("too few closed trades")
-        if b["net_pnl"]<=0 or b["profit_factor"]<MIN_PROFIT_FACTOR:
+        if base_closed_net<=0 or b["profit_factor"]<MIN_PROFIT_FACTOR:
             blockers.append("insufficient after-cost net profit or PF")
-        if s["net_pnl"]<=0:
+        if stress_closed_net<=0:
             blockers.append("fails doubled execution-cost stress")
         if b["max_drawdown_pct"]>=MAX_FOLD_DRAWDOWN_PCT:
             blockers.append("drawdown exceeds research tolerance")
@@ -58,10 +60,12 @@ def verify_walkforward(candles, *, asset:str,strategy:str,interval:str,
             "fold":i+1,"start":datetime.fromtimestamp(candles[start].ts,timezone.utc).isoformat(),
             "end":datetime.fromtimestamp(candles[end-1].ts+seconds,timezone.utc).isoformat(),
             "days":round(days,3),"bars":end-start,"base":b,"stress":s,
+            "base_closed_net_pnl":base_closed_net,
+            "stress_closed_net_pnl":stress_closed_net,
             "passed":not blockers,"blockers":blockers,
         })
     clean=sum(f["passed"] for f in windows)
-    positive=sum(f["base"]["net_pnl"]>0 for f in windows)
+    positive=sum(f["base_closed_net_pnl"]>0 for f in windows)
     total_closed=sum(f["base"]["trades"] for f in windows)
     return {
         "ok":True,"mode":"HISTORICAL_WALKFORWARD_ONLY",
