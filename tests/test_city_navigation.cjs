@@ -135,6 +135,6 @@ test("mobile MT5 Demo onboarding uses MetaApi cloud, not Windows", () => {
   assert.match(commandCenter,/بيتكوين بيبقى Kraken Paper/);
   assert.doesNotMatch(commandCenter,/mt5-connect\.cmd|mt5PairCreate/);
   assert.match(bridge,/\/api\/stage3\?mt5_cloud=1/);
-  assert.match(bridge,/doc\.state === "CONNECTED_DEMO"/);
+  assert.match(bridge,/doc\.state === "READY_FOR_VERIFICATION"/);
   assert.doesNotMatch(bridge,/mt5PairToken|pairingCode|brokerPassword/);
 });
