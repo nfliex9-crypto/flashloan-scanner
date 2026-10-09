@@ -10,7 +10,7 @@ from aegis import mt5_cloud
 INFO = {
     "type": "ACCOUNT_TRADE_MODE_DEMO", "login": 12345678,
     "server": "Broker-Demo", "currency": "USD", "balance": 10000,
-    "equity": 10020, "tradeAllowed": False,
+    "equity": 10020, "tradeAllowed": False, "investorMode": True,
 }
 CONFIG = {"token": "not-a-real-metaapi-token", "account": "01234567-89ab-cdef-0123-456789abcdef",
           "region": "london", "symbol": "XAUUSD"}
@@ -105,12 +105,14 @@ def test_broker_demo_snapshot_is_source_backed(monkeypatch):
     assert CONFIG["token"] not in str(result)
 
 
-def test_public_status_never_discloses_cloud_credentials(monkeypatch):
+def test_public_status_never_spends_metaapi_credits_or_leaks_credentials(monkeypatch):
     monkeypatch.setattr(mt5_cloud, "configuration", lambda: dict(CONFIG))
-    monkeypatch.setattr(mt5_cloud, "verified_demo_info", lambda _: dict(INFO))
+    def unexpected(*args, **kwargs):
+        raise AssertionError("Public GET must not query a billable MetaApi endpoint")
+    monkeypatch.setattr(mt5_cloud, "metaapi_get", unexpected)
     report=mt5_cloud.public_status()
-    assert report["connected"] is True
-    assert report["state"]=="CONNECTED_DEMO"
+    assert report["connected"] is False
+    assert report["state"]=="READY_FOR_VERIFICATION"
     assert report["demo_order_execution_enabled"] is False
     assert CONFIG["account"] not in str(report)
     assert CONFIG["token"] not in str(report)
@@ -143,3 +145,21 @@ def test_sync_persists_only_validated_demo_records(monkeypatch):
         "Sec-Fetch-Site":"same-origin"})
     assert status==200 and data["demo_order_execution_enabled"] is False
     assert len(saved)==1 and saved[0]["provider"]=="MT5_DEMO"
+
+def test_master_demo_account_is_not_investor_only(monkeypatch):
+    invoked=[]
+    def get(_cfg,route):
+        invoked.append(route)
+        return {**INFO,"investorMode":False}
+    monkeypatch.setattr(mt5_cloud,"metaapi_get",get)
+    with pytest.raises(mt5_cloud.CloudUnavailable,match="investor_mode_not_verified"):
+        mt5_cloud.snapshot_from_metaapi(CONFIG)
+    assert invoked==["/account-information"]
+
+
+def test_missing_investor_mode_fails_closed(monkeypatch):
+    info=dict(INFO)
+    info.pop("investorMode")
+    monkeypatch.setattr(mt5_cloud,"metaapi_get",lambda *args:info)
+    with pytest.raises(mt5_cloud.CloudUnavailable,match="investor_mode_not_verified"):
+        mt5_cloud.verified_demo_info(CONFIG)
