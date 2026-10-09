@@ -177,10 +177,14 @@ function renderTimeline(s){
 function renderDemo(s){
   const a=s.demo_brokers?.connected_accounts||[];
   const provider=id=>a.find(x=>x.provider===id);
-  const g=provider("MT5_DEMO"),b=provider("BINANCE_SPOT_DEMO");
+  const g=provider("MT5_DEMO");
+  const m=s.micro_engine||{};
+  const btcAgents=(m.agents||[]).filter(x=>x.symbol==="BTC");
+  const active=(m.active_intervals_minutes||[]).length;
+  const btcStatus=connectionLost?"تعذّر تحديث الحالة":btcAgents.length&&active>0?"Paper · "+active+" فواصل نشطة":btcAgents.length?"Paper · انتظار مصادر Kraken":"Paper · بانتظار تهيئة الوكلاء";
   const status=v=>!v?"غير مرتبط":!connectionLost&&v.sync_status==="SYNCED_DEMO"&&isValidTime(v.last_synced)&&Date.now()-Date.parse(v.last_synced)<300000?"Demo متصل · قراءة فقط":"مزامنة متأخرة";
   $("demoStatus").innerHTML='<span>MT5 GOLD</span><strong>'+escapeHtml(status(g))+'</strong>'+
-    '<span>BINANCE BTC</span><strong>'+escapeHtml(status(b))+'</strong>';
+    '<span>BTC PAPER</span><strong>'+escapeHtml(btcStatus)+'</strong>';
   const router=s.research_horizon_router||{};
   const selected=router.selected;
   $("horizonSummary").textContent=selected?
