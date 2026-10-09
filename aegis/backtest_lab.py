@@ -308,12 +308,15 @@ def run_backtest(params:dict,now:datetime|None=None)->dict:
         direction=p["direction"])
     warnings=[]
     if p["direction"] in ("SHORT","BOTH"):
-        warnings.append("BTC short is hypothetical derivatives/margin research only; Binance Spot Demo cannot open naked shorts")
+        if p["asset"]=="BTC":
+            warnings.append("Bitcoin SHORT is hypothetical derivatives/margin research only; Binance Spot Demo cannot open naked shorts")
+        else:
+            warnings.append("Gold SHORT is research only; external MT5 Demo execution requires a verified DEMO account and broker symbol")
         warnings.append("Short funding 2 bps/day is a model assumption, not broker-verified funding or borrow cost")
     if len(holdout["trades"])<20:
         warnings.append("Small out-of-sample trade count: insufficient evidence to trust a profitable result")
     if len(data)<400 or len(data)*INTERVALS[p["interval"]]<7*86400:
-        warnings.append("Historical window shorter than one trading week or 400 bars: insufficient regime coverage")
+        warnings.append("Fewer than 400 historical candles or less than seven calendar days of coverage: insufficient regime diversity")
     if p["asset"]=="XAU":
         warnings.append("Gold candles are indicative Twelve Data prices, not executable OANDA quotes")
     warnings.append("This is historical reconstruction, NOT forward paper performance or proof of a profitable strategy")
