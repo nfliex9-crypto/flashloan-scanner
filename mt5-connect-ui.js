@@ -11,17 +11,17 @@
   let configured = false, busy = false;
   const setMessage = message => { help.textContent = message; };
   const update = () => {sync.disabled = busy || !configured || owner.value.trim().length < 24;};
-  async function refresh() {
+  async function refresh(preserveMessage=false) {
     if(busy)return;
     try{
       const response = await fetch("/api/mt5_cloud",{cache:"no-store",headers:{"Accept":"application/json"}});
       const doc = await response.json();
       if(!response.ok || doc.ok !== true)throw new Error("service_unavailable");
-      configured = doc.state !== "SETUP_REQUIRED" && doc.state !== "CONFIG_INVALID";
+      configured = doc.state === "CONNECTED_DEMO";
       if(doc.state === "CONNECTED_DEMO"){
         status.textContent = "متصل · حساب MT5 Demo مؤكد (قراءة فقط)";
         detail.textContent = "اتصال سحابي مؤكد من MetaApi؛ آخر سجل محفوظ يظهر في صفحة الصفقات.";
-        setMessage("لجلب آخر صفقات الذهب إلى Neon، أدخل مفتاح المالك واضغط المزامنة.");
+        if(!preserveMessage)setMessage("لجلب آخر صفقات الذهب إلى Neon، أدخل مفتاح المالك واضغط المزامنة.");
       } else if(doc.state === "SETUP_REQUIRED"){
         status.textContent = "بانتظار إعداد MetaApi في Vercel Preview";
         detail.textContent = "لم تُضبط بيانات AEGIS_METAAPI_TOKEN و AEGIS_METAAPI_ACCOUNT_ID بعد.";
@@ -71,7 +71,7 @@
     } catch(error){
       setMessage(error.message || "فشل الاتصال السحابي. لم تُرسل صفقات.");
     }finally{
-      busy=false;update();await refresh();
+      busy=false;update();await refresh(true);
     }
   }
   owner.addEventListener("input",update);
