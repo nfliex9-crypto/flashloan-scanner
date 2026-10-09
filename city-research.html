@@ -1,0 +1,380 @@
+<!doctype html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#08071b">
+  <title>AEGIS · Research Lab · Advanced</title>
+  <meta name="description" content="AEGIS is a forward-only paper trading city with evolving trading agents, event-driven operations, and immutable broker evidence.">
+  <link rel="stylesheet" href="/city.css">
+</head>
+<body>
+  <div class="backdrop-grid" aria-hidden="true"></div>
+  <div id="toastHost" class="toast-host" aria-live="polite"></div>
+  <main class="app-shell">
+    <header class="topbar">
+      <a class="brand" href="/city.html" aria-label="AEGIS home">
+        <span class="brand-mark"><span class="core-dot"></span></span>
+        <span><strong>AEGIS<span class="brand-small">/ CITY</span></strong><small>AUTONOMOUS PAPER RESEARCH</small></span>
+      </a>
+      <div class="nav-tabs" role="navigation" aria-label="Sections">
+        <button class="nav-tab active" data-view="city">THE CITY</button>
+        <button class="nav-tab" data-view="payroll">PAYROLL</button>
+        <button class="nav-tab" data-view="evolution">EVOLUTION</button>
+        <button class="nav-tab" data-view="lab">RESEARCH LAB</button>
+        <button class="nav-tab" data-view="backtest">BACKTEST</button>
+        <button class="nav-tab" data-view="intel">INTELLIGENCE</button>
+      </div>
+      <div class="header-right">
+        <span class="top-time" id="utcClock">--:--:-- UTC</span>
+        <span class="status-pill" id="connectionStatus"><span class="led"></span>CONNECTING</span>
+        <button id="refreshBtn" class="icon-button" aria-label="Refresh live data" title="Refresh live data">↻</button>
+      </div>
+    </header>
+
+    <section class="marquee" aria-label="Live market and operations telemetry">
+      <div class="market-ticker" id="marketTicker"><span class="ticker-wait">MARKET LINK CONNECTING · KRAKEN HOURLY CANDLES</span></div>
+      <div class="marquee-right"><span class="tiny-pulse"></span><span id="lastRunLabel">WAITING FOR NEON LEDGER</span></div>
+    </section>
+
+    <div id="cityView" class="view active">
+      <div class="command-row">
+        <div>
+          <p class="eyebrow"><span class="sparkle">✦</span> MISSION CONTROL / LIVE OPERATIONS</p>
+          <h1>Every agent has <i>a city to run.</i></h1>
+          <p class="subtitle">Real events drive the action. No invented trades. No real-money execution.</p>
+        </div>
+        <div class="command-buttons">
+          <button class="outline-action" id="eventsBtn">EVENT LOG <span id="eventCount">0</span></button>
+          <button class="outline-action" id="cameraBtn">↗ EXPLORE VIEW</button>
+        </div>
+      </div>
+
+      <section class="priority-assets" aria-label="Primary Bitcoin and spot gold markets">
+        <div class="priority-market" id="btcPrimary"><div class="priority-title"><span>₿</span><div><strong>BITCOIN</strong><small>BTC / USD · KRAKEN SPOT</small></div></div><strong id="btcPriorityPrice">CONNECTING…</strong><span id="btcPriorityMeta">Waiting for market data</span></div>
+        <div class="priority-market gold-market" id="goldPrimary"><div class="priority-title"><span>◈</span><div><strong>GOLD</strong><small>XAU / USD · SPOT GOLD</small></div></div><strong id="goldPriorityPrice">CHECKING FEED…</strong><span id="goldPriorityMeta">Gold spot feed status</span></div>
+      </section>
+      <div class="top-metrics">
+        <div class="metric"><span class="metric-icon">◈</span><span>FORWARD VAULT</span><strong id="vaultEquity">—</strong><small id="vaultDelta">Paper equity</small></div>
+        <div class="metric"><span class="metric-icon">↗</span><span>REALIZED NET</span><strong id="realizedPnl">—</strong><small>After fees &amp; slippage</small></div>
+        <div class="metric"><span class="metric-icon">♜</span><span>WORKERS ON SHIFT</span><strong id="activeWorkers">—</strong><small id="onShiftDetails">Research-active agents</small></div>
+        <div class="metric"><span class="metric-icon">⏱</span><span>NEXT MARKET CHECK</span><strong id="nextScan">—</strong><small>15m checks · strategies use closed 1h bars</small></div>
+        <div class="metric risk-metric"><span class="metric-icon">⬡</span><span>RISK FIREWALL</span><strong id="riskCircuit">—</strong><small>REAL CAPITAL DISCONNECTED</small></div>
+      </div>
+
+      <div class="fast-risk-pulse" id="fastRiskPulse" role="status">15M SHADOW RISK · Waiting for a verified cycle · No live orders</div>
+
+      <section class="city-stage" aria-label="Interactive living trading city">
+        <div class="stage-topline">
+          <div><span class="live-chip"><span class="led"></span> LIVING SYSTEM</span><span class="scene-caption">NEON TERMINAL // ALL FINANCIAL EFFECTS FOLLOW RECORDED EVENTS</span></div>
+          <div class="scene-actions"><button class="scene-toggle selected" data-layer="agents">AGENT SIGNALS</button><button class="scene-toggle" data-layer="risk">RISK VIEW</button></div>
+        </div>
+        <div class="city-canvas" id="cityCanvas">
+          <div class="sky-glow sky-glow-a"></div><div class="sky-glow sky-glow-b"></div>
+          <div class="far-city city-silhouette-a"></div><div class="far-city city-silhouette-b"></div>
+          <div class="starfield"></div>
+          <div class="city-intro"><strong>THE AGENT DISTRICTS</strong><small>CLICK ANY TOWER TO INSPECT ITS WORKER</small></div>
+          <svg id="citySvg" viewBox="0 0 1200 620" role="img" aria-label="Interactive city showing genuine paper trading agent states" preserveAspectRatio="xMidYMid meet">
+            <defs>
+              <linearGradient id="ground" x1="0" x2="1" y1="0" y2="1"><stop offset="0" stop-color="#202058"/><stop offset=".6" stop-color="#101536"/><stop offset="1" stop-color="#0a1025"/></linearGradient>
+              <linearGradient id="vaultSkin" x1="0" x2="1"><stop stop-color="#f8c87c"/><stop offset=".38" stop-color="#8a63d7"/><stop offset="1" stop-color="#302469"/></linearGradient>
+              <filter id="cityGlow" x="-110%" y="-110%" width="320%" height="320%"><feGaussianBlur stdDeviation="6"/></filter>
+              <pattern id="floorGrid" width="36" height="36" patternUnits="userSpaceOnUse"><path d="M36 0H0V36" fill="none" stroke="#7664c5" stroke-opacity=".13"/></pattern>
+            </defs>
+            <ellipse cx="600" cy="450" rx="523" ry="142" fill="#100d39" stroke="#58539e" stroke-opacity=".35"/>
+            <ellipse cx="600" cy="460" rx="477" ry="118" fill="url(#ground)" stroke="#9184ef" stroke-opacity=".35"/>
+            <ellipse cx="600" cy="460" rx="477" ry="118" fill="url(#floorGrid)" opacity=".42"/>
+            <ellipse cx="600" cy="448" rx="335" ry="90" fill="none" stroke="#946cff" stroke-opacity=".17" stroke-width="24"/>
+            <ellipse class="orbital-ring" cx="600" cy="455" rx="302" ry="76" fill="none" stroke="#b18eff" stroke-dasharray="2 16" stroke-width="3" stroke-opacity=".6"/>
+            <g id="sceneRoads"></g>
+            <g id="sceneWorkers"></g>
+            <g id="sceneVault" tabindex="0" role="button" aria-label="Open the vault">
+              <ellipse cx="600" cy="463" rx="128" ry="40" fill="#9e7bff" opacity=".14" filter="url(#cityGlow)"/>
+              <ellipse cx="600" cy="463" rx="100" ry="30" fill="#0c0a2b" stroke="#f9cc8d" stroke-width="2"/>
+              <path d="M530 430 L530 461 Q600 490 670 461 L670 430Z" fill="url(#vaultSkin)" stroke="#b08df2" stroke-width="2"/>
+              <ellipse cx="600" cy="431" rx="70" ry="22" fill="#21183a" stroke="#f5c37e" stroke-width="3"/>
+              <ellipse cx="600" cy="428" rx="44" ry="14" fill="#e7cfac"/>
+              <path d="M567 428 L590 411 L610 411 L633 428 L610 446 L590 446Z" fill="#604c9c" stroke="#f8ce86"/>
+              <circle cx="600" cy="428" r="8" fill="#f7ce8b" class="vault-light"/>
+              <text x="600" y="498" class="scene-vault-title" text-anchor="middle">THE VAULT</text>
+            </g>
+            <g id="sceneEffects"></g>
+          </svg>
+          <div class="scene-label left-label"><span>◉</span> BTC DISTRICT</div>
+          <div class="scene-label right-label"><span>◈</span> GOLD DISTRICT</div>
+          <div class="vault-display" id="vaultDisplay" role="button" tabindex="0" aria-label="Open vault details"><span>THE VAULT · FORWARD ONLY</span><strong id="floatingVault">—</strong><small id="floatingVaultSub">Realized P&amp;L · Awaiting data</small></div>
+          <div class="city-footer"><span class="scene-key"><b class="key-green"></b> PAPER ACTIVE <b class="key-gold"></b> SHADOW / CHALLENGER <b class="key-red"></b> HALTED</span><span id="stageRefresh">DATA REFRESH: —</span></div>
+        </div>
+        <div class="stage-bottom"><span><span class="led"></span> LIVE SYSTEM FEED <b>·</b> MARKET RESEARCH</span><span id="cycleLabel">MARKET MONITORING EVERY 15 MIN · CLOSED-BAR SIGNALS HOURLY</span><span class="stage-disclaimer">AMBIENT ANIMATION ≠ TRADE</span></div>
+        <div class="worker-shortcuts" id="quickWorkers"><span class="await">Waiting for workers…</span></div>
+      </section>
+
+      <section class="module agent-tape-module" aria-label="Verified individual agent trading activity">
+        <header class="module-head">
+          <div><p class="eyebrow">EVIDENCE / FORWARD LEDGER</p><h2>Agent trade feed</h2></div>
+          <span class="module-tag">PAPER + COSTED SHADOW · NO LIVE ORDERS</span>
+        </header>
+        <div class="agent-tape-toolbar">
+          <label>AGENT<select id="agentTradeFilter"><option value="all">All agents</option></select></label>
+          <label>BOOK<select id="tradeMarketFilter"><option value="all">All books</option><option value="SHADOW">Costed shadow</option><option value="PAPER">Forward paper</option></select></label>
+          <label>ACTION<select id="tradeActionFilter"><option value="all">Open + Close</option><option value="OPEN">Opened</option><option value="CLOSE">Closed</option></select></label>
+          <span id="agentTapeStats">Waiting for actual fills…</span>
+        </div>
+        <div id="agentTradeFeed" class="agent-trade-feed"><div class="await">No audited agent trades yet. Forward-only — historical replay is excluded.</div></div>
+      </section>
+
+      <div class="below-city">
+        <section class="module activity-module">
+          <header class="module-head"><div><p class="eyebrow">CITY BROADCAST</p><h2>Operations feed</h2></div><span class="module-tag">NEON EVENT LOG</span></header>
+          <div class="activity-list" id="activityFeed"><div class="await">Waiting for real operational events…</div></div>
+        </section>
+        <section class="module control-module">
+          <header class="module-head"><div><p class="eyebrow">TRADE CONTROL</p><h2>Flight status</h2></div><span class="module-tag danger">CAPITAL LOCKED</span></header>
+          <div class="control-map"><div><span>PAPER POSITIONS</span><strong id="positionsCount">—</strong></div><div><span>CLOSED FORWARD TRADES</span><strong id="tradesCount">—</strong></div><div><span>GHOST SIGNALS</span><strong id="ghostCount">—</strong></div><div><span>PORTFOLIO DRAWDOWN</span><strong id="drawdownValue">—</strong></div></div>
+          <div class="equity-chart-wrap"><div class="mini-head"><span>FORWARD EQUITY CURVE</span><span id="curveRange">—</span></div><svg id="equityChart" viewBox="0 0 540 124" preserveAspectRatio="none" aria-label="Forward equity history chart"></svg></div>
+          <button id="openPayroll" class="full-cta">OPEN WORKER PAYROLL <span>↗</span></button>
+        </section>
+      </div>
+      <div class="deep-decks">
+        <section class="module">
+          <header class="module-head"><div><p class="eyebrow">THE TAPE / EXECUTED PAPER</p><h2>Recent trade autopsies</h2></div><span class="module-tag">AFTER FEES</span></header>
+          <div id="cityTradeTape" class="tape-list"><div class="await">No closed forward trades yet.</div></div>
+        </section>
+        <section class="module">
+          <header class="module-head"><div><p class="eyebrow">SHADOW DISTRICT</p><h2>Ghost Lab</h2></div><span class="module-tag">REJECTED · OBSERVED</span></header>
+          <div class="shadow-strip"><div><span>COSTED SHADOW FILLS</span><strong id="shadowCostedCount">—</strong></div><div><span>VIRTUAL OPEN POSITIONS</span><strong id="shadowOpenCount">—</strong></div></div>
+          <div class="shadow-headline">Real virtual entries/exits with the same fee and slippage model as the main Paper broker. Independent $100K test accounts per worker. Not live-money trades.</div>
+          <div id="cityGhostLab" class="ghost-lab-list"><div class="await">Awaiting rejected paper signals.</div></div>
+        </section>
+      </div>
+    </div>
+
+    <section id="payrollView" class="view dashboard-view">
+      <div class="section-hero"><p class="eyebrow">THE VAULT // WORKER ACCOUNTING</p><h1>Every shift. <i>Every dollar.</i></h1><p>Only settled, persisted forward paper fills earn payroll. Research replay is excluded.</p></div>
+      <div class="large-pnl"><div><span>FORWARD REALIZED PAYROLL</span><strong id="payrollTotal">—</strong><small>Net of estimated commissions and modeled slippage</small></div><div class="payroll-orbit">✦</div></div>
+      <div class="module"><header class="module-head"><h2>Worker payroll</h2><span class="module-tag">VERIFIED LEDGER</span></header><div class="scroll-table"><table><thead><tr><th>WORKER</th><th>ROLE</th><th>TRADES</th><th>WINS</th><th>EARNED TODAY</th><th>ALL-TIME</th></tr></thead><tbody id="payrollBody"></tbody></table></div></div>
+      <div class="module"><header class="module-head"><h2>Open positions</h2><span class="module-tag">PERSISTED FORWARD</span></header><div id="positionsList" class="position-list"><div class="await">No live paper positions</div></div></div>
+    </section>
+
+    <section id="evolutionView" class="view dashboard-view">
+      <div class="section-hero"><p class="eyebrow">EVIDENCE CHAMBER // HARD GATES</p><h1>Survive first. <i>Evolve later.</i></h1><p>Promotion needs forward evidence and costed shadow fills. Every risk veto remains deterministic.</p></div>
+      <div class="evolution-summary" id="evolutionSummary"></div>
+      <section class="module">
+        <header class="module-head"><div><p class="eyebrow">COSTED FORWARD PERFORMANCE</p><h2>Strategy filter &amp; ranking</h2></div><span class="module-tag">NO AUTO-PROMOTION · LIVE EXECUTION OFF</span></header>
+        <p class="filter-explainer">Rankings use settled, costed shadow trades and drawdown, not backtest profits. Quarantined strategies cannot open new virtual positions. Existing positions still follow their exit rules.</p>
+        <div id="strategyFilterBoard" class="strategy-filter-board"><div class="await">Collecting independently recorded trades…</div></div>
+      </section>
+      <div class="module"><header class="module-head"><h2>Agent evolution chamber</h2><span class="module-tag">NEON · LAST REVIEW</span></header><div id="evolutionCards" class="evolution-grid"></div></div>
+      <div class="module"><header class="module-head"><h2>Role changes</h2><span class="module-tag">AUDIT TRAIL</span></header><div id="evolutionChanges" class="activity-list"></div></div>
+    </section>
+
+    <section id="labView" class="view dashboard-view">
+      <div class="section-hero">
+        <p class="eyebrow">CONTINUOUS SHADOW RESEARCH / CONFIGURABLE</p>
+        <h1>Try more. <i>Trust evidence.</i></h1>
+        <p>Novel strategies are trialed on closed hourly bars and ranked using future, costed shadow fills. No auto-promotions, live execution, or unsupervised brokerage actions.</p>
+      </div>
+      <div class="module">
+        <header class="module-head">
+          <div><p class="eyebrow">ENGINE CONTROL / PERSISTED IN NEON</p><h2>Experiment controls</h2></div>
+          <span class="module-tag">OWNER-KEY PROTECTED · RESEARCH ONLY</span>
+        </header>
+        <div class="lab-topline">
+          <span id="labEngineStatus">Loading experiment state…</span>
+          <span id="labEngineUpdated">Awaiting persisted configuration</span>
+        </div>
+        <label class="lab-switch"><input id="expEnabled" type="checkbox" data-exp-input checked><span>Run bounded strategy experiments during hourly research cycles</span></label>
+        <div class="lab-control-grid">
+          <div class="lab-field"><strong>MARKETS TO TEST</strong>
+            <label><input type="checkbox" id="expAssetBTC" data-exp-input checked> BTC / USD · Kraken</label>
+            <label><input type="checkbox" id="expAssetXAU" data-exp-input checked> XAU / USD · Twelve Data</label>
+          </div>
+          <div class="lab-field"><strong>NEW CANDIDATE STRATEGIES</strong>
+            <label><input type="checkbox" id="expEMA" data-exp-input checked> EMA Cross</label>
+            <label><input type="checkbox" id="expRSI" data-exp-input checked> RSI Pullback</label>
+            <label><input type="checkbox" id="expChannel" data-exp-input checked> Channel Breakout</label>
+          </div>
+          <div class="lab-field">
+            <strong>MAX CONCURRENT CANDIDATES</strong>
+            <select id="expLimit" data-exp-input>
+              <option value="2">2 experiments</option>
+              <option value="4">4 experiments</option>
+              <option value="6" selected>6 experiments</option>
+            </select>
+            <small>Never changes paper-main sizing, live broker access, or the risk firewall.</small>
+          </div>
+        </div>
+        <div class="lab-save-row">
+          <label class="lab-owner-label">OWNER CONTROL KEY
+            <input id="expOwnerToken" type="password" autocomplete="off" spellcheck="false" placeholder="Enter separate AEGIS_CONTROL_TOKEN to save">
+          </label>
+          <button class="full-cta lab-save-button" id="expSave">SAVE RESEARCH CONTROLS ↗</button>
+        </div>
+        <div class="lab-result" id="expSaveStatus" role="status">Changes are proposals until saved with the owner key. The key is kept in this page only and cleared after each request.</div>
+      </div>
+      <section class="module" aria-label="Broker demo verified execution records">
+        <header class="module-head">
+          <div><p class="eyebrow">EXCHANGE / BROKER NATIVE DEMO ACCOUNTS</p>
+            <h2>Gold MT5 &amp; Bitcoin Demo</h2></div>
+          <span class="module-tag">EXTERNAL DEMO ACCOUNTS · READ ONLY</span>
+        </header>
+        <div class="bt-headline" id="demoBrokerSummary">
+          <div class="bt-metric"><small>MT5 GOLD</small><strong>NOT LINKED</strong></div>
+          <div class="bt-metric"><small>BINANCE BTC</small><strong>NOT LINKED</strong></div>
+        </div>
+        <div id="demoBrokerStatus" class="lab-topline">
+          No demo broker synchronization configured yet. Shadow Paper is separate.
+        </div>
+        <div class="module-head">
+          <div><p class="eyebrow">BROKER EXECUTION IDS · NOT SIMULATED BACKTEST FILLS</p><h2>Demo executions</h2></div>
+          <span class="module-tag">EXTERNAL SOURCE OF TRUTH</span>
+        </div>
+        <div id="demoBrokerFeed" class="agent-trade-feed"><div class="await">No broker-confirmed demo fills yet.</div></div>
+        <p class="filter-explainer">MT5 stores broker-side deals, Binance Demo stores BTC spot fills and orders. Neon keeps only minimal execution references for retention and AI evaluation. Order automation is disabled until each account passes DEMO-only verification.</p>
+      </section>
+      <section class="module" aria-label="Independent micro paper engine telemetry">
+        <header class="module-head">
+          <div><p class="eyebrow">INDEPENDENT PUBLIC STREAM · 1M / 5M / 15M</p>
+            <h2>Micro Research Engine</h2></div>
+          <span id="microConnectionBadge" class="module-tag">WORKER NOT DEPLOYED</span>
+        </header>
+        <p class="filter-explainer">A separate always-on process observes real Kraken crypto candles. It can open/close only independent virtual paper positions after each verified closed bar. OANDA and all real accounts remain disconnected.</p>
+        <div id="microMarketStatus" class="lab-topline">Awaiting first independent worker heartbeat in Neon…</div>
+        <div id="microWorkerTiles" class="bt-headline"></div>
+        <div class="module-head">
+          <div><p class="eyebrow">NEON / PERSISTED VIRTUAL FILLS ONLY</p><h2>Micro trade tape</h2></div>
+          <span class="module-tag">NOT HISTORICAL BACKTEST</span>
+        </div>
+        <div id="microTradeTape" class="agent-trade-feed"><div class="await">No live-stream micro trades recorded. This is not evidence of a connected worker.</div></div>
+      </section>
+      <section class="module" aria-label="Empirical adaptive trading horizon research">
+        <header class="module-head">
+          <div><p class="eyebrow">EVIDENCE-GATED / RESEARCH ONLY</p>
+          <h2>Adaptive Timeframe Selector</h2></div>
+          <span class="module-tag" id="horizonRouterState">WAITING FOR FORWARD EVIDENCE</span>
+        </header>
+        <p class="filter-explainer">Compare SCALPING (1m/5m), INTRADAY (15m/1h), SWING (4h/1d) and POSITION (1w). A timeframe is selected only after 20+ costed closed forward trades, enough observed days, positive net, PF at least 1.25 and drawdown below 4%. This never submits demo or real orders.</p>
+        <div id="horizonRouterSummary" class="lab-topline">Waiting for sufficient forward evidence; no automatic position sizing or capital changes.</div>
+        <div id="horizonRouterBoard" class="strategy-filter-board"><div class="await">No verified horizon candidates yet.</div></div>
+      </section>
+      <div class="module">
+        <header class="module-head"><div><p class="eyebrow">FORWARD EXPERIMENT EVIDENCE</p><h2>Candidate progress</h2></div><span class="module-tag">AUTO-FILTER AFTER ENOUGH COSTED FILLS</span></header>
+        <div id="labCandidateSummary" class="lab-topline">Waiting for the next verified hourly cycle…</div>
+        <div id="labCandidateBoard" class="strategy-filter-board"><div class="await">No new candidates have been registered yet.</div></div>
+        <p class="filter-explainer">Experimental variations are tested separately in Shadow. Good backtest results do not count as successful forward learning, and quarantined candidates cannot open new shadow positions.</p>
+      </div>
+    </section>
+
+    <section id="backtestView" class="view dashboard-view">
+      <div class="section-hero">
+        <p class="eyebrow">HISTORICAL SIMULATION // SOURCE-BACKED CANDLES</p>
+        <h1>Backtest. <i>Then verify forward.</i></h1>
+        <p>Test LONG, SHORT or BOTH across 1m to 1-week research horizons using genuine closed bars, conservative stops, financing and simulated transaction costs. Historical performance does not authorize real orders.</p>
+      </div>
+      <div class="module">
+        <header class="module-head">
+          <div><p class="eyebrow">RUN PARAMETERS · RESEARCH ONLY</p><h2>Backtest control panel</h2></div>
+          <span class="module-tag">NO BROKER ORDER ROUTES</span>
+        </header>
+        <div class="backtest-control-grid">
+          <label>MARKET<select id="btAsset">
+            <option value="BTC">BTC / USD · Kraken</option>
+            <option value="XAU">XAU / USD · Twelve Data</option>
+          </select></label>
+          <label>DIRECTION<select id="btDirection">
+            <option value="LONG">LONG only</option>
+            <option value="SHORT">SHORT only</option>
+            <option value="BOTH" selected>LONG + SHORT (research)</option>
+          </select></label>
+          <label>TIMEFRAME<select id="btInterval">
+            <option value="1min">1 minute</option>
+            <option value="5min">5 minutes</option>
+            <option value="15min">15 minutes</option>
+            <option value="1h">1 hour</option>
+            <option value="4h">4 hours · Swing</option>
+            <option value="1day">1 day · Swing</option>
+            <option value="1week">1 week · Position</option>
+          </select></label>
+          <label>STRATEGY<select id="btStrategy">
+            <option value="EMA Cross">EMA Cross</option>
+            <option value="RSI Pullback">RSI Pullback</option>
+            <option value="Channel Breakout">Channel Breakout</option>
+            <option value="Trend">Trend</option>
+            <option value="Momentum">Momentum</option>
+            <option value="Mean Reversion">Mean Reversion</option>
+            <option value="Breakout">Breakout</option>
+          </select></label>
+          <label>EXECUTION COSTS<select id="btCosts">
+            <option value="base">Base fees + slippage</option>
+            <option value="stress">2× cost stress test</option>
+          </select></label>
+          <label>HISTORY<select id="btBars">
+            <option value="200">200 closed bars</option>
+            <option value="400" selected>400 closed bars</option>
+            <option value="650">650 closed bars</option>
+          </select></label>
+          <div class="bt-button-container">
+            <button class="full-cta" id="btRun">RUN VERIFIED BACKTEST ↗</button>
+          </div>
+          <div class="bt-button-container">
+            <button class="full-cta" id="btWalkforwardRun">3-FOLD WALK-FORWARD ↗</button>
+          </div>
+          <div class="bt-button-container">
+            <button class="full-cta" id="btCompare">COMPARE ALL 7 ↗</button>
+          </div>
+        </div>
+        <p class="filter-explainer">No lookahead: signals form at bar close, with next-open virtual fills and pessimistic OHLC stops. SHORT includes hypothetical financing. BTC short results cannot be placed on Binance Spot Demo; a separate verified derivatives demo would be required.</p>
+        <div id="btStatus" class="lab-result" role="status">Choose your settings and run a historical test. Results are not saved as forward fills.</div>
+      </div>
+      <section id="btCompareResults" class="module" hidden>
+        <header class="module-head">
+          <div><p class="eyebrow">SAME SOURCE · SAME DATE RANGE · COST-STRESSED</p>
+          <h2>7-strategy historical comparison</h2></div>
+          <span class="module-tag">RESEARCH · NO AUTO-PROMOTION</span>
+        </header>
+        <p id="btCompareDetails" class="filter-explainer">A comparison uses identical historical closed candles for every strategy.</p>
+        <div id="btCompareRows" class="strategy-filter-board"></div>
+        <p id="btCompareWarnings" class="filter-explainer"></p>
+      </section>
+      <div id="btWalkforwardResults" class="module" hidden>
+        <header class="module-head">
+          <div><p class="eyebrow">ROBUSTNESS SCREEN · 3 SEQUENTIAL FOLDS</p><h2>Walk-forward evidence</h2></div>
+          <span class="module-tag" id="btWalkforwardState">WAITING</span>
+        </header>
+        <div id="btWalkforwardStats" class="lab-topline"></div>
+        <div id="btWalkforwardFolds" class="strategy-filter-board"></div>
+        <p class="filter-explainer">Each fold opens only after its own start; earlier data serve indicator warmup, never future trade outcomes. Pass status does not authorize demo/real orders. Repeated testing on these folds creates selection bias.</p>
+      </div>
+      <div id="btResults" class="module" hidden>
+        <header class="module-head"><div><p class="eyebrow">REAL HISTORY · SIMULATED FILLS</p><h2>Results &amp; out-of-sample</h2></div><span class="module-tag" id="btDataSource">Historical reconstruction</span></header>
+        <div id="btHeadline" class="bt-headline"></div>
+        <div id="btComparison" class="bt-comparison"></div>
+        <div class="bt-chart-wrap">
+          <div class="bt-chart-caption"><strong>Simulated equity (USD)</strong><span>Historical only · virtual $100k starting equity</span></div>
+          <svg id="btEquityChart" viewBox="0 0 900 240" role="img" aria-label="Historical simulated account equity chart" preserveAspectRatio="none"></svg>
+        </div>
+        <div id="btWarnings" class="bt-warnings"></div>
+        <div class="module-head"><div><p class="eyebrow">AUDITABLE SIMULATED FILLS</p><h2>Backtest trade log</h2></div><span class="module-tag">NOT FORWARD PAPER TRADES</span></div>
+        <div id="btTrades" class="agent-trade-feed"></div>
+      </div>
+    </section>
+
+    <section id="intelView" class="view dashboard-view">
+      <div class="section-hero"><p class="eyebrow">INTELLIGENCE HQ // FREE PUBLIC FEEDS</p><h1>Information is <i>not an order.</i></h1><p>Equities watchlist: SPY, QQQ, NVDA, TSLA, AAPL &amp; MSFT. These are not paper-traded yet.</p></div>
+      <div class="source-box"><div><b>◉</b> ALPACA IEX · REAL STOCK PRINTS</div><span id="equityDataStatus">PAPER DATA FEED · CHECKING CONNECTION</span></div>
+      <div id="equityLiveGrid" class="intel-grid"><div class="await">Checking Alpaca data access…</div></div>
+      <div class="source-box"><div><b>◈</b> FINRA SHORT-SALE VOLUME</div><span>CONTEXT ONLY · NOT SHORT INTEREST</span></div>
+      <div id="intelGrid" class="intel-grid"><div class="await">Connecting to intelligence sources…</div></div>
+      <div class="module intel-note">SEC EDGAR filings may be unavailable from serverless IP ranges. Unavailable or stale data are excluded from scores. Quiver API remains optional and is not connected.</div>
+    </section>
+
+    <div id="drawerBackdrop" class="drawer-backdrop" hidden></div>
+    <aside id="detailDrawer" class="detail-drawer" aria-label="Agent details" aria-hidden="true">
+      <div class="drawer-head"><span class="eyebrow" id="drawerEyebrow">AGENT DOSSIER</span><button id="drawerClose" class="icon-button" aria-label="Close details">✕</button></div>
+      <div id="drawerBody"></div>
+    </aside>
+    <footer class="site-footer"><div><strong>AEGIS / AGENT CITY 3.0</strong><span>© Research interface · Forward paper only</span></div><div><span>ENGINE: HOURLY CANDLES</span><span>REAL MONEY: OFF</span><a href="/city-legacy.html">CLASSIC DASHBOARD ↗</a></div></footer>
+  </main>
+  <script src="/city.js" defer></script>
+</body>
+</html>
