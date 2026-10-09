@@ -783,13 +783,25 @@ function paintIntelligence(data){
   }).join("");
 }
 
-function setView(view){
-  const names={city:"cityView",payroll:"payrollView",evolution:"evolutionView",intel:"intelView"};
-  if(!names[view])return;
+const VIEW_IDS=Object.freeze({
+  city:"cityView",payroll:"payrollView",evolution:"evolutionView",
+  lab:"labView",backtest:"backtestView",intel:"intelView"
+});
+function viewFromHash(){
+  const target=window.location.hash.slice(1).toLowerCase();
+  return Object.keys(VIEW_IDS).find(key=>VIEW_IDS[key].toLowerCase()===target)||
+    (Object.hasOwn(VIEW_IDS,target)?target:"city");
+}
+function setView(view,updateHash=true){
+  if(!Object.hasOwn(VIEW_IDS,view))return;
   currentView=view;
-  Object.values(names).forEach(id=>$(id).classList.remove("active"));
-  $(names[view]).classList.add("active");
-  document.querySelectorAll(".nav-tab").forEach(el=>el.classList.toggle("active",el.dataset.view===view));
+  Object.values(VIEW_IDS).forEach(id=>$(id).classList.remove("active"));
+  $(VIEW_IDS[view]).classList.add("active");
+  document.querySelectorAll(".nav-tab").forEach(el=>
+    el.classList.toggle("active",el.dataset.view===view));
+  if(updateHash && window.location.hash!=="#"+VIEW_IDS[view]){
+    window.history.replaceState(null,"","#"+VIEW_IDS[view]);
+  }
   window.scrollTo({top:0,behavior:"smooth"});
 }
 function openDrawer(html,label){
@@ -948,6 +960,9 @@ function init(){
   window.addEventListener("resize",syncCamera);
   syncCamera();
   document.querySelectorAll(".nav-tab").forEach(el=>el.addEventListener("click",()=>setView(el.dataset.view)));
+  window.addEventListener("hashchange",()=>setView(viewFromHash(),false));
+  // Deep links from the Command Center must open the requested panel.
+  setView(viewFromHash(),false);
   $("openPayroll").addEventListener("click",()=>setView("payroll"));
   $("eventsBtn").addEventListener("click",()=>$("activityFeed").scrollIntoView({behavior:"smooth",block:"center"}));
   $("cameraBtn").addEventListener("click",()=>{$("cityCanvas").classList.toggle("explored");$("cameraBtn").textContent=$("cityCanvas").classList.contains("explored")?"↙ DEFAULT VIEW":"↗ EXPLORE VIEW"});
