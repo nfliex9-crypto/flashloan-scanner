@@ -102,8 +102,12 @@ def snapshot_from_metaapi(config: dict, now: datetime | None = None) -> dict:
     deals = metaapi_get(config, "/history-deals/time/"+start+"/"+end+"?limit=200")
     if not isinstance(positions, list) or not isinstance(deals, list):
         raise CloudUnavailable("invalid_metaapi_ledger")
-    if len(positions) > 100 or len(deals) > 200:
-        raise CloudUnavailable("snapshot_too_large")
+    if len(positions) > 100 or len(deals) >= 200:
+        # A full first page may hide additional broker deals. Never treat a
+        # truncated ledger as an exhaustive seven-day sync.
+        raise CloudUnavailable("history_page_limit_reached")
+    if any(not isinstance(item, dict) for item in positions + deals):
+        raise CloudUnavailable("invalid_metaapi_ledger")
     source = str(info["login"])+":"+str(info["server"])
     fingerprint = "mt5-demo-"+hashlib.sha256(source.encode()).hexdigest()[:20]
     fills=[]
@@ -111,6 +115,17 @@ def snapshot_from_metaapi(config: dict, now: datetime | None = None) -> dict:
         if deal.get("symbol") != symbol or deal.get("type") not in ("DEAL_TYPE_BUY", "DEAL_TYPE_SELL"):
             continue
         # Models are sourced directly from MT5; no invented execution IDs.
+        try:
+            if not str(deal["id"]).strip():
+                raise ValueError("empty deal id")
+            deal_price,deal_qty = float(deal["price"]),float(deal["volume"])
+            if not all(math.isfinite(n) and n>0 for n in (deal_price,deal_qty)):
+                raise ValueError("invalid broker deal price or volume")
+            for field in ("profit","commission","swap"):
+                if not math.isfinite(float(deal.get(field,0) or 0)):
+                    raise ValueError("invalid broker deal cash flow")
+        except (KeyError,ValueError,TypeError,OverflowError):
+            raise CloudUnavailable("invalid_metaapi_deal") from None
         fills.append({
             "external_id": str(deal["id"]), "order_id": str(deal.get("orderId","")),
             "position_id": str(deal.get("positionId","")), "symbol": symbol,
@@ -124,6 +139,14 @@ def snapshot_from_metaapi(config: dict, now: datetime | None = None) -> dict:
     active=[]
     for p in positions:
         if p.get("symbol") != symbol:continue
+        if p.get("type") not in ("POSITION_TYPE_BUY","POSITION_TYPE_SELL"):
+            raise CloudUnavailable("invalid_metaapi_position")
+        try:
+            qty,price=float(p["volume"]),float(p["openPrice"])
+            if not math.isfinite(qty) or not math.isfinite(price) or qty<=0 or price<=0:
+                raise ValueError("invalid position")
+        except (ValueError,TypeError,KeyError,OverflowError):
+            raise CloudUnavailable("invalid_metaapi_position") from None
         active.append({
             "external_id": str(p["id"]), "symbol": symbol,
             "side": "BUY" if p.get("type") == "POSITION_TYPE_BUY" else "SELL",
