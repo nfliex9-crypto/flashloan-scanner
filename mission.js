@@ -63,6 +63,22 @@ function displayAgentName(a,index){return AGENT_NAMES[index%AGENT_NAMES.length]}
 function agentTitle(a){return a.strategy+" · "+(a.direction||"LONG")+" · "+a.interval_minutes+"m"}
 function recentByAgent(journal){const map=new Map();for(const d of journal){if(!map.has(d.agent_id))map.set(d.agent_id,d)}return map}
 function decodeReason(raw){return REASONS[raw]||String(raw||"قرار مسجّل بدون وصف إضافي")}
+function horizonFamily(minutes){
+  const n=Number(minutes);
+  if(n===1||n===5)return "SCALPING";
+  if(n===15||n===60)return "INTRADAY";
+  if(n===240||n===1440)return "SWING";
+  if(n===10080)return "POSITION";
+  return "UNSUPPORTED";
+}
+function matchesActiveScope(row){
+  const market=$("marketFilter").value;
+  const direction=$("directionFilter").value;
+  const horizon=$("horizonFilter").value;
+  return (market==="ALL"||row.symbol===market)&&
+    (direction==="ALL"||(row.direction||"LONG")===direction)&&
+    (horizon==="ALL"||horizonFamily(row.interval_minutes)===horizon);
+}
 function feedConnected(micro){
   const required=micro?.required_intervals_minutes||[1,5,15];
   const channels=(micro?.sources||[]).filter(x=>required.some(n=>x.stream_name===`kraken-public-micro-${n}m`));
@@ -84,6 +100,13 @@ function renderMetrics(s){
   $("openCount").textContent=Array.isArray(m.open_positions)?String(m.open_positions.length):"—";
   const counts=Array.isArray(m.decision_counts_last_hour)?m.decision_counts_last_hour:[];
   $("decisionsCount").textContent=m.decision_journal?String(counts.reduce((a,x)=>a+Number(x.count||0),0)):"—";
+  const enter=counts.filter(x=>x.action==="ENTER").reduce((n,x)=>n+Number(x.count||0),0);
+  const veto=counts.filter(x=>x.action==="VETO").reduce((n,x)=>n+Number(x.count||0),0);
+  const wait=counts.filter(x=>x.action==="WAIT").reduce((n,x)=>n+Number(x.count||0),0);
+  $("entryVetoCount").textContent=m.decision_journal?enter+" / "+veto:"—";
+  $("entryVetoNote").textContent=m.decision_journal?
+    "دخول "+enter+" · رفض "+veto+" · انتظار "+wait+" (آخر ساعة)":
+    "لا توجد بيانات قرارات مؤكدة";
   const stamps=(m.bar_stats||[]).map(x=>x.last_closed_bar).filter(isValidTime);
   const mostRecent=stamps.length?stamps.sort((a,b)=>Date.parse(b)-Date.parse(a))[0]:null;
   $("lastBarAge").textContent=mostRecent?age(mostRecent):"لا يوجد";
@@ -98,8 +121,9 @@ function renderCrew(s){
       String(a.strategy).localeCompare(String(b.strategy))||
       String(a.direction||"LONG").localeCompare(String(b.direction||"LONG")));
   agentRows=all;
-  const scope=$("marketFilter").value;
-  const rows=all.filter(a=>scope==="ALL"||a.symbol===scope);
+  const rows=all.filter(matchesActiveScope);
+  $("crewFilterStatus").textContent="عرض "+rows.length+" من "+all.length+
+    " وكيل ورقي · الفلاتر تتحكم بعرض الوكلاء والقرارات فقط، ولا تغيّر التداول";
   const journal=Array.isArray(m.decision_journal)?m.decision_journal:[];
   const map=recentByAgent(journal),positions=new Map((m.open_positions||[]).map(p=>[p.agent_id,p]));
   $("crewGrid").innerHTML=rows.length?rows.map(a=>{
@@ -127,7 +151,8 @@ function renderTimeline(s){
     $("feedTail").textContent="سجل القرارات غير متاح في النسخة المنشورة حاليًا";
     return;
   }
-  const journal=raw.filter(d=>activeAction==="ALL"||d.action===activeAction);
+  const journal=raw.filter(d=>(activeAction==="ALL"||d.action===activeAction)&&
+    matchesActiveScope(d));
   const labels={ENTER:"↗",EXIT:"↘",WAIT:"◷",MARK:"◎",VETO:"⊘"};
   $("decisionFeed").innerHTML=journal.length?journal.map(d=>
     '<article class="decision-event '+escapeHtml(String(d.action).toLowerCase())+'">'+
@@ -144,8 +169,8 @@ function renderTimeline(s){
     (d.net_pnl!=null?'<span>صافي ورقي '+usd(d.net_pnl)+'</span>':"")+
     '</div></div></article>').join(""):
     '<div class="empty-state">لا يوجد قرار '+(activeAction==="ALL"?"مسجّل حتى الآن":"بهذا النوع ضمن آخر 160 حدثًا")+'. سنعرض فقط الأحداث الموثقة من المحرك.</div>';
-  $("feedTail").textContent="قرارات Micro الموثقة: "+raw.length+
-    " ظاهرة من آخر السجل · التحديث كل 8 ثوانٍ · الصفقات افتراضية فقط";
+  $("feedTail").textContent="قرارات مطابقة للفلترة: "+journal.length+
+    " من "+raw.length+" سجل موثّق · التحديث كل 8 ثوانٍ · الصفقات افتراضية فقط";
 }
 function renderDemo(s){
   const a=s.demo_brokers?.connected_accounts||[];
@@ -233,7 +258,10 @@ document.addEventListener("click",e=>{
     if(state)renderTimeline(state);
   }
 });
-$("marketFilter").addEventListener("change",()=>{if(state)renderCrew(state)});
+["marketFilter","directionFilter","horizonFilter"].forEach(id=>
+  $(id).addEventListener("change",()=>{
+    if(state){renderCrew(state);renderTimeline(state);}
+  }));
 $("forceRefresh").addEventListener("click",poll);
 $("closeAgent").addEventListener("click",closeDossier);
 $("agentOverlay").addEventListener("click",e=>{if(e.target===$("agentOverlay"))closeDossier()});
