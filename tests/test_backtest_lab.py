@@ -136,3 +136,17 @@ def test_backtest_rejects_corrupt_price_bars():
                        low=bar.low,close=bar.close,volume=bar.volume)
     with pytest.raises(ValueError,match="Invalid historical OHLC"):
         simulate_costed_backtest(candles,asset="BTC",strategy="EMA Cross",interval="5min")
+
+
+def test_gold_short_backtest_warnings_do_not_claim_binance_short_is_gold():
+    from aegis import backtest_lab as bt
+    from pytest import MonkeyPatch
+    candles=samples(n=300,period=3600)
+    with MonkeyPatch.context() as monkeypatch:
+        monkeypatch.setattr(bt,"load_backtest_bars",
+            lambda asset,interval,bars,now=None:(candles,"UNIT TEST ONLY"))
+        result=bt.run_backtest({"asset":"XAU","strategy":"EMA Cross",
+            "interval":"1h","bars":"300","direction":"SHORT"})
+    assert result["live_execution_enabled"] is False
+    assert any("MT5 Demo" in w for w in result["warnings"])
+    assert not any("Binance Spot Demo" in w for w in result["warnings"])
