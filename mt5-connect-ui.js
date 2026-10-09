@@ -14,7 +14,7 @@
   async function refresh(preserveMessage=false) {
     if(busy)return;
     try{
-      const response = await fetch("/api/mt5_cloud",{cache:"no-store",headers:{"Accept":"application/json"}});
+      const response = await fetch("/api/stage3?mt5_cloud=1",{cache:"no-store",headers:{"Accept":"application/json"}});
       const doc = await response.json();
       if(!response.ok || doc.ok !== true)throw new Error("service_unavailable");
       configured = doc.state === "CONNECTED_DEMO";
@@ -49,7 +49,7 @@
     busy=true;update();
     setMessage("جاري قراءة معلومات MT5 Demo ومراكزه وسجل صفقات الذهب من MetaApi والتحقق من Neon…");
     try{
-      const response=await fetch("/api/mt5_cloud",{
+      const response=await fetch("/api/stage3?mt5_cloud=1",{
         method:"POST",cache:"no-store",credentials:"same-origin",
         headers:{"Content-Type":"application/json","Authorization":"Bearer "+owner.value.trim()},
         body:JSON.stringify({action:"sync"})
