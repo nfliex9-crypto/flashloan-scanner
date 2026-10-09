@@ -5,7 +5,7 @@ real broker, and cannot be mistaken for a successful account connection.
 """
 import pytest
 
-from api import mt5_cloud
+from aegis import mt5_cloud
 
 INFO = {
     "type": "ACCOUNT_TRADE_MODE_DEMO", "login": 12345678,
