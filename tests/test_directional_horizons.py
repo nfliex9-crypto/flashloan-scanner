@@ -124,9 +124,9 @@ def test_auto_router_requires_verified_costed_forward_ledger():
     assert short["selected"] is None
     assert "direction_supported" in short["candidates"][0]["failed_checks"]
     wins=rank_forward_horizons([evidence(minutes=5),evidence(minutes=15)],side="LONG")
-    assert wins["state"]=="RESEARCH_LEADER_AVAILABLE"
-    assert wins["selected"] is not None
-    assert not wins["selected"]["execution_authorized"]
+    assert wins["state"]=="AWAITING_MATCHED_OOS_EVIDENCE"
+    assert wins["forward_leader"] is not None
+    assert not wins["forward_leader"]["execution_authorized"]
 
 
 def test_router_rejects_lucky_small_samples_and_high_drawdown():
@@ -165,7 +165,7 @@ def test_horizon_ranks_each_agent_not_blended_pooled_profit():
     other={**base,"agent_id":"micro-btc-5m-channel-breakout",
            "strategy":"Channel Breakout","net_pnl":-500}
     result=rank_forward_horizons([base,other],side="LONG")
-    assert result["selected"]["agent_id"]=="micro-btc-5m-ema-cross"
-    assert result["selected"]["strategy"]=="EMA Cross"
+    assert result["forward_leader"]["agent_id"]=="micro-btc-5m-ema-cross"
+    assert result["forward_leader"]["strategy"]=="EMA Cross"
     assert len(result["candidates"])==2
     assert sum(int(c["qualified"]) for c in result["candidates"])==1

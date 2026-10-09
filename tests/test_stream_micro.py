@@ -121,7 +121,7 @@ def test_micro_gap_histories_block_new_position():
 
 
 def test_multiple_timeframes_and_unique_ids():
-    assert ALLOWED_MINUTES==(1,5,15)
+    assert ALLOWED_MINUTES==(1,5,15,60,240,1440,10080)
     aids={stream_agent_id("BTC",m,"EMA Cross") for m in ALLOWED_MINUTES}
-    assert len(aids)==3
+    assert len(aids)==7
     assert all("micro-btc" in id for id in aids)

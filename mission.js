@@ -64,21 +64,22 @@ function agentTitle(a){return a.strategy+" · "+(a.direction||"LONG")+" · "+a.i
 function recentByAgent(journal){const map=new Map();for(const d of journal){if(!map.has(d.agent_id))map.set(d.agent_id,d)}return map}
 function decodeReason(raw){return REASONS[raw]||String(raw||"قرار مسجّل بدون وصف إضافي")}
 function feedConnected(micro){
-  const channels=(micro?.sources||[]).filter(x=>/^kraken-public-micro-(1|5|15)m$/.test(x.stream_name));
+  const required=micro?.required_intervals_minutes||[1,5,15];
+  const channels=(micro?.sources||[]).filter(x=>required.some(n=>x.stream_name===`kraken-public-micro-${n}m`));
   const healthy=channels.filter(x=>x.state==="CONNECTED"&&isValidTime(x.updated_at)&&Date.now()-Date.parse(x.updated_at)<180000&&Date.now()>=Date.parse(x.updated_at));
-  return {healthy:healthy.length,total:3};
+  return {healthy:healthy.length,total:required.length};
 }
 function renderMetrics(s){
   const m=s.micro_engine||{},journal=Array.isArray(m.decision_journal)?m.decision_journal:[];
   const status=feedConnected(m);
-  const connected=!connectionLost&&status.healthy===3&&m.is_connected===true;
+  const connected=!connectionLost&&status.healthy===status.total&&m.is_connected===true;
   const partial=!connectionLost&&status.healthy>0&&!connected;
   const conn=$("globalConnection");
   conn.className="connection-state "+(connected?"connected":partial?"partial":"disconnected");
   conn.innerHTML='<span class="state-dot"></span>'+
     (connected?"Kraken متصل · Paper":partial?"اتصال جزئي":connectionLost?"تعذر تحديث Neon":"البيانات متأخرة / العامل متوقف");
   $("engineState").textContent=connected?"متصل":partial?"جزئي":"غير مؤكد";
-  $("feedCount").textContent=status.healthy+" / 3 مصادر نشطة";
+  $("feedCount").textContent=status.healthy+" / "+status.total+" مصادر نشطة";
   $("crewCount").textContent=Array.isArray(m.agents)?String(m.agents.length):"—";
   $("openCount").textContent=Array.isArray(m.open_positions)?String(m.open_positions.length):"—";
   const counts=Array.isArray(m.decision_counts_last_hour)?m.decision_counts_last_hour:[];
@@ -150,7 +151,7 @@ function renderDemo(s){
   const a=s.demo_brokers?.connected_accounts||[];
   const provider=id=>a.find(x=>x.provider===id);
   const g=provider("MT5_DEMO"),b=provider("BINANCE_SPOT_DEMO");
-  const status=v=>!v?"غير مرتبط":v.sync_status==="SYNCED_DEMO"?"Demo متصل":"مزامنة متأخرة";
+  const status=v=>!v?"غير مرتبط":!connectionLost&&v.sync_status==="SYNCED_DEMO"&&isValidTime(v.last_synced)&&Date.now()-Date.parse(v.last_synced)<300000?"Demo متصل · قراءة فقط":"مزامنة متأخرة";
   $("demoStatus").innerHTML='<span>MT5 GOLD</span><strong>'+escapeHtml(status(g))+'</strong>'+
     '<span>BINANCE BTC</span><strong>'+escapeHtml(status(b))+'</strong>';
   const router=s.research_horizon_router||{};
@@ -174,6 +175,8 @@ function render(){
   renderCrew(state);
   renderTimeline(state);
   renderDemo(state);
+  renderHorizonEvidence(state);
+  renderBrokerFills(state);
   if(currentAgent&&$("agentOverlay").hidden===false)renderDossier(currentAgent);
 }
 async function poll(){
@@ -237,8 +240,55 @@ $("agentOverlay").addEventListener("click",e=>{if(e.target===$("agentOverlay"))c
 document.addEventListener("keydown",e=>{if(e.key==="Escape")closeDossier()});
 function tickClock(){
   $("feedClock").textContent=new Date().toLocaleTimeString("en-GB",{hour12:false,timeZone:"UTC"})+" UTC";
-  if(state)renderMetrics(state);
+  if(state){renderMetrics(state);renderDemo(state);renderHorizonEvidence(state);}
 }
 tickClock();setInterval(tickClock,1000);
 poll();setInterval(()=>{if(!document.hidden)poll()},8000);
 document.addEventListener("visibilitychange",()=>{if(!document.hidden)poll()});
+
+const horizonRows=[[1,'1min','سكالبينغ'],[5,'5min','سكالبينغ'],[15,'15min','يومي'],[60,'1h','يومي'],[240,'4h','سوينغ'],[1440,'1day','سوينغ'],[10080,'1week','أسبوعي']];
+function renderHorizonEvidence(s){
+  const m=s.micro_engine||{},r=s.research_horizon_router||{};
+  $('horizonEvidence').innerHTML=horizonRows.map(([minutes,label,family])=>{
+    const feed=(m.sources||[]).find(f=>f.stream_name===`kraken-public-micro-${minutes}m`);
+    const active=!connectionLost&&(m.active_intervals_minutes||[]).includes(minutes)&&feed&&isValidTime(feed.updated_at)&&Date.now()-Date.parse(feed.updated_at)<180000;
+    const agents=(m.agents||[]).filter(a=>a.interval_minutes===minutes);
+    const candidates=(r.candidates||[]).filter(c=>c.interval===label);
+    const screens=(r.historical_screens||[]).filter(c=>c.interval===label);
+    const n=candidates.reduce((a,c)=>a+c.trades,0);
+    return '<tr><td>'+label+' · '+family+'</td><td>'+(active?'متصل':'غير مؤكد')+'</td><td>'+agents.filter(a=>a.direction==='LONG').length+' / '+agents.filter(a=>a.direction==='SHORT').length+'</td><td>'+n+'</td><td>'+screens.filter(c=>c.historical_screen_passed).length+' / '+screens.length+'</td><td>'+(candidates.some(c=>c.selection_qualified)?'مؤهل بحثيًا':'أدلة غير كافية')+'</td></tr>';
+  }).join('');
+}
+function renderBrokerFills(s){
+  const fills=s.demo_brokers?.recent_fills||[];
+  $('brokerFills').innerHTML=fills.length?fills.slice(0,12).map(f=>'<tr><td>'+escapeHtml(f.provider||f.source_id)+'</td><td>'+escapeHtml(f.symbol)+'</td><td>'+escapeHtml(f.side)+'</td><td>'+num(f.qty,6)+'</td><td>'+usd(f.price,true)+'</td><td>'+escapeHtml(utc(f.executed_at))+'</td></tr>').join(''):'<tr><td colspan="6">لا توجد تنفيذات Demo متزامنة. Bitcoin Spot Demo لا يدعم فتح Short؛ نتائج Short الحالية محاكاة فقط.</td></tr>';
+}
+let comparingHorizons=false;
+async function compareHorizons(){
+  if(comparingHorizons)return;
+  comparingHorizons=true;
+  const btn=$('compareHorizons');btn.disabled=true;
+  const asset=$('comparisonAsset').value;
+  $('horizonCompareRows').innerHTML='';
+  try{
+    for(const [,interval] of horizonRows){
+      $('horizonCompareStatus').textContent='فحص '+asset+' / '+interval+' · Long وShort منفصلان…';
+      const q=new URLSearchParams({backtest:'horizon',asset,interval,bars:'720',cost:'base'});
+      try{
+        const res=await fetch('/api/stage3?'+q,{signal:AbortSignal.timeout(45000)});
+        const data=await res.json();
+        if(!res.ok||!data.ok)throw Error(data.error||'المصدر غير متاح');
+        for(const report of data.reports){
+          for(const row of report.results){
+            const h=row.holdout,stress=row.stress_holdout;
+            $('horizonCompareRows').insertAdjacentHTML('beforeend','<tr><td>'+escapeHtml(interval)+'</td><td>'+escapeHtml(report.direction)+'</td><td>'+escapeHtml(row.strategy)+'</td><td>'+num(report.holdout_days)+'</td><td>'+h.trades+'</td><td>'+usd(h.closed_net_pnl)+'</td><td>'+usd(stress.closed_net_pnl)+'</td><td>'+num(h.max_drawdown_pct)+'%</td><td>'+escapeHtml(row.historical_screen_passed?'اجتاز التاريخي فقط':row.blockers.join(' · '))+'</td></tr>');
+          }
+        }
+      }catch(error){
+        $('horizonCompareRows').insertAdjacentHTML('beforeend','<tr><td>'+escapeHtml(interval)+'</td><td colspan="8">غير متاح: '+escapeHtml(error.message)+'</td></tr>');
+      }
+    }
+    $('horizonCompareStatus').textContent='اكتمل الفحص. الفترات التاريخية متفاوتة؛ لا نعلن فائزًا شاملًا ولا نفعّل تداولًا. النتائج التاريخية لا تدخل سجل Forward.';
+  }finally{btn.disabled=false;comparingHorizons=false;}
+}
+$('compareHorizons').addEventListener('click',compareHorizons);

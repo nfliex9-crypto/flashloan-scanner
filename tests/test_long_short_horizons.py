@@ -121,7 +121,7 @@ def test_separate_long_and_short_forward_winners_on_real_evidence():
             "max_drawdown":.013,
         })
     report=rank_forward_horizons(rows,side="BOTH")
-    assert report["selected"]["direction"]=="SHORT"
-    assert report["selected_by_direction"]["LONG"]["qualified"]
-    assert report["selected_by_direction"]["SHORT"]["qualified"]
+    assert report["forward_leader"]["direction"]=="SHORT"
+    assert report["forward_leaders_by_direction"]["LONG"]["qualified"]
+    assert report["forward_leaders_by_direction"]["SHORT"]["qualified"]
     assert report["selection_is_not_a_trading_order"] is True

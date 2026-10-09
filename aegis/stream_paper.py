@@ -85,11 +85,11 @@ def fill_decision(account: dict, position: dict | None, history: list[Candle],
         values=signed_strategy_signals([c.close for c in history],strategy,direction)
         signal=values[-1];previous=values[-2]
     if pos:
-        if signal!=side and previous==side:
+        if contiguous and signal!=side:
             return {"action":"EXIT","raw_price":now_open,
                     "reason":"SIGNAL_EXIT","at":utc(event.next_start)}
         return {"action":"MARK","price":closed.close}
-    if not contiguous or bool(account["halted"]) or float(account["max_drawdown"])>=.05:
+    if not contiguous or bool(account["halted"]) or float(account["max_drawdown"])>=config.max_agent_drawdown_pct:
         return {"action":"WAIT","reason":"HALTED_OR_INSUFFICIENT_CLOSED_HISTORY"}
     if signal!=side or previous==side:
         return {"action":"WAIT","reason":"NO_FRESH_CLOSED_BAR_ENTRY"}

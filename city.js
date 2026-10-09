@@ -163,17 +163,17 @@ function renderHorizonRouter(data){
       " / "+winner.horizon+" / "+(winner.strategy||"unknown strategy")+
       " / "+winner.direction+" · Not a demo/live order authorization"
     :"No qualifying timeframe yet · "+options.length+
-      " candidate timeframes · Short and weekly forward evidence still pending";
+      " candidates · Requires matching pre-forward OOS evidence and enough costed forward trades";
   $("horizonRouterBoard").innerHTML=options.length?options.map(o=>
     '<div class="strategy-rank-row">'+
       '<strong class="strategy-rank-number">'+safe(o.interval)+'</strong>'+
       '<span class="strategy-rank-name"><strong>'+safe(o.asset)+' / '+safe(o.direction)+' / '+safe(o.horizon)+'</strong>'+
       '<small>'+safe(o.strategy||"Unidentified strategy")+' · '+Number(o.trades)+' closed costed trades · '+fixed(o.observed_days,1)+
-      ' observation days'+(o.qualified?" · Qualified":" · Pending: "+safe((o.failed_checks||[]).join(", ")))+'</small></span>'+
+      ' observation days'+(o.selection_qualified?" · OOS + Forward qualified":o.qualified?" · Forward only; matching OOS pending":" · Pending: "+safe((o.failed_checks||[]).join(", ")))+'</small></span>'+
       '<span class="strategy-rank-metrics">PF '+fixed(o.profit_factor,2)+
       ' · <span class="'+sign(o.net_pnl)+'">'+currency(o.net_pnl)+'</span></span>'+
-      '<span class="strategy-rank-state '+(o.qualified?"leader":"observing")+'">'+
-      (o.qualified?"RESEARCH READY":"COLLECTING")+'</span></div>'
+      '<span class="strategy-rank-state '+(o.selection_qualified?"leader":"observing")+'">'+
+      (o.selection_qualified?"RESEARCH READY":"COLLECTING")+'</span></div>'
   ).join(""):'<div class="await">No settled costed forward micro trades to rank. Research selection waits for observed performance.</div>';
 }
 
@@ -353,8 +353,8 @@ function renderHistoricalLeaderboard(d){
       '<span class="strategy-rank-name"><strong>'+safe(r.strategy)+'</strong>'+
       '<small>'+safe(ok?"Still requires untouched forward evidence":(r.blockers||[]).join(" · "))+'</small></span>'+
       '<span class="strategy-rank-metrics"><span>OOS '+Number(h.trades||0)+' fills</span>'+
-      '<span class="'+sign(h.net_pnl)+'">OOS '+currency(h.net_pnl)+'</span>'+
-      '<span class="'+sign(sh.net_pnl)+'">2× '+currency(sh.net_pnl)+'</span>'+
+      '<span class="'+sign(h.closed_net_pnl)+'">OOS closed '+currency(h.closed_net_pnl)+'</span>'+
+      '<span class="'+sign(sh.closed_net_pnl)+'">2× closed '+currency(sh.closed_net_pnl)+'</span>'+
       '<span>DD '+fixed(h.max_drawdown_pct,2)+'%</span></span>'+
       '<span class="strategy-rank-state '+(ok?"leader":"observing")+'">'+state+'</span></button>';
   }).join("");

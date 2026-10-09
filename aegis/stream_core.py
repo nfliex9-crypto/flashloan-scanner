@@ -12,7 +12,7 @@ from datetime import datetime, timezone
 
 from .live_lab import Candle
 
-ALLOWED_MINUTES = (1, 5, 15)
+ALLOWED_MINUTES = (1, 5, 15, 60, 240, 1440, 10080)
 SYMBOL_NAMES = {"BTC/USD": "BTC", "ETH/USD": "ETH"}
 
 
@@ -36,7 +36,10 @@ def parse_kraken_bar(row: dict) -> tuple[str, int, Candle]:
         raise ValueError("Kraken interval_begin needs a timezone")
     ts = int(start.astimezone(timezone.utc).timestamp())
     seconds = interval * 60
-    if ts % seconds:
+    # Weekly source calendars need not be anchored to Unix epoch Thursday.
+    # Consecutive weekly bars still must differ by exactly 604800 seconds.
+    alignment=86400 if interval==10080 else seconds
+    if ts % alignment or start.microsecond:
         raise ValueError("Unaligned Kraken interval")
     op, high, low, close = (float(row[k]) for k in ("open", "high", "low", "close"))
     volume = float(row.get("volume", 0))

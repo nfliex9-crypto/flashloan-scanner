@@ -342,7 +342,7 @@ def get_stage3_state() -> dict:
         # spoof a connected WebSocket or mix micro trades with forward paper.
         cur.execute(
             "SELECT stream_name,state,last_message_at,last_closed_bar,updated_at "
-            "FROM aegis.stream_status ORDER BY updated_at DESC LIMIT 4")
+            "FROM aegis.stream_status ORDER BY updated_at DESC LIMIT 16")
         micro_sources=list(cur.fetchall())
         cur.execute(
             "SELECT agent_id,symbol,interval_minutes,strategy,direction,cash,"
@@ -382,11 +382,18 @@ def get_stage3_state() -> dict:
             "COALESCE(sum(t.net_pnl) FILTER(WHERE t.net_pnl>0),0) AS gross_gains,"
             "COALESCE(sum(t.net_pnl) FILTER(WHERE t.net_pnl<0),0) AS gross_losses,"
             "min(t.opened_at) AS first_trade,max(t.closed_at) AS last_trade,"
-            "COALESCE(max(a.max_drawdown),0) AS max_drawdown "
+            "max(a.max_drawdown) AS max_drawdown,bool_or(a.halted) AS halted "
             "FROM aegis.stream_trades t "
             "LEFT JOIN aegis.stream_accounts a ON a.agent_id=t.agent_id "
             "GROUP BY t.agent_id,a.strategy,t.symbol,t.interval_minutes,t.direction")
         micro_directional_evidence=list(cur.fetchall())
+        # Rolling deploy: API remains readable before the worker's additive
+        # migration arrives. Missing receipts never qualify a candidate.
+        cur.execute("SELECT to_regclass('aegis.stream_historical_screens') AS present")
+        historical_screens=[]
+        if cur.fetchone()['present']:
+            cur.execute('SELECT evidence FROM aegis.stream_historical_screens ORDER BY agent_id')
+            historical_screens=[r['evidence'] for r in cur.fetchall()]
 
         # These are BROKER-CONFIRMED DEMO records, never computed shadow
         # paper fills. No login, API key, password or account number is stored.
@@ -449,8 +456,8 @@ def get_stage3_state() -> dict:
     trade_feed.sort(key=lambda row:row["timestamp"],reverse=True)
     trade_feed=trade_feed[:180]
     rank_by_id={r["agent_id"]:r for r in strategy_ranks}
-    required_micro_feeds={"kraken-public-micro-1m","kraken-public-micro-5m",
-                          "kraken-public-micro-15m"}
+    from .stream_core import ALLOWED_MINUTES
+    required_micro_feeds={f"kraken-public-micro-{n}m" for n in ALLOWED_MINUTES}
     live_feeds=set()
     checked_at=datetime.now(timezone.utc)
     for source in micro_sources:
@@ -478,13 +485,15 @@ def get_stage3_state() -> dict:
         "history_source":"Broker demo / exchange demo. Neon contains only compact reconciled execution IDs.",
     }
     from .horizon_selector import rank_forward_horizons
-    micro_horizon_router=rank_forward_horizons(micro_directional_evidence,side="BOTH")
+    micro_horizon_router=rank_forward_horizons(micro_directional_evidence,side="BOTH",historical_evidence=historical_screens)
+    micro_horizon_router['historical_screens']=historical_screens
     micro_engine={
         "mode":micro_mode,"is_connected":stream_active,
         "source":"Kraken public Spot WebSocket v2 (BTC/ETH only)",
         "live_execution_enabled":False,
         "sources":micro_sources,
-        "active_intervals_minutes":[n for n in (1,5,15) if f"kraken-public-micro-{n}m" in live_feeds],
+        "required_intervals_minutes":list(ALLOWED_MINUTES),
+        "active_intervals_minutes":[n for n in ALLOWED_MINUTES if f"kraken-public-micro-{n}m" in live_feeds],
         "agents":micro_agents,
         "open_positions":micro_positions,
         "recent_closed_trades":micro_trades,

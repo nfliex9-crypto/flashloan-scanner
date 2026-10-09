@@ -42,7 +42,7 @@
       </section>
 
       <section class="signal-strip" aria-label="Actual micro engine metrics">
-        <div class="signal-metric"><span>حالة المحرك</span><strong id="engineState">جاري التحقق</strong><small id="feedCount">0 / 3 مصادر</small></div>
+        <div class="signal-metric"><span>حالة المحرك</span><strong id="engineState">جاري التحقق</strong><small id="feedCount">0 / 7 مصادر</small></div>
         <div class="signal-metric"><span>أعضاء الفريق</span><strong id="crewCount">—</strong><small>وكلاء ورقيون مسجلون</small></div>
         <div class="signal-metric"><span>قرارات الساعة</span><strong id="decisionsCount">—</strong><small>أحداث محفوظة بالفعل</small></div>
         <div class="signal-metric"><span>المراكز المفتوحة</span><strong id="openCount">—</strong><small>Micro Paper فقط</small></div>
@@ -60,7 +60,7 @@
 
         <aside class="decision-zone">
           <div class="timeline-header"><div><span class="overline">LIVE DECISION TAPE</span><h2>شو قرروا الآن؟</h2></div><span id="newDecisionPulse" class="small-count">0 أحداث</span></div>
-          <p class="decision-intro">تسلسل قرارات الوكلاء، حتى قرارات عدم الدخول. السجل يتحدّث من Neon كل 8 ثوانٍ؛ الأحداث تنشأ عند إغلاق شموع 1m / 5m / 15m.</p>
+          <p class="decision-intro">تسلسل قرارات الوكلاء، حتى قرارات عدم الدخول. السجل يتحدّث من Neon كل 8 ثوانٍ؛ الأحداث تنشأ عند إغلاق شموع 1m / 5m / 15m / 1h / 4h / 1d / 1w.</p>
           <div class="decision-filters" role="group" aria-label="فلترة القرارات">
             <button class="filter-chip active" data-action="ALL" type="button">الكل</button>
             <button class="filter-chip" data-action="ENTER" type="button">فتح</button>
@@ -77,6 +77,18 @@
         <div class="rail-card" id="riskPanel"><div class="rail-header"><span class="overline">RISK FIREWALL</span><span class="rail-chip safe">REAL ORDERS OFF</span></div><h3>مسؤول إدارة المخاطر</h3><p>كل دخول ورقي يمر من حدود المخاطرة والحجر. رفض الصفقة يظهر في سجل القرارات مع سبب واضح.</p><div class="risk-meter"><span>ميزانية المخاطرة لكل صفقة</span><strong>0.25%</strong></div><div class="risk-meter"><span>حد حجم المركز الافتراضي</span><strong>20%</strong></div><div class="risk-meter"><span>إيقاف حساب الوكيل عند التراجع</span><strong>5%</strong></div></div>
         <div class="rail-card"><div class="rail-header"><span class="overline">BROKER DEMO / SOURCE OF TRUTH</span><span class="rail-chip">READ ONLY</span></div><h3>MT5 Gold + Bitcoin Demo</h3><p>صفقات الحسابات التجريبية تظهر فقط بعد اتصال المنصتين والتحقق من سجل التنفيذ الحقيقي عند الوسيط.</p><div class="demo-rows" id="demoStatus"><span>MT5 Gold</span><strong>غير متصل</strong><span>Bitcoin Demo</span><strong>غير متصل</strong></div><a href="/city-research.html" class="text-link">فتح سجل الحسابات التفصيلي ↗</a></div>
         <div class="rail-card"><div class="rail-header"><span class="overline">RESEARCH / HORIZON SELECTION</span><span class="rail-chip">EVIDENCE ONLY</span></div><h3>مين الأفضل؟</h3><p>اختيار السكالبينغ أو اليومي أو السوينغ يحتاج صفقات مغلقة كافية بعد التكاليف. لا نعطي تصنيفًا رابحًا بناءً على اختبار تاريخي وحده.</p><div id="horizonSummary" class="horizon-state">بانتظار أدلة Forward كافية</div><a href="/city-research.html" class="text-link">نتائج الاستراتيجيات والـBacktest ↗</a></div>
+      </section>
+      <section class="rail-card evidence-panel">
+        <span class="overline">ADAPTIVE TIMEFRAME SELECTOR</span><h2>الفواصل والأدلة الفعلية</h2>
+        <p>نجاح فحص تاريخي سابق + نتائج Forward مستقلة بعد الرسوم والانزلاق والتمويل. الاتصال وحده لا يعني وجود صفقات أو أفضلية. أرقام OOS تخص فحوص BTC المحفوظة.</p>
+        <div class="table-scroll"><table><thead><tr><th>الفاصل</th><th>المصدر</th><th>وكلاء Long / Short</th><th>صفقات Forward مغلقة</th><th>فحوص OOS ناجحة / محفوظة</th><th>حالة الاختيار</th></tr></thead><tbody id="horizonEvidence"></tbody></table></div>
+        <label for="comparisonAsset">السوق للفحص التاريخي</label> <select id="comparisonAsset"><option value="BTC">Bitcoin</option><option value="XAU">Gold</option></select>
+        <button type="button" class="refresh-button" id="compareHorizons">مقارنة 7 فواصل × Long / Short × 7 استراتيجيات</button>
+        <p id="horizonCompareStatus">فحص متسلسل عند الطلب. 720 شمعة كحد أقصى لكل فاصل؛ قد تكون عيّنة السكالبينغ أقصر من المطلوب. الذهب يعتمد على توفر مصدر البيانات.</p>
+        <div class="table-scroll"><table><thead><tr><th>الفاصل</th><th>الاتجاه</th><th>الاستراتيجية</th><th>أيام OOS</th><th>مغلقة</th><th>صافي مغلق</th><th>تكاليف ×2</th><th>التراجع</th><th>النتيجة / سبب الرفض</th></tr></thead><tbody id="horizonCompareRows"></tbody></table></div>
+      </section>
+      <section class="rail-card evidence-panel"><span class="overline">EXTERNAL DEMO · READ ONLY</span><h2>سجل تنفيذ الوسيط</h2><p>قراءة فقط. لا أوامر Demo أو أموال حقيقية من هذه الواجهة.</p>
+        <div class="table-scroll"><table><thead><tr><th>المصدر</th><th>الرمز</th><th>العملية</th><th>الكمية</th><th>السعر</th><th>وقت التنفيذ</th></tr></thead><tbody id="brokerFills"><tr><td colspan="6">بانتظار سجل موثّق</td></tr></tbody></table></div>
       </section>
       <footer class="footer"><span>AEGIS COMMAND CENTER <i>·</i> VERIFIED DECISIONS ONLY</span><span>Kraken public market data · Neon decision journal · No live brokerage execution</span></footer>
     </main>

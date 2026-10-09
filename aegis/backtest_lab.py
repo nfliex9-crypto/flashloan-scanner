@@ -119,6 +119,7 @@ def _stats(trades:list[dict],curve:list[dict],starting_equity:float,open_positio
     final=curve[-1]["equity"] if curve else starting_equity
     dd=max((x["drawdown"] for x in curve),default=0.0)
     return {"trades":len(trades),"wins":wins,"win_rate":wins/len(trades) if trades else 0.0,
+            "closed_net_pnl":round(sum(t["net_pnl"] for t in trades),4),
             "net_pnl":round(final-starting_equity,4),
             "return_pct":round((final/starting_equity-1)*100,4),
             "max_drawdown_pct":round(dd*100,4),
@@ -172,6 +173,10 @@ def simulate_costed_backtest(candles:list[Candle], *,
         raise ValueError("Unsupported simulated instrument, timeframe or direction")
     if not (math.isfinite(cost_multiplier) and 0<cost_multiplier<=10):
         raise ValueError("Invalid simulated trading costs")
+    if not math.isfinite(starting_equity) or starting_equity<=0:
+        raise ValueError("Starting equity must be finite and positive")
+    if type(entry_from) is not int or not 0<=entry_from<len(candles):
+        raise ValueError("Invalid out-of-sample boundary")
     seconds=INTERVALS[interval]
     _verify_research_history(candles,asset,seconds)
     cfg=RiskConfig(starting_equity=starting_equity,
@@ -189,6 +194,7 @@ def simulate_costed_backtest(candles:list[Candle], *,
     trades=[]
     curve=[]
     entries=0
+    pending_reversal=0
     def funding(pos:dict,at:int)->float:
         if pos["direction"]!= -1:return 0.0
         days=max(0,at-pos["entry_ts"])/86400.0
@@ -202,7 +208,7 @@ def simulate_costed_backtest(candles:list[Candle], *,
             raw_exit=bar.open
             exit_kind="SIGNAL_EXIT"
         if open_pos is None and i>=max(65,entry_from,2) and not circuit_halted:
-            if signal!=0 and signal!=prior:
+            if signal!=0 and (signal!=prior or signal==pending_reversal):
                 side=signal
                 raw_entry=bar.open
                 entry=_fill_price(raw_entry,"BUY" if side==1 else "SELL",
@@ -226,6 +232,7 @@ def simulate_costed_backtest(candles:list[Candle], *,
                               "entry_slippage":abs(entry-raw_entry)*qty,
                               "notional":entry*qty}
                     entries+=1
+            pending_reversal=0
         if open_pos is not None and raw_exit is None:
             side=open_pos["direction"]
             stop_hit=(bar.low<=open_pos["stop"]) if side==1 else (bar.high>=open_pos["stop"])
@@ -257,6 +264,9 @@ def simulate_costed_backtest(candles:list[Candle], *,
                            "financing_cost":round(finance,4),
                            "slippage_cost":round(slip,4),
                            "reason":exit_kind,"bars_held":i-p["entry_index"]+1})
+            # Close first. A reversal may enter only at the following open,
+            # after another closed bar confirms it; never lose that transition.
+            pending_reversal=signal if exit_kind=="SIGNAL_EXIT" and signal else 0
             open_pos=None
         unrealized=0.0
         if open_pos is not None:
@@ -346,6 +356,23 @@ def run_strategy_comparison(params:dict, now:datetime|None=None)->dict:
     """
     p=validate_backtest_request(params)
     candles,source=load_backtest_bars(p["asset"],p["interval"],p["bars"],now=now)
+    return _compare_on_history(p,candles,source)
+
+
+def run_directional_comparison(params:dict,now:datetime|None=None)->dict:
+    """Compare independent long and short books with one source fetch."""
+    p=validate_backtest_request(params)
+    candles,source=load_backtest_bars(p['asset'],p['interval'],p['bars'],now=now)
+    reports=[_compare_on_history({**p,'direction':direction},candles,source)
+             for direction in ('LONG','SHORT')]
+    return {'ok':True,'mode':'DIRECTIONAL_HORIZON_SCREEN','asset':p['asset'],
+            'interval':p['interval'],'reports':reports,
+            'live_execution_enabled':False,'demo_order_execution_enabled':False,
+            'auto_promotion_enabled':False,
+            'warning':'Exploratory OOS comparison; unequal calendar coverage across intervals is not a global ranking.'}
+
+
+def _compare_on_history(p:dict,candles:list[Candle],source:str)->dict:
     split=max(65,int(len(candles)*.70))
     oos_days=(len(candles)-split)*INTERVALS[p["interval"]]/86400.0
     horizon=classify_horizon(p["interval"])
@@ -368,9 +395,9 @@ def run_strategy_comparison(params:dict, now:datetime|None=None)->dict:
             blockers.append("fewer than 20 held-out closed trades")
         if oos_days<required_days:
             blockers.append("held-out calendar window too short")
-        if h["net_pnl"]<=0 or h["profit_factor"]<1.25:
+        if h["closed_net_pnl"]<=0 or h["profit_factor"]<1.25:
             blockers.append("insufficient net profit after modeled costs")
-        if sh["net_pnl"]<=0:
+        if sh["closed_net_pnl"]<=0:
             blockers.append("fails 2x execution cost stress")
         if h["max_drawdown_pct"]>=4.0 or sh["max_drawdown_pct"]>=4.0:
             blockers.append("at least 4% held-out drawdown")

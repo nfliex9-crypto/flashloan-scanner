@@ -73,10 +73,10 @@ def test_forward_research_selector_separates_long_short_evidence():
        "gross_losses":-450,"max_drawdown":.01,
        "first_trade":now-timedelta(days=45),"last_trade":now}
     r=rank_forward_horizons([a],side="BOTH")
-    assert r["selected"] is not None
-    assert r["selected"]["direction"]=="SHORT"
-    assert r["selected_by_direction"]["SHORT"]["interval"]=="5min"
-    assert r["selected_by_direction"]["LONG"] is None
+    assert r["forward_leader"] is not None
+    assert r["forward_leader"]["direction"]=="SHORT"
+    assert r["forward_leaders_by_direction"]["SHORT"]["interval"]=="5min"
+    assert r["forward_leaders_by_direction"]["LONG"] is None
     assert not r["demo_order_execution_enabled"]
 
 

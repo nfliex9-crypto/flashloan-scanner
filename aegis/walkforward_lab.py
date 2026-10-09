@@ -52,7 +52,7 @@ def verify_walkforward(candles, *, asset:str,strategy:str,interval:str,
             blockers.append("insufficient after-cost net profit or PF")
         if stress_closed_net<=0:
             blockers.append("fails doubled execution-cost stress")
-        if b["max_drawdown_pct"]>=MAX_FOLD_DRAWDOWN_PCT:
+        if max(b["max_drawdown_pct"],s["max_drawdown_pct"])>=MAX_FOLD_DRAWDOWN_PCT:
             blockers.append("drawdown exceeds research tolerance")
         if days<REQUIRED_HORIZON_DAYS[horizon]:
             blockers.append("too little chronological market coverage")

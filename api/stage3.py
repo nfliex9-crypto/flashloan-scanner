@@ -44,17 +44,18 @@ class handler(BaseHTTPRequestHandler):
         query=parse_qs(urlsplit(self.path).query,keep_blank_values=True)
         if "backtest" in query:
             mode=query.pop("backtest")
-            if mode not in (["1"],["compare"],["walkforward"]):
+            if mode not in (["1"],["compare"],["walkforward"],["horizon"]):
                 self._reply(400,{"ok":False,"error":"invalid_backtest_mode"})
                 return
             if any(len(v)!=1 for v in query.values()):
                 self._reply(400,{"ok":False,"error":"duplicate_backtest_parameter"})
                 return
             try:
-                from aegis.backtest_lab import run_backtest,run_strategy_comparison
+                from aegis.backtest_lab import run_backtest,run_strategy_comparison,run_directional_comparison
                 from aegis.walkforward_lab import run_walkforward
                 params={key:values[0] for key,values in query.items()}
                 report=(run_backtest(params) if mode==["1"] else
+                        run_directional_comparison(params) if mode==["horizon"] else
                         run_strategy_comparison(params) if mode==["compare"] else
                         run_walkforward(params))
                 self._reply(200,report,cache="public, s-maxage=300, stale-while-revalidate=120")

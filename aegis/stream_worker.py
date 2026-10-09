@@ -85,10 +85,25 @@ class KrakenMicroWorker:
                 raw=await asyncio.to_thread(fetch_ohlc,PAIRS[sym][1],minute)
                 past=[x for x in raw if x.ts+minute*60<=now]
                 self.history[(sym,minute)]=deque(past[-720:],maxlen=720)
+                # Freeze first historical result; reconnects cannot optimize
+                # the holdout or overwrite a failed screen after seeing PnL.
+                if sym=='BTC':
+                    await asyncio.to_thread(self.record_screen,sym,minute,past[-720:])
             except Exception:
                 self.history[(sym,minute)]=deque(maxlen=720)
                 log.warning("Warmup unavailable: %s %dm. New entries disabled.",sym,minute)
         log.info("Loaded real closed-candle warmup for %dm public market feed",minute)
+
+    @staticmethod
+    def record_screen(symbol,minute,bars):
+        from .historical_receipts import build_receipts,persist_receipts
+        from .stream_paper import stream_agent_id,STRATEGIES,MICRO_DIRECTIONS
+        ids=[stream_agent_id(symbol,minute,s,d) for s in STRATEGIES for d in MICRO_DIRECTIONS]
+        with _connect() as conn:
+            with conn.cursor() as cur:
+                cur.execute('SELECT count(*) AS n FROM aegis.stream_historical_screens WHERE agent_id=ANY(%s)',(ids,))
+                if cur.fetchone()['n']==len(ids):return
+            persist_receipts(conn,build_receipts(symbol,minute,bars))
 
     async def _persist(self, event:CompletedBar, bars:list[Candle])->dict:
         def work():
