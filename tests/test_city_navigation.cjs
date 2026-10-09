@@ -80,3 +80,44 @@ test("unknown view does not discard the current active panel", () => {
   api.setView("not-a-real-panel");
   assert.equal(nodes.get("backtestView").classList.active, true);
 });
+
+
+test("MT5 demo ledger excludes BTC exchange demo and displays real BTC paper state", () => {
+  const start=source.indexOf("function renderDemoBrokerLedger(");
+  const end=source.indexOf("function renderMicroEngine(",start);
+  assert.ok(start>=0 && end>start);
+  const content=source.slice(start,end);
+  const elements={
+    demoBrokerSummary:{innerHTML:""},
+    demoBrokerStatus:{textContent:""},
+    demoBrokerFeed:{innerHTML:""}
+  };
+  const context={
+    document:{getElementById:id=>elements[id]},
+    safe:value=>String(value??""),
+    utc:value=>String(value??""),
+    currency:value=>String(value??""),
+    fixed:value=>String(value??"")
+  };
+  const fn=vm.runInNewContext("const $=id=>document.getElementById(id);\n"+
+    content+"\nrenderDemoBrokerLedger",context);
+  fn({
+    connected_accounts:[
+      {provider:"MT5_DEMO",sync_status:"SYNCED_DEMO",market:"XAUUSD"},
+      {provider:"BINANCE_SPOT_DEMO",sync_status:"SYNCED_DEMO",market:"BTCUSDT"}
+    ],
+    recent_fills:[
+      {provider:"MT5_DEMO",symbol:"XAUUSD",external_id:"gold-deal",
+       side:"BUY",price:2200,qty:0.01},
+      {provider:"BINANCE_SPOT_DEMO",symbol:"BTCUSDT",external_id:"btc-deal",
+       side:"BUY",price:50000,qty:0.01}
+    ]
+  },{agents:[{symbol:"BTC",agent_id:"btc-paper-1"}],active_intervals_minutes:[1,5]});
+  assert.match(elements.demoBrokerSummary.innerHTML,/BTC · KRAKEN PAPER/);
+  assert.match(elements.demoBrokerSummary.innerHTML,/2 FRESH FEEDS/);
+  assert.match(elements.demoBrokerFeed.innerHTML,/gold-deal/);
+  assert.doesNotMatch(elements.demoBrokerFeed.innerHTML,/btc-deal/);
+  assert.doesNotMatch(elements.demoBrokerSummary.innerHTML,/BINANCE SPOT BTC/);
+  assert.match(fs.readFileSync("mission.js","utf8"),/BTC PAPER/);
+  assert.match(fs.readFileSync("city.html","utf8"),/MT5 Gold Demo \+ Bitcoin Paper/);
+});
