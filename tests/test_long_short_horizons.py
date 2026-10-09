@@ -43,7 +43,12 @@ def test_short_backtest_tracks_gross_profit_and_costs():
     assert res["parameters"]["short_finance_bps_per_day"]>0
     assert all(t["direction"]=="SHORT" for t in res["trades"])
     assert all(t["financing_cost"]>=0 and t["fees"]>=0 for t in res["trades"])
-    assert all(t["qty"]*t["entry_price"]<=20000.01 for t in res["trades"])
+    balance=100000.0
+    for trade in res["trades"]:
+        # Position cap is a percentage of CURRENT paper equity, not a
+        # constant $20k after previous realized gains/losses.
+        assert trade["qty"]*trade["entry_price"] <= balance*.20+0.02
+        balance += trade["net_pnl"]
 
 
 def test_short_and_long_cost_stress_does_not_fake_gain():
