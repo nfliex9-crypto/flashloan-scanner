@@ -52,7 +52,7 @@ def metaapi_get(config: dict, suffix: str):
     if suffix not in ("/account-information", "/positions", "/symbols") and not suffix.startswith("/history-deals/time/"):
         raise ValueError("MetaApi endpoint forbidden")
     if suffix.startswith("/history-deals/time/") and not re.fullmatch(
-            r"/history-deals/time/[0-9TZ:.-]+/[0-9TZ:.-]+\\?limit=[0-9]{1,3}",suffix):
+            r"/history-deals/time/[0-9TZ:.-]+/[0-9TZ:.-]+\?limit=[0-9]{1,3}",suffix):
         raise ValueError("MetaApi history range forbidden")
     base = "https://mt-client-api-v1." + config["region"] + ".agiliumtrade.ai"
     url = base + "/users/current/accounts/" + config["account"] + suffix
