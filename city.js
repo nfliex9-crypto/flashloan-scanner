@@ -288,6 +288,26 @@ function selectedExperimentSettings(){
   return {enabled:$("expEnabled").checked,assets,strategies,
     max_candidates:Number($("expLimit").value)};
 }
+async function checkResearchWriteReadiness(){
+  const button=$("expSave"),key=$("expOwnerToken");
+  button.disabled=true;
+  key.disabled=true;
+  try{
+    const res=await fetch("/api/stage3?capabilities=1",{cache:"no-store"});
+    const status=await res.json();
+    if(!res.ok||status.ok!==true)throw new Error("readiness endpoint unavailable");
+    const configured=status.owner_controls_configured===true;
+    button.disabled=!configured;
+    key.disabled=!configured;
+    if(!configured){
+      $("expSaveStatus").textContent=
+        "Research results are readable. Saving changes is LOCKED because AEGIS_CONTROL_TOKEN is missing in this Vercel Preview deployment. Configure a separate 24+ character owner key in Vercel; never enter broker credentials here.";
+    }
+  }catch(error){
+    $("expSaveStatus").textContent=
+      "Cannot verify owner-control security. Saving is locked; historical Backtest and read-only Research remain available.";
+  }
+}
 async function saveResearchSettings(){
   if(experimentSaving)return;
   const token=$("expOwnerToken").value.trim();
@@ -936,6 +956,7 @@ function init(){
       $("labEngineUpdated").textContent="UNSAVED CHANGES";
     }));
   $("expSave").addEventListener("click",saveResearchSettings);
+  checkResearchWriteReadiness();
   ["agentTradeFilter","tradeMarketFilter","tradeActionFilter"].forEach(id=>{
     $(id).addEventListener("change",applyTradeFilters);
   });
