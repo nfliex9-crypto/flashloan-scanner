@@ -73,6 +73,10 @@ def verified_demo_info(config: dict) -> dict:
     info = metaapi_get(config, "/account-information")
     if not isinstance(info, dict) or info.get("type") != "ACCOUNT_TRADE_MODE_DEMO":
         raise CloudUnavailable("not_verified_demo_account")
+    # MetaApi G2 exposes investorMode when investor credentials are used.
+    # A DEMO account connected with a trading/master password is not eligible.
+    if info.get("investorMode") is not True:
+        raise CloudUnavailable("investor_mode_not_verified")
     for key in ("balance", "equity"):
         try:
             amount = float(info[key])
@@ -139,20 +143,17 @@ def snapshot_from_metaapi(config: dict, now: datetime | None = None) -> dict:
 
 
 def public_status() -> dict:
+    """Public GET must NEVER call a billed third-party API.
+
+    Configuration is not connection proof. Only an owner-authorized sync
+    verifies both DEMO and investor-only account and persists broker evidence.
+    """
     cfg = configuration()
     if cfg is None:
         return {"ok":True,"state":"SETUP_REQUIRED","connected":False,
                 "setup":"metaapi_environment_variables_missing",
                 "live_execution_enabled":False,"demo_order_execution_enabled":False}
-    try:
-        verified_demo_info(cfg)
-    except CloudUnavailable as exc:
-        reason = str(exc)
-        return {"ok":True,"state":"NOT_VERIFIED","connected":False,
-                "reason": reason if reason in ("not_verified_demo_account",
-                              "invalid_broker_account_info") else "cloud_api_unavailable",
-                "live_execution_enabled":False,"demo_order_execution_enabled":False}
-    return {"ok":True,"state":"CONNECTED_DEMO","connected":True,
+    return {"ok":True,"state":"READY_FOR_VERIFICATION","connected":False,
             "mode":"METAAPI_CLOUD_READ_ONLY","source":"METAAPI_MT5_DEMO",
             "live_execution_enabled":False,"demo_order_execution_enabled":False}
 
