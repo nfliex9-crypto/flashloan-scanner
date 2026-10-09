@@ -44,7 +44,7 @@ class handler(BaseHTTPRequestHandler):
         query=parse_qs(urlsplit(self.path).query,keep_blank_values=True)
         if "backtest" in query:
             mode=query.pop("backtest")
-            if mode not in (["1"],["compare"]):
+            if mode not in (["1"],["compare"],["walkforward"]):
                 self._reply(400,{"ok":False,"error":"invalid_backtest_mode"})
                 return
             if any(len(v)!=1 for v in query.values()):
@@ -52,8 +52,11 @@ class handler(BaseHTTPRequestHandler):
                 return
             try:
                 from aegis.backtest_lab import run_backtest,run_strategy_comparison
+                from aegis.walkforward_lab import run_walkforward
                 params={key:values[0] for key,values in query.items()}
-                report=run_backtest(params) if mode==["1"] else run_strategy_comparison(params)
+                report=(run_backtest(params) if mode==["1"] else
+                        run_strategy_comparison(params) if mode==["compare"] else
+                        run_walkforward(params))
                 self._reply(200,report,cache="public, s-maxage=300, stale-while-revalidate=120")
             except ValueError as exc:
                 # Only finite, authored validation messages. Never return
