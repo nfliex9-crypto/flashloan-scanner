@@ -163,3 +163,29 @@ def test_missing_investor_mode_fails_closed(monkeypatch):
     monkeypatch.setattr(mt5_cloud,"metaapi_get",lambda *args:info)
     with pytest.raises(mt5_cloud.CloudUnavailable,match="investor_mode_not_verified"):
         mt5_cloud.verified_demo_info(CONFIG)
+
+def test_truncated_history_is_rejected_not_presented_as_complete(monkeypatch):
+    def stub(_config, route):
+        if route=="/account-information":return dict(INFO)
+        if route=="/symbols":return ["XAUUSD"]
+        if route=="/positions":return []
+        if route.startswith("/history-deals/"):return [
+            {"symbol":"EURUSD","type":"DEAL_TYPE_BUY"} for _ in range(200)]
+        raise AssertionError("Unexpected route")
+    monkeypatch.setattr(mt5_cloud,"metaapi_get",stub)
+    with pytest.raises(mt5_cloud.CloudUnavailable,match="history_page_limit_reached"):
+        mt5_cloud.snapshot_from_metaapi(CONFIG)
+
+
+def test_unknown_position_direction_is_rejected(monkeypatch):
+    def stub(_config,route):
+        if route=="/account-information":return dict(INFO)
+        if route=="/symbols":return ["XAUUSD"]
+        if route=="/positions":return [{
+            "symbol":"XAUUSD","type":"POSITION_TYPE_UNKNOWN","volume":1,
+            "openPrice":2500,"id":"x"}]
+        if route.startswith("/history-deals/"):return []
+        raise AssertionError("Unexpected route")
+    monkeypatch.setattr(mt5_cloud,"metaapi_get",stub)
+    with pytest.raises(mt5_cloud.CloudUnavailable,match="invalid_metaapi_position"):
+        mt5_cloud.snapshot_from_metaapi(CONFIG)
