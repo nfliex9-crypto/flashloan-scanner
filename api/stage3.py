@@ -42,6 +42,19 @@ class handler(BaseHTTPRequestHandler):
         # Reuse the existing function slot. Read-only, bounded historical
         # testing cannot touch a broker or persist simulated fills in Neon.
         query=parse_qs(urlsplit(self.path).query,keep_blank_values=True)
+        if "mt5_cloud" in query:
+            if query != {"mt5_cloud": ["1"]}:
+                self._reply(400, {"ok": False, "error": "invalid_mt5_cloud_query"})
+                return
+            try:
+                from aegis.mt5_cloud import public_status, CloudUnavailable
+                self._reply(200, public_status())
+            except CloudUnavailable:
+                self._reply(200, {"ok": True, "state": "CONFIG_INVALID",
+                                  "connected": False, "demo_order_execution_enabled": False})
+            except Exception:
+                self._reply(503, {"ok": False, "error": "metaapi_status_unavailable"})
+            return
         if "capabilities" in query:
             if query != {"capabilities": ["1"]}:
                 self._reply(400,{"ok":False,"error":"invalid_capabilities_request"})
@@ -81,6 +94,28 @@ class handler(BaseHTTPRequestHandler):
             self._reply(503,{"ok":False,"error":"ledger_temporarily_unavailable"})
 
     def do_POST(self):
+        query=parse_qs(urlsplit(self.path).query,keep_blank_values=True)
+        if "mt5_cloud" in query:
+            if query != {"mt5_cloud": ["1"]}:
+                self._reply(400, {"ok": False, "error": "invalid_mt5_cloud_query"})
+                return
+            try:
+                size=int(self.headers.get("Content-Length","0"))
+                if size<2 or size>128 or self.headers.get("Transfer-Encoding"):
+                    self._reply(413, {"ok": False, "error": "invalid_payload_size"})
+                    return
+                body=json.loads(self.rfile.read(size))
+                if body != {"action":"sync"}:
+                    self._reply(400, {"ok": False, "error": "invalid_mt5_cloud_action"})
+                    return
+                from aegis.mt5_cloud import sync_readonly
+                status,result=sync_readonly(self.headers)
+                self._reply(status,result)
+            except (ValueError,TypeError,UnicodeDecodeError,json.JSONDecodeError):
+                self._reply(400, {"ok": False, "error": "invalid_mt5_cloud_request"})
+            except Exception:
+                self._reply(503, {"ok": False, "error": "metaapi_sync_unavailable"})
+            return
         check=authorize_control_request(
             expected_token=os.getenv("AEGIS_CONTROL_TOKEN",""),
             supplied_auth=self.headers.get("Authorization",""),
