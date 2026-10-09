@@ -28,6 +28,46 @@ broker/exchange becomes the authoritative account ledger.
   and whole-account reconciliation. MT5 returns broker-reported
   realized deal P&L.
 
+## MT5 Demo without Windows — cloud connector (mobile browser)
+
+The default MT5 connection displayed in `city.html` now uses the documented
+[MetaApi cloud account application](https://app.metaapi.cloud/accounts).
+The AEGIS application **never needs the MT5 terminal on Windows**.
+
+1. On a phone or desktop browser, add an **existing MT5 DEMO** account in
+   MetaApi and choose the **Investor (read-only) password**, not the master
+   trading password. MetaApi is a third-party cloud provider which may charge
+   separately. The user supplies broker credentials **to MetaApi**, never
+   to AEGIS or the chat.
+2. After MetaApi has provisioned and connected the account, set these
+   **Vercel Preview** secrets (not production or GitHub):
+   - `AEGIS_METAAPI_TOKEN`: MetaApi authorization token.
+   - `AEGIS_METAAPI_ACCOUNT_ID`: MetaApi's **cloud account id**, not the MT5 login.
+   - `AEGIS_METAAPI_REGION`: `new-york` or `london` per MetaApi API region.
+   - `AEGIS_MT5_GOLD_SYMBOL`: exact broker symbol, e.g. `XAUUSD` (optional).
+   - `AEGIS_CONTROL_TOKEN`: separate 24+-character AEGIS owner control key.
+3. Redeploy the branch preview after setting the environment variables.
+   Open `/city.html#mt5CloudPanel`, check the actual MetaApi DEMO status, then
+   supply the AEGIS owner control key and press **Verify and sync MT5 Demo**.
+   The browser never stores a brokerage or MetaApi password.
+4. The provider returns its account type: AEGIS requires exactly
+   `ACCOUNT_TRADE_MODE_DEMO`. The API calls are hardcoded **GET-only**
+   `/account-information`, `/symbols`, `/positions` and bounded
+   `/history-deals/time/...`, and save broker-confirmed XAU fills in Neon.
+   There is no `POST /trade` or automatic demo execution route.
+5. Neon migration `sql/007_demo_accounts.sql` must already be installed
+   (current Neon ownership is not accessible in the connected plugin).
+   Until actual provider verification and successful persistence, the
+   dashboard must show not linked, stale or setup required.
+6. The "Verify and sync" button performs a **manual single snapshot**, not
+   scheduled autonomous syncing. To keep records fresh while the browser is
+   closed, add a separate strictly authorized scheduled sync workflow after
+   validating source and database access.
+
+Current Bitcoin strategy retains **Kraken virtual Paper** only. Binance demo
+connection is not required or requested. Gold/MT5 uses its independent Demo
+source ledger and cannot be reported as BTC Paper.
+
 ## Demo setup (no secret in ChatGPT)
 
 ### Gold: Windows PC or Windows VPS
