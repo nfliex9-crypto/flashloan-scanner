@@ -42,6 +42,15 @@ class handler(BaseHTTPRequestHandler):
         # Reuse the existing function slot. Read-only, bounded historical
         # testing cannot touch a broker or persist simulated fills in Neon.
         query=parse_qs(urlsplit(self.path).query,keep_blank_values=True)
+        if "capabilities" in query:
+            if query != {"capabilities": ["1"]}:
+                self._reply(400,{"ok":False,"error":"invalid_capabilities_request"})
+                return
+            # Public readiness contains no secret values, database URLs, or broker IDs.
+            self._reply(200,{"ok":True,"mode":"READ_ONLY_RESEARCH_READINESS",
+                "owner_controls_configured":len(os.getenv("AEGIS_CONTROL_TOKEN",""))>=24,
+                "demo_order_execution_enabled":False,"live_execution_enabled":False})
+            return
         if "backtest" in query:
             mode=query.pop("backtest")
             if mode not in (["1"],["compare"],["walkforward"],["horizon"]):
