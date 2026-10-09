@@ -922,6 +922,7 @@ async function pollCity(){
   livePolling=true;
   try{
     const d=await fetchJson("/api/stage3");
+    if(!isReady(d))throw new Error("Neon AEGIS ledger is not initialized; verify schema and paper account");
     cityState=d;
     paintCity(d);
     $("connectionStatus").classList.remove("down");
