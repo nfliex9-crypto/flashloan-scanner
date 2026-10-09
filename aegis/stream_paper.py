@@ -133,6 +133,28 @@ def _update_account_risk(cur, aid: str, account: dict, position: dict | None,
         (peak,dd,dd>=config.max_agent_drawdown_pct,aid))
 
 
+def journal_decision(cur, *, aid:str, event:CompletedBar, strategy:str,
+                     direction:str, action:str, reason:str, reference_price:float,
+                     position_id:str|None=None, qty:float|None=None,
+                     stop:float|None=None, target:float|None=None,
+                     net_pnl:float|None=None)->None:
+    """Persist a verifiable per-agent decision, including explicit NO-TRADE.
+
+    The same DB transaction owns the candle, decision and virtual fill.
+    Replayed events are idempotent, and no broker execution is possible.
+    """
+    if action not in ("WAIT","MARK","ENTER","EXIT","VETO"):
+        raise ValueError("Unknown auditable decision")
+    cur.execute(
+        "INSERT INTO aegis.stream_decisions "
+        "(agent_id,bar_start,symbol,interval_minutes,strategy,direction,action,"
+        "reason,reference_price,position_id,qty,risk_stop,risk_target,net_pnl) "
+        "VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s) "
+        "ON CONFLICT(agent_id,bar_start) DO NOTHING",
+        (aid,utc(event.candle.ts),event.symbol,event.interval_minutes,strategy,
+         direction,action,reason,reference_price,position_id,qty,stop,target,net_pnl))
+
+
 def persist_closed_stream_bar(conn, event: CompletedBar, history: list[Candle],
                               *, config: RiskConfig=RISK) -> dict:
     """Idempotent virtual decisions across restarts/replicas.
@@ -171,6 +193,18 @@ def persist_closed_stream_bar(conn, event: CompletedBar, history: list[Candle],
                 pos=cur.fetchone()
                 decision=fill_decision(acc,pos,history,event,config=config)
                 action=decision["action"]
+                decision_reason=decision.get("reason") or {
+                    "ENTER":"CLOSED_BAR_ENTRY_SIGNAL",
+                    "EXIT":"CLOSED_BAR_EXIT_TRIGGER",
+                    "MARK":"POSITION_MONITORED_NO_EXIT",
+                    "WAIT":"NO_POSITION_CHANGE",
+                }.get(action,"RESEARCH_WAIT")
+                decision_position=pos["position_id"] if pos else None
+                decision_qty=float(pos["qty"]) if pos else None
+                decision_stop=float(pos["stop_price"]) if pos else None
+                decision_target=float(pos["target_price"]) if pos else None
+                decision_net=None
+                decision_price=c.close
                 if action=="EXIT" and pos:
                     raw=decision["raw_price"]
                     side=1 if direction=="LONG" else -1
@@ -201,6 +235,8 @@ def persist_closed_stream_bar(conn, event: CompletedBar, history: list[Candle],
                                 (cash,aid))
                     acc={**acc,"cash":cash}
                     counts["exits"]+=1
+                    decision_net=net
+                    decision_price=exit_price
                     pos=None
                 elif action=="ENTER":
                     # Independent forward evidence gate; historical backtests
@@ -224,6 +260,10 @@ def persist_closed_stream_bar(conn, event: CompletedBar, history: list[Candle],
                         cur.execute("UPDATE aegis.stream_accounts SET halted=TRUE,updated_at=now() "
                                     "WHERE agent_id=%s",(aid,))
                         counts["filtered"]+=1
+                        journal_decision(
+                            cur,aid=aid,event=event,strategy=strategy,direction=direction,
+                            action="VETO",reason="COSTED_FORWARD_STRATEGY_QUARANTINE",
+                            reference_price=c.close)
                         continue
                     # The deterministic signal can be logged after restart but
                     # never creates two positions for an agent.
@@ -247,6 +287,11 @@ def persist_closed_stream_bar(conn, event: CompletedBar, history: list[Candle],
                     pos={"entry_price":decision["entry"],"qty":decision["qty"],
                          "direction":direction,"opened_at":decision["at"]}
                     counts["entries"]+=1
+                    decision_position=position_id
+                    decision_qty=decision["qty"]
+                    decision_stop=decision["stop"]
+                    decision_target=decision["target"]
+                    decision_price=decision["entry"]
                 if action=="MARK" and pos:
                     cur.execute(
                         "UPDATE aegis.stream_positions SET last_mark=%s WHERE agent_id=%s",
@@ -254,4 +299,9 @@ def persist_closed_stream_bar(conn, event: CompletedBar, history: list[Candle],
                     counts["marks"]+=1
                 mark=event.next_open if action=="ENTER" else c.close
                 _update_account_risk(cur,aid,acc,pos,mark,config,mark_at=event.next_start)
+                journal_decision(cur,aid=aid,event=event,strategy=strategy,
+                    direction=direction,action=action,reason=decision_reason,
+                    reference_price=decision_price,position_id=decision_position,
+                    qty=decision_qty,stop=decision_stop,target=decision_target,
+                    net_pnl=decision_net)
     return counts
