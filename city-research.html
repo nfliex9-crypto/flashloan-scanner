@@ -111,12 +111,12 @@
 
       <section class="module agent-tape-module" aria-label="Verified individual agent trading activity">
         <header class="module-head">
-          <div><p class="eyebrow">EVIDENCE / FORWARD LEDGER</p><h2>Agent trade feed</h2></div>
-          <span class="module-tag">PAPER + COSTED SHADOW · NO LIVE ORDERS</span>
+          <div><p class="eyebrow">BROKER DEMO + FORWARD RESEARCH</p><h2>Agent trade feed</h2></div>
+          <span class="module-tag">FORWARD PAPER · SHADOW BACKGROUND</span>
         </header>
         <div class="agent-tape-toolbar">
           <label>AGENT<select id="agentTradeFilter"><option value="all">All agents</option></select></label>
-          <label>BOOK<select id="tradeMarketFilter"><option value="all">All books</option><option value="SHADOW">Costed shadow</option><option value="PAPER">Forward paper</option></select></label>
+          <label>BOOK<select id="tradeMarketFilter"><option value="PAPER" selected>Forward paper (default)</option><option value="all">All books (advanced)</option><option value="SHADOW">Shadow evidence (advanced)</option></select></label>
           <label>ACTION<select id="tradeActionFilter"><option value="all">Open + Close</option><option value="OPEN">Opened</option><option value="CLOSE">Closed</option></select></label>
           <span id="agentTapeStats">Waiting for actual fills…</span>
         </div>
@@ -140,7 +140,7 @@
           <header class="module-head"><div><p class="eyebrow">THE TAPE / EXECUTED PAPER</p><h2>Recent trade autopsies</h2></div><span class="module-tag">AFTER FEES</span></header>
           <div id="cityTradeTape" class="tape-list"><div class="await">No closed forward trades yet.</div></div>
         </section>
-        <section class="module">
+        <section class="module" id="backgroundShadowEvidence" hidden aria-label="Background shadow research evidence">
           <header class="module-head"><div><p class="eyebrow">SHADOW DISTRICT</p><h2>Ghost Lab</h2></div><span class="module-tag">REJECTED · OBSERVED</span></header>
           <div class="shadow-strip"><div><span>COSTED SHADOW FILLS</span><strong id="shadowCostedCount">—</strong></div><div><span>VIRTUAL OPEN POSITIONS</span><strong id="shadowOpenCount">—</strong></div></div>
           <div class="shadow-headline">Real virtual entries/exits with the same fee and slippage model as the main Paper broker. Independent $100K test accounts per worker. Not live-money trades.</div>
@@ -172,7 +172,7 @@
       <div class="section-hero">
         <p class="eyebrow">CONTINUOUS SHADOW RESEARCH / CONFIGURABLE</p>
         <h1>Try more. <i>Trust evidence.</i></h1>
-        <p>Novel strategies are trialed on closed hourly bars and ranked using future, costed shadow fills. No auto-promotions, live execution, or unsupervised brokerage actions.</p>
+        <p>Analyze real closed candles and costed forward evidence. Shadow research remains active in the background for quarantine and validation; it is not broker Demo trading. No automatic broker orders are enabled.</p>
       </div>
       <div class="module">
         <header class="module-head">
