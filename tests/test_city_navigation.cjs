@@ -62,7 +62,11 @@ test("command-center deep links open Backtest and Research Lab", () => {
     api.setView(api.viewFromHash(), false);
     assert.equal(nodes.get(api.VIEW_IDS[view]).classList.active, true);
   }
-  assert.match(fs.readFileSync("city.html", "utf8"), /city-research\.html#backtestView/);
+  const main = fs.readFileSync("city.html", "utf8");
+  assert.match(main, /city-research\.html#backtestView/);
+  assert.match(main, /city-research\.html#labView/);
+  assert.match(main, /href="\/city-research\.html#labView" class="text-link">فتح سجل الحسابات التفصيلي/);
+  assert.match(main, /href="\/city-research\.html#backtestView" class="text-link">نتائج الاستراتيجيات والـBacktest/);
 });
 
 test("shadow remains behind the scenes and paper is primary in feed", () => {
