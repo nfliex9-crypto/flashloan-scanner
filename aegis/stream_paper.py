@@ -14,7 +14,7 @@ from .live_lab import Candle
 from .directional_signals import signed_strategy_signals
 from .paper_engine import RiskConfig, _atr_at, _fee, _fill_price, _position_size
 from .shadow_broker import conservative_stop_fill
-from .stream_core import CompletedBar, fresh_closed_history
+from .stream_core import CompletedBar, fresh_closed_history, TRADING_MINUTES
 
 STRATEGIES = ("EMA Cross", "Channel Breakout")
 STARTING_EQUITY = 100000.0
@@ -180,18 +180,40 @@ def persist_closed_stream_bar(conn, event: CompletedBar, history: list[Candle],
                 "VALUES (%s,%s,%s,%s,%s,%s,%s,%s) ON CONFLICT DO NOTHING",
                 (symbol,minutes,utc(c.ts),c.open,c.high,c.low,c.close,c.volume))
             counts["processed"]=True
+            if minutes not in TRADING_MINUTES:
+                # BTC 1m is reserved for public quote/chart updates only.
+                # If a pre-existing virtual 1m position survives an upgrade,
+                # close it once at the next verified bar with modeled costs.
+                # Otherwise this branch never creates new accounts, decisions
+                # or virtual orders on this timeframe.
+                cur.execute(
+                    "SELECT 1 FROM aegis.stream_positions "
+                    "WHERE symbol=%s AND interval_minutes=%s LIMIT 1",
+                    (symbol,minutes))
+                if cur.fetchone() is None:
+                    return counts
             for strategy in STRATEGIES:
               for direction in MICRO_DIRECTIONS:
                 aid=stream_agent_id(symbol,minutes,strategy,direction)
-                cur.execute(
-                    "INSERT INTO aegis.stream_accounts(agent_id,symbol,interval_minutes,strategy,direction) "
-                    "VALUES (%s,%s,%s,%s,%s) ON CONFLICT DO NOTHING",
-                    (aid,symbol,minutes,strategy,direction))
+                if minutes in TRADING_MINUTES:
+                    cur.execute(
+                        "INSERT INTO aegis.stream_accounts(agent_id,symbol,interval_minutes,strategy,direction) "
+                        "VALUES (%s,%s,%s,%s,%s) ON CONFLICT DO NOTHING",
+                        (aid,symbol,minutes,strategy,direction))
                 cur.execute("SELECT * FROM aegis.stream_accounts WHERE agent_id=%s FOR UPDATE",(aid,))
                 acc=cur.fetchone()
+                if acc is None:
+                    continue  # No new 1m bot accounts, including after cutover.
                 cur.execute("SELECT * FROM aegis.stream_positions WHERE agent_id=%s FOR UPDATE",(aid,))
                 pos=cur.fetchone()
-                decision=fill_decision(acc,pos,history,event,config=config)
+                if minutes not in TRADING_MINUTES:
+                    if pos is None:
+                        continue
+                    decision={"action":"EXIT","raw_price":event.next_open,
+                              "reason":"TIMEFRAME_1M_RETIRED",
+                              "at":utc(event.next_start)}
+                else:
+                    decision=fill_decision(acc,pos,history,event,config=config)
                 action=decision["action"]
                 decision_reason=decision.get("reason") or {
                     "ENTER":"CLOSED_BAR_ENTRY_SIGNAL",
