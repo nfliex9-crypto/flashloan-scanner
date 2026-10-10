@@ -42,7 +42,7 @@ def test_rejects_unknown_audit_action_without_side_effects():
 
 
 
-def test_arabic_command_filters_and_decision_counters_are_real_controls():
+def test_streamlined_trading_desk_is_bot_first_and_source_backed():
     from pathlib import Path
     from html.parser import HTMLParser
 
@@ -59,17 +59,22 @@ def test_arabic_command_filters_and_decision_counters_are_real_controls():
     script=Path("mission.js").read_text(encoding="utf-8")
     reader=Ids()
     reader.feed(page)
-    ids={"marketFilter","directionFilter","horizonFilter","intervalFilter",
-         "entryVetoCount","entryVetoNote","crewFilterStatus",
-         "decisionFeed","crewGrid"}
+    ids={"paperBotFleet","botFleetRows","botFleetCount","botFleetStrategy",
+         "botFleetDirection","botFleetPeriod","decisionFeed","demoStatus",
+         "botCount","openCount","decisionsCount","feedCount","globalConnection",
+         "refreshMain","goldDemo","lastUpdated"}
     assert ids.issubset(reader.ids)
-    assert "function matchesActiveScope(row)" in script
-    assert 'const interval=$("intervalFilter").value' in script
-    assert 'Number(row.interval_minutes)===Number(interval)' in script
-    assert '["marketFilter","directionFilter","horizonFilter","intervalFilter"]' in script
+    assert "function renderBotFleet(d)" in script
+    assert "function renderDecisions(d)" in script
+    assert "function botScope(bot)" in script
+    assert "net_pnl_after_costs" in script
+    assert "average_net_per_closed_trade" in script
+    assert "oos_forward_qualified" in script
+    assert "micro_engine?.paper_bots" in script
+    assert 'fetch("/api/stage3"' in script
     assert all(f'<option value="{n}">' in page for n in (1,5,15,60,240,1440,10080))
-    assert "raw.filter(d=>(activeAction" in script
-    assert "all.filter(matchesActiveScope)" in script
-    assert "renderCrew(state);renderTimeline(state)" in script
-    assert 'data-action="ENTER"' in page
-    assert "REAL ORDERS OFF" in page
+    assert "/city-research.html#backtestView" in page
+    assert 'id="mt5CloudPanel"' in page
+    assert 'id="advancedDiagnostics"' in page
+    assert 'id="backgroundShadowEvidence"' not in page
+    assert "REAL + DEMO ORDERS" not in page
