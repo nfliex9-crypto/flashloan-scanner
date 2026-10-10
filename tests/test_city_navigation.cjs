@@ -64,15 +64,17 @@ test("command-center deep links open Backtest and Research Lab", () => {
   }
   const main = fs.readFileSync("city.html", "utf8");
   assert.match(main, /city-research\.html#backtestView/);
-  assert.match(main, /city-research\.html#labView/);
-  assert.match(main, /href="\/city-research\.html#labView" class="text-link">فتح سجل الحسابات التفصيلي/);
-  assert.match(main, /href="\/city-research\.html#backtestView" class="text-link">نتائج الاستراتيجيات والـBacktest/);
+  assert.match(main, /href="\/city-research\.html#backtestView"/);
+  assert.match(main, /id="paperBotFleet"/);
+  assert.match(main, /id="botFleetRows"/);
 });
 
-test("shadow remains behind the scenes and paper is primary in feed", () => {
-  assert.match(html, /id="backgroundShadowEvidence" hidden/);
+test("advanced research remains functional while trading desk is Paper/Demo only", () => {
   assert.match(html, /<option value="PAPER" selected>/);
   assert.match(source, /renderResearchLab\(/);
+  const main=fs.readFileSync("city.html","utf8");
+  assert.doesNotMatch(main, /backgroundShadowEvidence|SHADOW DISTRICT/);
+  assert.match(main, /Kraken Paper/);
 });
 
 test("unknown view does not discard the current active panel", () => {
@@ -118,8 +120,8 @@ test("MT5 demo ledger excludes BTC exchange demo and displays real BTC paper sta
   assert.match(elements.demoBrokerFeed.innerHTML,/gold-deal/);
   assert.doesNotMatch(elements.demoBrokerFeed.innerHTML,/btc-deal/);
   assert.doesNotMatch(elements.demoBrokerSummary.innerHTML,/BINANCE SPOT BTC/);
-  assert.match(fs.readFileSync("mission.js","utf8"),/BTC PAPER/);
-  assert.match(fs.readFileSync("city.html","utf8"),/MT5 Gold Demo \+ Bitcoin Paper/);
+  assert.match(fs.readFileSync("mission.js","utf8"),/Kraken Paper/);
+  assert.match(fs.readFileSync("city.html","utf8"),/MT5 Demo/);
 });
 
 
