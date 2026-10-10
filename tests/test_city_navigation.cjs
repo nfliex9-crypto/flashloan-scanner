@@ -154,3 +154,20 @@ test("operational diagnostics render real source receipts, never strategy order 
   assert.match(script, /NO_EVIDENCE/);
   assert.doesNotMatch(script, /order_send|createOrder|placeOrder|POST/);
 });
+
+
+test("external risk critics have explicit owner controls and no broker execution", () => {
+  const page = fs.readFileSync("city.html","utf8");
+  const js = fs.readFileSync("research-advisors.js","utf8");
+  assert.doesNotThrow(() => new vm.Script(js));
+  for(const id of [
+    "externalResearchPanel","advisorOwnerKey","advisorGrokReview",
+    "advisorGrok","advisorJev","advisorRefresh","advisorStatus","advisorResult"
+  ]) assert.match(page,new RegExp('id="'+id+'"'));
+  assert.match(page,/src="\/research-advisors\.js"/);
+  assert.match(js,/\/api\/stage3\?research_advisors=1/);
+  assert.match(js,/\/api\/stage3\?grok_review=1/);
+  assert.match(js,/key\.value\.trim\(\)\.length < 24/);
+  assert.match(js,/output\.textContent/);
+  assert.doesNotMatch(js,/innerHTML|order_send|placeOrder|walletKey/);
+});
