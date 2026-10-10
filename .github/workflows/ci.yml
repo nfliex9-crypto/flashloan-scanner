@@ -19,7 +19,7 @@ jobs:
       - name: Import scanner
         run: python -c "import scanner; print('scanner import OK')"
       - name: Check browser JavaScript syntax
-        run: node --check city.js && node --check mission.js && node --check mt5-connect-ui.js && node --check ops-health.js && node --check research-advisors.js
+        run: node --check city.js && node --check mission.js && node --check mt5-connect-ui.js && node --check ops-health.js && node --check research-advisors.js && node --check gold-desk.js
       - name: Verify Dashboard routes, deep links and hidden research evidence
         run: node --test tests/test_city_navigation.cjs
       - name: Verify standalone streaming worker imports
