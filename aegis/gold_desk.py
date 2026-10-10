@@ -56,6 +56,7 @@ def parse_gold_spot(doc:dict, *, now:datetime|None=None)->dict:
         "fresh":is_fresh,
         "state":"CURRENT" if is_fresh else "STALE_SOURCE_QUOTE",
         "price":round(float(price),4) if is_fresh else None,
+        "last_known_price":round(float(price),4),
         "spread":None,
         "pepperstone_bid":None,
         "pepperstone_ask":None,
