@@ -59,12 +59,9 @@ def snapshot(cur,now:datetime|None=None) -> dict:
     if now.tzinfo is None:raise ValueError("UTC-aware snapshot time required")
     now=now.astimezone(timezone.utc)
     cur.execute(
-        "SELECT unnest(%s::text[]) AS name, to_regclass('aegis.' || "
-        "unnest_name.name) AS relation FROM unnest(%s::text[]) "
-        "AS unnest_name(name)",
-        (list(REQUIRED),list(REQUIRED)))
-    # PostgreSQL set-returning function in select list may not be portable:
-    # callers can use per-table to_regclass to avoid brittle deployment SQL.
+        "SELECT name, to_regclass('aegis.' || name) AS relation "
+        "FROM unnest(%s::text[]) AS tbl(name)",
+        (list(REQUIRED),))
     rows=list(cur.fetchall())
     present={r["name"]: r["relation"] is not None for r in rows}
     missing=[table for table in REQUIRED if not present.get(table)]
@@ -111,13 +108,13 @@ def snapshot(cur,now:datetime|None=None) -> dict:
                 "ORDER BY opened_at DESC LIMIT 120")
     positions=list(cur.fetchall())
     cur.execute(
-        "SELECT agent_id,strategy,symbol,interval_minutes,direction AS side,"
+        "SELECT t.agent_id,a.strategy,t.symbol,t.interval_minutes,t.direction AS side,"
         "count(*) AS trades,COALESCE(sum(t.net_pnl),0) AS net_pnl,"
         "COALESCE(sum(t.net_pnl) FILTER(WHERE t.net_pnl>0),0) AS gross_gains,"
         "COALESCE(sum(t.net_pnl) FILTER(WHERE t.net_pnl<0),0) AS gross_losses "
         "FROM aegis.stream_trades t JOIN aegis.stream_accounts a "
         "ON a.agent_id=t.agent_id WHERE t.symbol='BTC' "
-        "GROUP BY t.agent_id,strategy,symbol,interval_minutes,direction")
+        "GROUP BY t.agent_id,a.strategy,t.symbol,t.interval_minutes,t.direction")
     evidence=list(cur.fetchall())
     cur.execute("SELECT agent_id,bar_start,observed_at,symbol,interval_minutes,"
                 "strategy,direction,action,reason,reference_price,"
