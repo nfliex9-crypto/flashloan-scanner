@@ -21,7 +21,8 @@
       const valid=m.fresh===true&&m.state==="CURRENT"&&
         m.source==="gold-api.com"&&m.unit==="USD_PER_TROY_OUNCE"&&
         Number.isFinite(Number(m.price))&&Number(m.price)>0;
-      const stale=m.state==="STALE_SOURCE_QUOTE"&&
+      const weekend=m.state==="MARKET_CLOSED_WEEKEND";
+      const stale=(m.state==="STALE_SOURCE_QUOTE"||weekend)&&
         Number.isFinite(Number(m.last_known_price))&&Number(m.last_known_price)>0;
       const display=valid?m.price:stale?m.last_known_price:null;
       price.textContent=display==null?"—":
@@ -29,7 +30,8 @@
           minimumFractionDigits:2,maximumFractionDigits:2}).format(display);
       price.dataset.state=valid?"CURRENT":stale?"STALE":"UNVERIFIED";
       when.textContent=(valid||stale)&&m.provider_updated_at?
-        (stale?"آخر سعر معروف (قديم؛ ليس سعرًا مباشرًا): ":"آخر تحديث المصدر: ")+
+        (weekend?"سوق الذهب مغلق (عطلة نهاية الأسبوع) · سعر مرجعي فقط: ":
+         stale?"آخر سعر معروف (قديم؛ ليس سعرًا مباشرًا): ":"آخر تحديث المصدر: ")+
         new Date(m.provider_updated_at).toLocaleString("ar-BE",{timeZone:"UTC"})+
         " UTC · استرشادي":
         "سعر الذهب غير متاح حاليًا؛ ما رح نعرض رقمًا تخمينيًا.";
