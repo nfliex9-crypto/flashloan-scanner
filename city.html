@@ -8,7 +8,7 @@
   <title>AEGIS · Trading Desk</title>
   <link rel="stylesheet" href="/mission.css">
   <script src="/mission.js" defer></script>
-  <script src="/mt5-connect-ui.js" defer></script>
+  <script src="/gold-desk.js" defer></script>
   <script src="/ops-health.js" defer></script>
   <script src="/research-advisors.js" defer></script>
 </head>
@@ -32,7 +32,7 @@
         <div class="desk-hero-intro">
           <div class="desk-eyebrow"><span class="desk-live-dot"></span> PAPER FIRST · REAL FEEDS · NO FAKE PERFORMANCE</div>
           <h1 id="deskTitle">بوتات تداول. <span>نتائج حقيقية من السجل.</span></h1>
-          <p>بيتكوين على Kraken Paper، ذهب على MT5 Demo. كل بوت عنده استراتيجية وفاصل من 5m وفوق واتجاه ونتائج مستقلة. نقيّم صافي التكرار بعد التكاليف، مو عدد الصفقات لحاله.</p>
+          <p>بيتكوين على Kraken Paper، وأسعار ذهب حقيقية مع ربط Pepperstone Demo عند تفعيله. كل بوت عنده استراتيجية وفاصل من 5m وفوق واتجاه ونتائج مستقلة. نقيّم صافي التكرار بعد التكاليف، مو عدد الصفقات لحاله.</p>
         </div>
         <div class="desk-market-pulse" aria-label="آخر سعر بيتكوين موثق من Kraken">
           <span class="desk-kicker">BTC / USD · LAST CLOSED 1M CANDLE</span>
@@ -76,34 +76,34 @@
           <div id="decisionFeed" class="desk-events" aria-live="polite"><div class="empty-state">بانتظار قرارات Paper الحقيقية.</div></div>
         </section>
         <section class="desk-section desk-gold" id="goldDemo" aria-labelledby="goldTitle">
-          <span class="desk-kicker">03 / GOLD BROKER DEMO</span>
-          <h2 id="goldTitle">الذهب · MT5 Demo</h2>
-          <p>حساب تجريبي للذهب عبر MetaApi. البيتكوين يظل Kraken Paper، بدون ربط منصة تداول.</p>
-          <strong id="demoStatus" class="desk-demo-status" role="status">جاري التحقق من حساب Demo…</strong>
-          <details class="desk-disclosure" id="mt5SetupDetails">
-            <summary>إعداد اتصال MT5 Demo <span>↙</span></summary>
-                  <section class="rail-card mt5-connect-panel" id="mt5CloudPanel" aria-labelledby="mt5ConnectHeading">
-                    <div class="rail-header"><span class="overline">MT5 DEMO · CLOUD CONNECTOR</span><span class="rail-chip safe">NO WINDOWS · READ ONLY</span></div>
-                    <h2 id="mt5ConnectHeading">ربط MT5 Demo من الموبايل</h2>
-                    <p>ما بتحتاج Windows ولا تشغيل برنامج محلي. نستخدم خدمة MetaApi السحابية للاتصال بحساب MT5 Demo الخاص بالذهب فقط. ما منطلب كلمة مرور الوسيط هون، والبيتكوين بيبقى Kraken Paper.</p>
-                    <div class="mt5-connect-state" role="status" aria-live="polite"><span>حالة اتصال MT5 السحابي</span><strong id="mt5LinkStatus">جارٍ فحص اتصال MetaApi…</strong><small id="mt5LinkLastSync">لن يظهر اتصال أخضر إلا بعد التحقق من نوع الحساب Demo فعليًا.</small></div>
-                    <div class="mt5-connect-steps">
-                      <div class="mt5-connect-step"><b>١</b><div><strong>اربط MT5 Demo في MetaApi</strong><p>من المتصفح افتح منصة MetaApi، أضف حساب MT5 عند وسيطك باستخدام كلمة مرور المستثمر Investor للقراءة فقط. لا تدخل كلمة مرور التداول الرئيسية في AEGIS.</p><a class="mt5-download" href="https://app.metaapi.cloud/accounts" target="_blank" rel="noopener noreferrer">فتح منصة MetaApi السحابية ↗</a></div></div>
-                      <div class="mt5-connect-step"><b>٢</b><div><strong>احفظ بيانات API في Vercel Preview</strong><p>بعد الاتصال، خزّن AEGIS_METAAPI_TOKEN و AEGIS_METAAPI_ACCOUNT_ID، والمنطقة AEGIS_METAAPI_REGION (new-york أو london) في Vercel Environment Variables، لا في هذا الموقع أو GitHub.</p></div></div>
-                      <div class="mt5-connect-step"><b>٣</b><div><strong>افحص الاتصال وزامن سجل الذهب</strong><p>عند تهيئة المفتاح والتحقق من أن الحساب Demo فعليًا، استخدم زر المزامنة. يقرأ النظام صفقات XAUUSD فقط ويحفظها في Neon بعد التكاليف.</p></div></div>
-                    </div>
-                    <div class="mt5-link-actions">
-                      <label for="mt5OwnerKey">مفتاح تحكم AEGIS الخاص بالمالك (وليس كلمة مرور MT5 أو MetaApi)</label>
-                      <input type="password" id="mt5OwnerKey" autocomplete="off" spellcheck="false" placeholder="AEGIS_CONTROL_TOKEN">
-                      <div class="mt5-action-buttons">
-                        <button id="mt5CloudSync" type="button" class="refresh-button" disabled>التحقق ومزامنة صفقات MT5 Demo</button>
-                        <button id="mt5CloudRefresh" type="button" class="refresh-button">تحديث حالة الربط</button>
-                      </div>
-                      <p id="mt5PairHelp" role="status">التحقق من الحساب وقراءة صفقاته يتطلبان إعداد MetaApi في Vercel أولًا.</p>
-                    </div>
-                    <p class="mt5-security">لا ندخل كلمات المرور على موقع AEGIS. MetaApi خدمة مستقلة قد تفرض رسومًا حسب الاشتراك؛ احرص على استخدام حساب MT5 تجريبي وكلمة مرور مستثمر للقراءة فقط. لا توجد أوامر تنفيذ MT5 في هذا التكامل.</p>
-                  </section>
-            
+          <span class="desk-kicker">03 / REAL GOLD DATA + PEPPERSTONE DEMO</span>
+          <h2 id="goldTitle">الذهب · XAU/USD</h2>
+          <p>سعر استرشادي حقيقي بالدولار لكل أونصة تروي من مصدر مستقل. لا نخلطه بسعر التنفيذ أو السبريد لدى Pepperstone.</p>
+          <div class="gold-quote" aria-live="polite">
+            <span>SPOT GOLD · USD / TROY OUNCE</span>
+            <strong id="goldSpotPrice">—</strong>
+            <small id="goldSpotTime">بانتظار سعر موثّق من المصدر…</small>
+            <small id="goldSpotSource">المصدر: Gold-API · استرشادي وليس عرض شراء أو بيع</small>
+          </div>
+          <strong id="demoStatus" class="desk-demo-status" role="status">Pepperstone Demo غير مربوط بـAEGIS</strong>
+          <div class="gold-demo-evidence">
+            <div><span>المراكز لدى Pepperstone</span><strong id="goldDemoPositions">—</strong></div>
+            <div><span>الصفقات المؤكدة</span><strong id="goldDemoTrades">—</strong></div>
+          </div>
+          <p id="goldIntegrationNote" class="desk-footnote">لا توجد صلاحية قراءة لحساب Pepperstone بعد؛ لا نعرض صفقات أو أرباحًا غير موثقة.</p>
+          <details class="desk-disclosure" id="goldTradingViewSteps">
+            <summary>الخطوة 3 · مشاهدة صفقات الذهب على TradingView <span>↙</span></summary>
+            <div class="gold-step-content">
+              <p>١. افتح حساب Pepperstone <strong>TradingView Demo</strong>، وليس حساب Real.</p>
+              <p>٢. في TradingView افتح <strong>Trading Panel → Pepperstone → Connect</strong> ثم وافق على ربط حساب Demo.</p>
+              <p>٣. اختر رمز الذهب الذي يحمل اسم Pepperstone داخل TradingView. عندها تظهر مراكز حساب الوسيط وأوامره هناك؛ الربط داخل TradingView لا يربطها تلقائيًا بـAEGIS.</p>
+              <p>لإظهار مراكز الوسيط داخل AEGIS نفسه، نحتاج لاحقًا إلى ربط <strong>cTrader Open API</strong> بتفويض حساب للقراءة فقط، وليس كلمة مرور داخل الموقع.</p>
+              <div class="gold-link-row">
+                <a class="refresh-button" href="https://www.tradingview.com/chart/" target="_blank" rel="noopener noreferrer">فتح شارت TradingView ↗</a>
+                <a class="refresh-button" href="https://pepperstone.com/en/support/platforms-and-tools" target="_blank" rel="noopener noreferrer">طريقة ربط Pepperstone ↗</a>
+                <a class="refresh-button" href="https://gold-api.com/" target="_blank" rel="noopener noreferrer">مصدر سعر الذهب ↗</a>
+              </div>
+            </div>
           </details>
         </section>
       </div>
@@ -148,7 +148,7 @@
 
         </div>
       </details>
-      <footer class="desk-footer"><span>AEGIS · Paper + Demo Trading Desk</span><span>Kraken Paper · MT5 Demo · Backtest</span></footer>
+      <footer class="desk-footer"><span>AEGIS · Paper + Gold Market Desk</span><span>Kraken Paper · Gold Indicative · Pepperstone Demo Pending</span></footer>
     </main>
   </div>
 </body>
