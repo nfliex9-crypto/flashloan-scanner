@@ -9,6 +9,7 @@
   <link rel="stylesheet" href="/mission.css">
   <script src="/mission.js" defer></script>
   <script src="/mt5-connect-ui.js" defer></script>
+  <script src="/ops-health.js" defer></script>
 </head>
 <body>
   <div class="star-noise" aria-hidden="true"></div>
@@ -89,6 +90,20 @@
         <div class="rail-card" id="riskPanel"><div class="rail-header"><span class="overline">RISK FIREWALL</span><span class="rail-chip safe">REAL ORDERS OFF</span></div><h3>مسؤول إدارة المخاطر</h3><p>كل دخول ورقي يمر من حدود المخاطرة والحجر. رفض الصفقة يظهر في سجل القرارات مع سبب واضح.</p><div class="risk-meter"><span>ميزانية المخاطرة لكل صفقة</span><strong>0.25%</strong></div><div class="risk-meter"><span>حد حجم المركز الافتراضي</span><strong>20%</strong></div><div class="risk-meter"><span>إيقاف حساب الوكيل عند التراجع</span><strong>5%</strong></div></div>
         <div class="rail-card"><div class="rail-header"><span class="overline">GOLD DEMO + BTC PAPER / VERIFIED SOURCES</span><span class="rail-chip">READ ONLY</span></div><h3>MT5 Gold Demo + Bitcoin Paper</h3><p>الذهب: سجل صفقات MT5 Demo موثّق من الوسيط عند الربط. البيتكوين: قرارات وصفقات Paper فقط من محرك Kraken؛ لا أوامر Binance أو أموال حقيقية.</p><div class="demo-rows" id="demoStatus"><span>MT5 Gold Demo</span><strong>غير متصل</strong><span>Bitcoin Paper</span><strong>جاري فحص Kraken</strong></div><a href="/city-research.html#labView" class="text-link">فتح سجل الحسابات التفصيلي ↗</a></div>
         <div class="rail-card"><div class="rail-header"><span class="overline">RESEARCH / HORIZON SELECTION</span><span class="rail-chip">EVIDENCE ONLY</span></div><h3>مين الأفضل؟</h3><p>اختيار السكالبينغ أو اليومي أو السوينغ يحتاج صفقات مغلقة كافية بعد التكاليف. لا نعطي تصنيفًا رابحًا بناءً على اختبار تاريخي وحده.</p><div id="horizonSummary" class="horizon-state">بانتظار أدلة Forward كافية</div><a href="/city-research.html#backtestView" class="text-link">نتائج الاستراتيجيات والـBacktest ↗</a></div>
+      </section>
+      <section class="rail-card ops-health-panel" id="opsHealthPanel" aria-label="فحص صحة مصادر AEGIS الحقيقية">
+        <div class="rail-header"><span class="overline">LIVE SOURCE CANARIES / AUDITED EVIDENCE</span><span class="rail-chip">READ ONLY</span></div>
+        <h2>فحص التشغيل الحقيقي</h2>
+        <p>كل نتيجة من قاعدة Neon وسجلات المحركات، مو من رسوم متحركة أو Backtest. إذا جدول ناقص أو العامل متوقف رح يظهر السبب، وما رح ينفّذ الفحص أي صفقات.</p>
+        <div class="ops-health-grid">
+          <div class="ops-health-tile"><span>Neon</span><strong id="healthDatabase">جارٍ الفحص…</strong></div>
+          <div class="ops-health-tile"><span>Paper scheduler / 15m</span><strong id="healthMonitor">جارٍ الفحص…</strong></div>
+          <div class="ops-health-tile"><span>Forward / 1h</span><strong id="healthForward">جارٍ الفحص…</strong></div>
+          <div class="ops-health-tile"><span>Kraken Paper / 7 intervals</span><strong id="healthKraken">جارٍ الفحص…</strong></div>
+          <div class="ops-health-tile"><span>Gold / MT5 Demo</span><strong id="healthGold">جارٍ الفحص…</strong></div>
+        </div>
+        <p id="healthExplanation" role="status">في انتظار قراءات حقيقية من endpoint التشخيص…</p>
+        <div class="ops-health-footer"><small id="healthCheckedAt">لم يتم فحص المصادر بعد</small><button id="healthRefresh" class="refresh-button" type="button">↻ فحص الآن</button></div>
       </section>
       <section class="rail-card mt5-connect-panel" id="mt5CloudPanel" aria-labelledby="mt5ConnectHeading">
         <div class="rail-header"><span class="overline">MT5 DEMO · CLOUD CONNECTOR</span><span class="rail-chip safe">NO WINDOWS · READ ONLY</span></div>
