@@ -98,13 +98,6 @@ function renderTop(d){
     String(micro.decision_journal.filter(e=>TRADING_INTERVALS.includes(Number(e.interval_minutes))).length):"—";
   $("botCount").textContent=Array.isArray(micro.paper_bots)?
     String(micro.paper_bots.filter(b=>TRADING_INTERVALS.includes(Number(b.interval_minutes))).length):"—";
-  const gold=(d.demo_brokers?.connected_accounts||[]).find(a=>a.provider==="MT5_DEMO");
-  const goldFresh=gold?.sync_status==="SYNCED_DEMO" && gold.last_synced &&
-    Number.isFinite(Date.parse(gold.last_synced))&&Date.now()-Date.parse(gold.last_synced)<300000;
-  $("demoStatus").textContent=d.demo_brokers ? (goldFresh?
-    "MT5 Demo · "+esc(gold.market||"XAUUSD")+" · آخر مزامنة "+stamp(gold.last_synced):
-    "الذهب: غير متصل أو سجل قديم · Bitcoin: Paper") :
-    "ذهب MT5 Demo · افحص حالة الربط أدناه · Bitcoin: Paper";
   $("lastUpdated").textContent="آخر قراءة: "+new Date().toLocaleTimeString("ar-BE");
 }
 function render(d){renderTop(d);renderBotFleet(d);renderDecisions(d);}
@@ -135,7 +128,7 @@ async function refreshLedger(){
     $("botFleetCount").textContent="بانتظار بيانات حقيقية";
     $("botFleetRows").innerHTML='<tr><td colspan="8">تعذر قراءة Paper من Neon؛ جرّب تحديث البيانات.</td></tr>';
     $("decisionFeed").innerHTML='<div class="empty-state">تعذر جلب سجل الصفقات الحقيقي.</div>';
-    $("demoStatus").textContent="حالة MT5 Demo غير مؤكدة";
+
     snapshot=null;
   }finally{
     syncing=false;
