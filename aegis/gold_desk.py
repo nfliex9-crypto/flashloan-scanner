@@ -43,6 +43,12 @@ def parse_gold_spot(doc:dict, *, now:datetime|None=None)->dict:
     if not isfinite(seconds) or seconds < -120:
         raise ValueError("Gold provider timestamp lies in the future")
     is_fresh=0<=seconds<=MAX_AGE_SECONDS
+    # Independent spot providers can refresh timestamps on weekends even when
+    # broker CFDs are closed. Do not label a refreshed weekend reference as
+    # a current tradable price. Sunday reopening differs across brokers/DST.
+    weekend=now.weekday() in (5,6)
+    state=("MARKET_CLOSED_WEEKEND" if weekend else
+           "CURRENT" if is_fresh else "STALE_SOURCE_QUOTE")
     return {
         "source":"gold-api.com",
         "source_url":"https://gold-api.com/",
@@ -53,9 +59,11 @@ def parse_gold_spot(doc:dict, *, now:datetime|None=None)->dict:
         "kind":"INDICATIVE_SPOT_REFERENCE_NOT_BROKER_EXECUTABLE",
         "provider_updated_at":published.isoformat(),
         "age_seconds":max(0,round(seconds)),
-        "fresh":is_fresh,
-        "state":"CURRENT" if is_fresh else "STALE_SOURCE_QUOTE",
-        "price":round(float(price),4) if is_fresh else None,
+        "fresh":is_fresh and not weekend,
+        "provider_timestamp_fresh":is_fresh,
+        "market_session":"WEEKEND_CLOSED" if weekend else "NOT_VERIFIED_FROM_BROKER",
+        "state":state,
+        "price":round(float(price),4) if is_fresh and not weekend else None,
         "last_known_price":round(float(price),4),
         "spread":None,
         "pepperstone_bid":None,
