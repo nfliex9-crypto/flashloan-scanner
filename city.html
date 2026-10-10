@@ -2,62 +2,54 @@
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#060c17">
-  <meta name="description" content="AEGIS Mission Control — verified micro-agent decisions and paper research, with no real-money execution">
-  <title>AEGIS · غرفة العمليات</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#07111c">
+  <meta name="description" content="AEGIS — بوتات استراتيجية مستقلة للبيتكوين Paper، ذهب MT5 Demo، الصفقات والنتائج الموثقة.">
+  <title>AEGIS · Trading Desk</title>
   <link rel="stylesheet" href="/mission.css">
   <script src="/mission.js" defer></script>
   <script src="/mt5-connect-ui.js" defer></script>
   <script src="/ops-health.js" defer></script>
   <script src="/research-advisors.js" defer></script>
 </head>
-<body>
-  <div class="star-noise" aria-hidden="true"></div>
+<body class="aegis-minimal">
   <div class="app-shell">
-    <header class="global-header">
-      <a href="/city.html" class="brand" aria-label="AEGIS Command Center">
+    <header class="global-header desk-header">
+      <a class="brand" href="/city.html" aria-label="AEGIS Trading Desk">
         <span class="brand-icon" aria-hidden="true"><span></span><span></span><span></span></span>
-        <span class="brand-copy"><strong>AEGIS <em>COMMAND</em></strong><small>AGENT RESEARCH OPERATIONS</small></span>
+        <span class="brand-copy"><strong>AEGIS <em>TRADE</em></strong><small>STRATEGY BOT TERMINAL</small></span>
       </a>
-      <div class="global-links">
-        <a href="/city-research.html#labView" class="nav-secondary"><span aria-hidden="true">⌁</span> المختبر والتحكم</a>
-        <a href="/city-research.html#backtestView" class="nav-secondary compact-link">BACKTEST <span aria-hidden="true">↗</span></a>
-      </div>
-      <div class="global-state"><span class="secure-label">PAPER ONLY</span>
-        <span id="globalConnection" class="connection-state checking"><span class="state-dot"></span> جاري الاتصال…</span>
-      </div>
+      <nav class="desk-nav" aria-label="التنقل">
+        <a href="#paperBotFleet">البوتات</a>
+        <a href="#paperTape">الصفقات</a>
+        <a href="#goldDemo">الذهب Demo</a>
+        <a href="/city-research.html#backtestView">Backtest ↗</a>
+      </nav>
+      <span id="globalConnection" class="desk-connection" data-state="UNVERIFIED" role="status">جاري الاتصال بـPaper…</span>
     </header>
-
     <main>
-      <section class="hero">
-        <div class="hero-content">
-          <div class="eyebrow"><span class="eyebrow-line"></span> LIVE AUDIT / CLOSED CANDLES / NO REAL ORDERS</div>
-          <h1>غرفة <span>العمليات.</span></h1>
-          <p>شوف فريق AEGIS، وراقب <strong>كل قرار محفوظ</strong> مع سببه ونتيجته. البيانات من محرك Kraken الورقي وسجل Neon — لا إشارات مخترعة ولا صفقات حقيقية.</p>
-          <div class="hero-bottom">
-            <span id="feedClock" class="time-chip">--:--:-- UTC</span>
-            <span id="syncAge">بانتظار أول قراءة للسجل</span>
-            <button id="forceRefresh" class="refresh-button" title="تحديث سجل القرارات" type="button">↻ تحديث</button>
-          </div>
+      <section class="desk-hero" aria-labelledby="deskTitle">
+        <div class="desk-hero-intro">
+          <div class="desk-eyebrow"><span class="desk-live-dot"></span> PAPER FIRST · REAL FEEDS · NO FAKE PERFORMANCE</div>
+          <h1 id="deskTitle">بوتات تداول. <span>نتائج حقيقية من السجل.</span></h1>
+          <p>بيتكوين على Kraken Paper، ذهب على MT5 Demo. كل بوت عنده استراتيجية وفاصل واتجاه ونتائج مستقلة. نقيّم صافي التكرار بعد التكاليف، مو عدد الصفقات لحاله.</p>
         </div>
-        <div class="hero-orbit" aria-hidden="true"><div class="orbit orbit-outer"></div><div class="orbit orbit-mid"></div><div class="orbit orbit-inner"></div><div class="orbit-center">A<span>✦</span></div><span class="orbit-dot one"></span><span class="orbit-dot two"></span><span class="orbit-dot three"></span><div class="orbit-tag top">RISK 0.25%</div><div class="orbit-tag bottom">LIVE CAPITAL OFF</div></div>
+        <div class="desk-toolbar">
+          <span id="lastUpdated">بانتظار سجل Neon</span>
+          <button id="refreshMain" type="button" class="refresh-button">↻ تحديث البيانات</button>
+        </div>
       </section>
-
-      <section class="signal-strip" aria-label="Actual micro engine metrics">
-        <div class="signal-metric"><span>حالة المحرك</span><strong id="engineState">جاري التحقق</strong><small id="feedCount">0 / 7 مصادر</small></div>
-        <div class="signal-metric"><span>أعضاء الفريق</span><strong id="crewCount">—</strong><small>وكلاء ورقيون مسجلون</small></div>
-        <div class="signal-metric"><span>قرارات الساعة</span><strong id="decisionsCount">—</strong><small>أحداث محفوظة بالفعل</small></div>
-        <div class="signal-metric"><span>المراكز المفتوحة</span><strong id="openCount">—</strong><small>Micro Paper فقط</small></div>
-        <div class="signal-metric"><span>آخر شمعة مؤكدة</span><strong id="lastBarAge">—</strong><small>لا قرارات على شمعة قيد التشكّل</small></div>
-        <div class="signal-metric"><span>دخول / رفض · آخر ساعة</span><strong id="entryVetoCount">—</strong><small id="entryVetoNote">من قرارات Neon الموثّقة</small></div>
+      <section class="desk-kpis" aria-label="حالة محرك البوتات">
+        <article><span>بوتات Paper</span><strong id="botCount">—</strong><small>استراتيجيات مستقلة</small></article>
+        <article><span>مراكز مفتوحة</span><strong id="openCount">—</strong><small>محاكاة فقط</small></article>
+        <article><span>قرارات محفوظة</span><strong id="decisionsCount">—</strong><small>قرارات المصدر</small></article>
+        <article><span>Kraken</span><strong id="feedCount">—</strong><small>فواصل مؤكد اتصالها</small></article>
       </section>
-
-      <section class="rail-card paper-bot-panel" id="paperBotFleet" aria-labelledby="botFleetHeading">
-        <div class="rail-header"><span class="overline">STRATEGY BOTS / KRAKEN VIRTUAL PAPER</span><span class="rail-chip safe">REAL + DEMO ORDERS OFF</span></div>
-        <div class="paper-bot-header">
-          <div><h2 id="botFleetHeading">بوتات التداول الاستراتيجي</h2><p>كل بوت = استراتيجية ثابتة × فاصل × Long أو Short، وله حساب Paper مستقل. التقييم من صفقات Forward المغلقة بعد التكاليف، وليس تنبؤ نموذج AI.</p></div>
-          <strong id="botFleetCount" aria-live="polite">بانتظار سجل Neon</strong>
+      <section class="desk-section" id="paperBotFleet" aria-labelledby="botFleetHeading">
+        <div class="desk-section-heading">
+          <div><span class="desk-kicker">01 / STRATEGY BOT FLEET</span><h2 id="botFleetHeading">بوتات التداول</h2>
+            <p>بوت واحد لكل استراتيجية واتجاه وفاصل. الحسابات والنتائج من Neon فقط.</p></div>
+          <strong id="botFleetCount" class="desk-count">بانتظار API</strong>
         </div>
         <div class="paper-bot-controls">
           <label for="botFleetStrategy">الاستراتيجية</label>
@@ -65,54 +57,53 @@
           <label for="botFleetDirection">الاتجاه</label>
           <select id="botFleetDirection"><option value="ALL">Long + Short</option><option value="LONG">Long</option><option value="SHORT">Short</option></select>
           <label for="botFleetPeriod">الفاصل</label>
-          <select id="botFleetPeriod"><option value="ALL">الكل</option><option value="1">1m</option><option value="5">5m</option><option value="15">15m</option><option value="60">1h</option><option value="240">4h</option><option value="1440">1d</option><option value="10080">1w</option></select>
+          <select id="botFleetPeriod"><option value="ALL">كل الفواصل</option><option value="1">1m</option><option value="5">5m</option><option value="15">15m</option><option value="60">1h</option><option value="240">4h</option><option value="1440">1d</option><option value="10080">1w</option></select>
         </div>
-        <div class="table-scroll paper-bot-table"><table>
-          <thead><tr><th>البوت / السوق</th><th>الفاصل</th><th>حالة Paper</th><th>صفقات مغلقة</th><th>صافي بعد التكاليف</th><th>متوسط صافي الصفقة</th><th>Profit Factor</th><th>أدلة OOS + Forward</th></tr></thead>
-          <tbody id="botFleetRows"><tr><td colspan="8">بانتظار جلب حسابات Paper الحقيقية من Neon. لن نعرض بوتات وهمية.</td></tr></tbody>
-        </table></div>
-        <p id="botFleetFootnote" role="status">المقاييس تخص كل حساب ورقي مستقل. تعدد الصفقات أو نسبة الفوز لا يضمنان الربح. AI لا يملك صلاحية فتح صفقات.</p>
+        <div class="table-scroll desk-table"><table><thead><tr><th>البوت</th><th>الفاصل</th><th>الحالة</th><th>صفقات مغلقة</th><th>صافي الربح</th><th>متوسط الصفقة</th><th>Profit Factor</th><th>OOS + Forward</th></tr></thead>
+          <tbody id="botFleetRows"><tr><td colspan="8">بانتظار سجلات Paper الحقيقية من Neon.</td></tr></tbody></table></div>
+        <p id="botFleetFootnote" class="desk-footnote" role="status">لن نعرض نتائج وهمية أو استراتيجية «رابحة» بدون صفقات مغلقة بعد التكاليف.</p>
       </section>
-
-      <section class="operations">
-        <div class="crew-zone">
-          <div class="section-heading"><div><span class="overline">THE CREW / REAL WORKER STATE</span><h2>الفريق في غرفة التداول</h2><p>كل شخصية تمثّل خوارزمية حقيقية. تفاصيلها تأتي من قاعدة البيانات، وليس من رسوم متحركة وهمية.</p></div>
-            <div class="section-tools">
-              <label class="sr-only" for="marketFilter">السوق</label>
-              <select id="marketFilter" aria-label="فلترة السوق"><option value="ALL">كل الأسواق</option><option value="BTC">Bitcoin</option><option value="ETH">Ethereum</option></select>
-              <label class="sr-only" for="directionFilter">الاتجاه</label>
-              <select id="directionFilter" aria-label="فلترة الاتجاه"><option value="ALL">Long + Short</option><option value="LONG">Long فقط</option><option value="SHORT">Short فقط</option></select>
-              <label class="sr-only" for="horizonFilter">أسلوب التداول</label>
-              <select id="horizonFilter" aria-label="فلترة أسلوب التداول"><option value="ALL">كل الفواصل</option><option value="SCALPING">سكالبينغ 1m / 5m</option><option value="INTRADAY">يومي 15m / 1h</option><option value="SWING">سوينغ 4h / يومي</option><option value="POSITION">أسبوعي 1w</option></select>
-              <label class="sr-only" for="intervalFilter">الإطار الزمني المحدد</label>
-              <select id="intervalFilter" aria-label="فلترة الإطار الزمني المحدد"><option value="ALL">كل الأطر الزمنية</option><option value="1">1m</option><option value="5">5m</option><option value="15">15m</option><option value="60">1h</option><option value="240">4h</option><option value="1440">1d</option><option value="10080">1w</option></select>
-            </div>
-          </div>
-          <div class="crew-filter-status" id="crewFilterStatus" role="status">بانتظار الوكلاء والفلترة الفعلية…</div>
-          <div class="crew-grid" id="crewGrid"><div class="empty-state">نقرأ أعضاء الفريق وحالة المحرك من Neon…</div></div>
-          <div class="crew-footnote"><span class="key-dot cyan"></span> القرار من شمعة مكتملة <span class="key-dot amber"></span> مراقبة/انتظار <span class="key-dot green"></span> دخول أو خروج ورقي موثّق</div>
-        </div>
-
-        <aside class="decision-zone">
-          <div class="timeline-header"><div><span class="overline">LIVE DECISION TAPE</span><h2>شو قرروا الآن؟</h2></div><span id="newDecisionPulse" class="small-count">0 أحداث</span></div>
-          <p class="decision-intro">تسلسل قرارات الوكلاء، حتى قرارات عدم الدخول. السجل يتحدّث من Neon كل 8 ثوانٍ؛ الأحداث تنشأ عند إغلاق شموع 1m / 5m / 15m / 1h / 4h / 1d / 1w.</p>
-          <div class="decision-filters" role="group" aria-label="فلترة القرارات">
-            <button class="filter-chip active" data-action="ALL" type="button">الكل</button>
-            <button class="filter-chip" data-action="ENTER" type="button">فتح</button>
-            <button class="filter-chip" data-action="EXIT" type="button">إغلاق</button>
-            <button class="filter-chip" data-action="WAIT" type="button">انتظار</button>
-            <button class="filter-chip" data-action="VETO" type="button">رفض</button>
-          </div>
-          <div class="decision-feed" id="decisionFeed" aria-live="polite"><div class="empty-state">ما ظهر أي قرار موثّق بعد. ما رح نعرض قرارات وهمية.</div></div>
-          <div class="feed-tail" id="feedTail">آخر 160 قرار متاح من سجل البحث الورقي · بدون تنفيذ خارجي</div>
-        </aside>
-      </section>
-
-      <section class="lower-rail">
-        <div class="rail-card" id="riskPanel"><div class="rail-header"><span class="overline">RISK FIREWALL</span><span class="rail-chip safe">REAL ORDERS OFF</span></div><h3>مسؤول إدارة المخاطر</h3><p>كل دخول ورقي يمر من حدود المخاطرة والحجر. رفض الصفقة يظهر في سجل القرارات مع سبب واضح.</p><div class="risk-meter"><span>ميزانية المخاطرة لكل صفقة</span><strong>0.25%</strong></div><div class="risk-meter"><span>حد حجم المركز الافتراضي</span><strong>20%</strong></div><div class="risk-meter"><span>إيقاف حساب الوكيل عند التراجع</span><strong>5%</strong></div></div>
-        <div class="rail-card"><div class="rail-header"><span class="overline">GOLD DEMO + BTC PAPER / VERIFIED SOURCES</span><span class="rail-chip">READ ONLY</span></div><h3>MT5 Gold Demo + Bitcoin Paper</h3><p>الذهب: سجل صفقات MT5 Demo موثّق من الوسيط عند الربط. البيتكوين: قرارات وصفقات Paper فقط من محرك Kraken؛ لا أوامر Binance أو أموال حقيقية.</p><div class="demo-rows" id="demoStatus"><span>MT5 Gold Demo</span><strong>غير متصل</strong><span>Bitcoin Paper</span><strong>جاري فحص Kraken</strong></div><a href="/city-research.html#labView" class="text-link">فتح سجل الحسابات التفصيلي ↗</a></div>
-        <div class="rail-card"><div class="rail-header"><span class="overline">RESEARCH / HORIZON SELECTION</span><span class="rail-chip">EVIDENCE ONLY</span></div><h3>مين الأفضل؟</h3><p>اختيار السكالبينغ أو اليومي أو السوينغ يحتاج صفقات مغلقة كافية بعد التكاليف. لا نعطي تصنيفًا رابحًا بناءً على اختبار تاريخي وحده.</p><div id="horizonSummary" class="horizon-state">بانتظار أدلة Forward كافية</div><a href="/city-research.html#backtestView" class="text-link">نتائج الاستراتيجيات والـBacktest ↗</a></div>
-      </section>
+      <div class="desk-two-columns">
+        <section class="desk-section desk-tape" id="paperTape" aria-labelledby="tapeTitle">
+          <div class="desk-section-heading"><div><span class="desk-kicker">02 / DECISION TAPE</span><h2 id="tapeTitle">آخر قرارات البوتات</h2></div>
+            <small id="decisionCount">بانتظار الصفقات</small></div>
+          <div id="decisionFeed" class="desk-events" aria-live="polite"><div class="empty-state">بانتظار قرارات Paper الحقيقية.</div></div>
+        </section>
+        <section class="desk-section desk-gold" id="goldDemo" aria-labelledby="goldTitle">
+          <span class="desk-kicker">03 / GOLD BROKER DEMO</span>
+          <h2 id="goldTitle">الذهب · MT5 Demo</h2>
+          <p>حساب تجريبي للذهب عبر MetaApi. البيتكوين يظل Kraken Paper، بدون ربط منصة تداول.</p>
+          <strong id="demoStatus" class="desk-demo-status" role="status">جاري التحقق من حساب Demo…</strong>
+          <details class="desk-disclosure" id="mt5SetupDetails">
+            <summary>إعداد اتصال MT5 Demo <span>↙</span></summary>
+                  <section class="rail-card mt5-connect-panel" id="mt5CloudPanel" aria-labelledby="mt5ConnectHeading">
+                    <div class="rail-header"><span class="overline">MT5 DEMO · CLOUD CONNECTOR</span><span class="rail-chip safe">NO WINDOWS · READ ONLY</span></div>
+                    <h2 id="mt5ConnectHeading">ربط MT5 Demo من الموبايل</h2>
+                    <p>ما بتحتاج Windows ولا تشغيل برنامج محلي. نستخدم خدمة MetaApi السحابية للاتصال بحساب MT5 Demo الخاص بالذهب فقط. ما منطلب كلمة مرور الوسيط هون، والبيتكوين بيبقى Kraken Paper.</p>
+                    <div class="mt5-connect-state" role="status" aria-live="polite"><span>حالة اتصال MT5 السحابي</span><strong id="mt5LinkStatus">جارٍ فحص اتصال MetaApi…</strong><small id="mt5LinkLastSync">لن يظهر اتصال أخضر إلا بعد التحقق من نوع الحساب Demo فعليًا.</small></div>
+                    <div class="mt5-connect-steps">
+                      <div class="mt5-connect-step"><b>١</b><div><strong>اربط MT5 Demo في MetaApi</strong><p>من المتصفح افتح منصة MetaApi، أضف حساب MT5 عند وسيطك باستخدام كلمة مرور المستثمر Investor للقراءة فقط. لا تدخل كلمة مرور التداول الرئيسية في AEGIS.</p><a class="mt5-download" href="https://app.metaapi.cloud/accounts" target="_blank" rel="noopener noreferrer">فتح منصة MetaApi السحابية ↗</a></div></div>
+                      <div class="mt5-connect-step"><b>٢</b><div><strong>احفظ بيانات API في Vercel Preview</strong><p>بعد الاتصال، خزّن AEGIS_METAAPI_TOKEN و AEGIS_METAAPI_ACCOUNT_ID، والمنطقة AEGIS_METAAPI_REGION (new-york أو london) في Vercel Environment Variables، لا في هذا الموقع أو GitHub.</p></div></div>
+                      <div class="mt5-connect-step"><b>٣</b><div><strong>افحص الاتصال وزامن سجل الذهب</strong><p>عند تهيئة المفتاح والتحقق من أن الحساب Demo فعليًا، استخدم زر المزامنة. يقرأ النظام صفقات XAUUSD فقط ويحفظها في Neon بعد التكاليف.</p></div></div>
+                    </div>
+                    <div class="mt5-link-actions">
+                      <label for="mt5OwnerKey">مفتاح تحكم AEGIS الخاص بالمالك (وليس كلمة مرور MT5 أو MetaApi)</label>
+                      <input type="password" id="mt5OwnerKey" autocomplete="off" spellcheck="false" placeholder="AEGIS_CONTROL_TOKEN">
+                      <div class="mt5-action-buttons">
+                        <button id="mt5CloudSync" type="button" class="refresh-button" disabled>التحقق ومزامنة صفقات MT5 Demo</button>
+                        <button id="mt5CloudRefresh" type="button" class="refresh-button">تحديث حالة الربط</button>
+                      </div>
+                      <p id="mt5PairHelp" role="status">التحقق من الحساب وقراءة صفقاته يتطلبان إعداد MetaApi في Vercel أولًا.</p>
+                    </div>
+                    <p class="mt5-security">لا ندخل كلمات المرور على موقع AEGIS. MetaApi خدمة مستقلة قد تفرض رسومًا حسب الاشتراك؛ احرص على استخدام حساب MT5 تجريبي وكلمة مرور مستثمر للقراءة فقط. لا توجد أوامر تنفيذ MT5 في هذا التكامل.</p>
+                  </section>
+            
+          </details>
+        </section>
+      </div>
+      <details class="desk-disclosure desk-advanced" id="advancedDiagnostics">
+        <summary><span>التشخيص المتقدم · Grok / JEV / مصادر البيانات</span><span>↙</span></summary>
+        <div class="desk-advanced-inner">
       <section class="rail-card ops-health-panel" id="opsHealthPanel" aria-label="فحص صحة مصادر AEGIS الحقيقية">
         <div class="rail-header"><span class="overline">LIVE SOURCE CANARIES / AUDITED EVIDENCE</span><span class="rail-chip">READ ONLY</span></div>
         <h2>فحص التشغيل الحقيقي</h2>
@@ -148,48 +139,11 @@
           <pre id="advisorResult" class="external-advisor-result" hidden></pre>
         </div>
       </section>
-      <section class="rail-card mt5-connect-panel" id="mt5CloudPanel" aria-labelledby="mt5ConnectHeading">
-        <div class="rail-header"><span class="overline">MT5 DEMO · CLOUD CONNECTOR</span><span class="rail-chip safe">NO WINDOWS · READ ONLY</span></div>
-        <h2 id="mt5ConnectHeading">ربط MT5 Demo من الموبايل</h2>
-        <p>ما بتحتاج Windows ولا تشغيل برنامج محلي. نستخدم خدمة MetaApi السحابية للاتصال بحساب MT5 Demo الخاص بالذهب فقط. ما منطلب كلمة مرور الوسيط هون، والبيتكوين بيبقى Kraken Paper.</p>
-        <div class="mt5-connect-state" role="status" aria-live="polite"><span>حالة اتصال MT5 السحابي</span><strong id="mt5LinkStatus">جارٍ فحص اتصال MetaApi…</strong><small id="mt5LinkLastSync">لن يظهر اتصال أخضر إلا بعد التحقق من نوع الحساب Demo فعليًا.</small></div>
-        <div class="mt5-connect-steps">
-          <div class="mt5-connect-step"><b>١</b><div><strong>اربط MT5 Demo في MetaApi</strong><p>من المتصفح افتح منصة MetaApi، أضف حساب MT5 عند وسيطك باستخدام كلمة مرور المستثمر Investor للقراءة فقط. لا تدخل كلمة مرور التداول الرئيسية في AEGIS.</p><a class="mt5-download" href="https://app.metaapi.cloud/accounts" target="_blank" rel="noopener noreferrer">فتح منصة MetaApi السحابية ↗</a></div></div>
-          <div class="mt5-connect-step"><b>٢</b><div><strong>احفظ بيانات API في Vercel Preview</strong><p>بعد الاتصال، خزّن AEGIS_METAAPI_TOKEN و AEGIS_METAAPI_ACCOUNT_ID، والمنطقة AEGIS_METAAPI_REGION (new-york أو london) في Vercel Environment Variables، لا في هذا الموقع أو GitHub.</p></div></div>
-          <div class="mt5-connect-step"><b>٣</b><div><strong>افحص الاتصال وزامن سجل الذهب</strong><p>عند تهيئة المفتاح والتحقق من أن الحساب Demo فعليًا، استخدم زر المزامنة. يقرأ النظام صفقات XAUUSD فقط ويحفظها في Neon بعد التكاليف.</p></div></div>
-        </div>
-        <div class="mt5-link-actions">
-          <label for="mt5OwnerKey">مفتاح تحكم AEGIS الخاص بالمالك (وليس كلمة مرور MT5 أو MetaApi)</label>
-          <input type="password" id="mt5OwnerKey" autocomplete="off" spellcheck="false" placeholder="AEGIS_CONTROL_TOKEN">
-          <div class="mt5-action-buttons">
-            <button id="mt5CloudSync" type="button" class="refresh-button" disabled>التحقق ومزامنة صفقات MT5 Demo</button>
-            <button id="mt5CloudRefresh" type="button" class="refresh-button">تحديث حالة الربط</button>
-          </div>
-          <p id="mt5PairHelp" role="status">التحقق من الحساب وقراءة صفقاته يتطلبان إعداد MetaApi في Vercel أولًا.</p>
-        </div>
-        <p class="mt5-security">لا ندخل كلمات المرور على موقع AEGIS. MetaApi خدمة مستقلة قد تفرض رسومًا حسب الاشتراك؛ احرص على استخدام حساب MT5 تجريبي وكلمة مرور مستثمر للقراءة فقط. لا توجد أوامر تنفيذ MT5 في هذا التكامل.</p>
-      </section>
-      <section class="rail-card evidence-panel">
-        <span class="overline">ADAPTIVE TIMEFRAME SELECTOR</span><h2>الفواصل والأدلة الفعلية</h2>
-        <p>نجاح فحص تاريخي سابق + نتائج Forward مستقلة بعد الرسوم والانزلاق والتمويل. الاتصال وحده لا يعني وجود صفقات أو أفضلية. أرقام OOS تخص فحوص BTC المحفوظة.</p>
-        <div class="table-scroll"><table><thead><tr><th>الفاصل</th><th>المصدر</th><th>وكلاء Long / Short</th><th>صفقات Forward مغلقة</th><th>فحوص OOS ناجحة / محفوظة</th><th>حالة الاختيار</th></tr></thead><tbody id="horizonEvidence"></tbody></table></div>
-        <label for="comparisonAsset">السوق للفحص التاريخي</label> <select id="comparisonAsset"><option value="BTC">Bitcoin</option><option value="XAU">Gold</option></select>
-        <button type="button" class="refresh-button" id="compareHorizons">مقارنة 7 فواصل × Long / Short × 7 استراتيجيات</button>
-        <p id="horizonCompareStatus">فحص متسلسل عند الطلب. 720 شمعة كحد أقصى لكل فاصل؛ قد تكون عيّنة السكالبينغ أقصر من المطلوب. الذهب يعتمد على توفر مصدر البيانات.</p>
-        <div class="table-scroll"><table><thead><tr><th>الفاصل</th><th>الاتجاه</th><th>الاستراتيجية</th><th>أيام OOS</th><th>مغلقة</th><th>صافي مغلق</th><th>تكاليف ×2</th><th>التراجع</th><th>النتيجة / سبب الرفض</th></tr></thead><tbody id="horizonCompareRows"></tbody></table></div>
-      </section>
-      <section class="rail-card evidence-panel"><span class="overline">EXTERNAL DEMO · READ ONLY</span><h2>سجل تنفيذ الوسيط</h2><p>قراءة فقط. لا أوامر Demo أو أموال حقيقية من هذه الواجهة.</p>
-        <div class="table-scroll"><table><thead><tr><th>المصدر</th><th>الرمز</th><th>العملية</th><th>الكمية</th><th>السعر</th><th>وقت التنفيذ</th></tr></thead><tbody id="brokerFills"><tr><td colspan="6">بانتظار سجل موثّق</td></tr></tbody></table></div>
-      </section>
-      <footer class="footer"><span>AEGIS COMMAND CENTER <i>·</i> VERIFIED DECISIONS ONLY</span><span>Kraken public market data · Neon decision journal · No live brokerage execution</span></footer>
-    </main>
-  </div>
 
-  <div class="modal-overlay" id="agentOverlay" hidden>
-    <div class="agent-modal" role="dialog" aria-modal="true" aria-labelledby="agentDialogTitle">
-      <div class="modal-top"><span class="overline">AGENT DOSSIER / AUDIT TRAIL</span><button class="close-modal" id="closeAgent" type="button" aria-label="إغلاق">✕</button></div>
-      <div id="agentDialogContent"></div>
-    </div>
+        </div>
+      </details>
+      <footer class="desk-footer"><span>AEGIS · Paper + Demo Trading Desk</span><span>Kraken Paper · MT5 Demo · Backtest</span></footer>
+    </main>
   </div>
 </body>
 </html>
