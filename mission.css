@@ -97,3 +97,82 @@ a{color:inherit;text-decoration:none}button,select{font:inherit}button{cursor:po
   padding:14px;border:1px solid #38665e;background:#102524;border-radius:12px;
   color:#d8efe7;line-height:1.9;font:500 12px 'Cairo',sans-serif;direction:rtl}
 .external-advisor-result[hidden]{display:none}
+
+
+/* AEGIS Trading Desk 2.0 — deliberately small, bot-first, responsive */
+.aegis-minimal{background:#070d16;color:#edf5fc}
+.aegis-minimal:before{background:radial-gradient(ellipse at 12% -8%,#14323b88,transparent 47%),radial-gradient(ellipse at 96% 2%,#19314d6b,transparent 48%)}
+.aegis-minimal .app-shell{max-width:1470px;padding:0 clamp(16px,3.5vw,52px)}
+.desk-header{border-bottom:1px solid #29455780;padding:18px 0;min-height:85px;gap:20px}
+.desk-header .brand-copy strong{font-size:21px;letter-spacing:.3px}
+.desk-header .brand-copy em{color:#76e8cb;font-style:normal}
+.desk-nav{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-inline-start:auto}
+.desk-nav a{font:700 12px 'Cairo',sans-serif;color:#a7bacb;border:1px solid transparent;border-radius:10px;padding:9px 12px;transition:background .16s,color .16s}
+.desk-nav a:hover,.desk-nav a:focus-visible{background:#15313d;border-color:#315a61;color:#c4f8e8}
+.desk-connection{display:inline-flex;align-items:center;max-width:260px;gap:7px;color:#93b9b7;background:#12302e;border:1px solid #335c58;border-radius:100px;padding:8px 12px;font:700 11px 'Cairo',sans-serif}
+.desk-connection[data-state="UNVERIFIED"]{color:#d4b18a;background:#322418;border-color:#745236}
+.desk-hero{display:flex;justify-content:space-between;align-items:flex-end;gap:25px;padding:40px 0 25px;flex-wrap:wrap}
+.desk-hero-intro{max-width:740px}
+.desk-eyebrow{display:flex;align-items:center;gap:9px;color:#7bc8be;font:700 10px 'Space Grotesk',sans-serif;letter-spacing:1.1px}
+.desk-live-dot{width:7px;height:7px;border-radius:100%;background:#68e1bb;box-shadow:0 0 17px #68e1bb88}
+.desk-hero h1{font:800 clamp(26px,3.5vw,46px)/1.35 'Cairo',sans-serif;letter-spacing:-1px;margin:10px 0 12px}
+.desk-hero h1 span{color:#80dcc7}
+.desk-hero p{font-size:13px;color:#97afc3;line-height:1.9;margin:0}
+.desk-toolbar{display:flex;align-items:center;gap:14px;color:#8caab9;font-size:11px;white-space:nowrap}
+.desk-toolbar .refresh-button{padding:10px 15px;background:#1e463f;border:1px solid #3b8875;border-radius:10px;color:#d6fff4;font-weight:800}
+.desk-toolbar .refresh-button:hover:not(:disabled){background:#275b51}
+.desk-toolbar .refresh-button:disabled{opacity:.5}
+.desk-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:13px;margin-bottom:29px}
+.desk-kpis article{padding:17px 20px;min-height:105px;background:linear-gradient(145deg,#142536,#101b28);border:1px solid #294052;border-radius:15px;display:grid;gap:2px}
+.desk-kpis article span{color:#95b0c3;font-size:11px}
+.desk-kpis article strong{font:700 28px 'Space Grotesk',sans-serif;color:#e7f7f3;line-height:1.45}
+.desk-kpis article small{color:#788da1;font-size:10px}
+.desk-section{background:#0e1a29;border:1px solid #283d50;border-radius:18px;padding:23px;margin-bottom:17px;box-shadow:0 12px 30px #050c1520}
+.desk-section-heading{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:18px}
+.desk-section-heading h2,.desk-gold h2{font:800 clamp(19px,2.2vw,25px) 'Cairo',sans-serif;margin:4px 0 6px;color:#eaf6fb}
+.desk-section-heading p,.desk-gold>p{font-size:12px;line-height:1.8;color:#90a8ba;margin:0}
+.desk-kicker{font:700 10px 'Space Grotesk',sans-serif;letter-spacing:1px;color:#65cdbc;direction:ltr;display:inline-block}
+.desk-count{font-size:12px;color:#d2eee5;white-space:nowrap}
+.paper-bot-controls{display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin:0 0 18px}
+.paper-bot-controls label{font-size:11px;color:#91a9bc;margin-inline-start:10px}
+.paper-bot-controls select{background:#111f2e;border:1px solid #355369;border-radius:9px;color:#e1f2fb;padding:9px 13px;font:700 12px 'Cairo',sans-serif;min-width:100px}
+.paper-bot-controls select:focus-visible{outline:2px solid #77dec8}
+.desk-table{overflow:auto;max-height:520px;border:1px solid #23364a;border-radius:12px;background:#0d1723}
+.desk-table table{border-collapse:collapse;min-width:850px;width:100%;font-size:12px;text-align:start}
+.desk-table th{position:sticky;top:0;text-align:start;font-size:10px;letter-spacing:.1px;color:#a1c9ce;background:#172536;padding:14px 12px;white-space:nowrap}
+.desk-table td{padding:14px 12px;border-top:1px solid #223749;color:#c4d4df;white-space:nowrap}
+.desk-table td:first-child strong{font-size:12px;color:#f3fbff;display:block}
+.desk-table td:first-child small{display:block;color:#7290a4;font-size:10px;max-width:200px;overflow:hidden;text-overflow:ellipsis}
+.desk-table tr:hover td{background:#152838}
+.desk-table .profit{color:#75e5bc;font-weight:700}
+.desk-table .loss{color:#ec989d;font-weight:700}
+.bot-status{display:inline-block;color:#b7d1d8;padding:4px 9px;border:1px solid #33546a;border-radius:7px;background:#152839}
+.bot-status[data-state="OPEN_PAPER_POSITION"]{color:#9be4cb;border-color:#2d6757}
+.bot-status[data-state="HALTED_RISK"],.bot-status[data-state="FEED_UNVERIFIED"]{color:#dfb394;border-color:#735c47}
+.bot-qualified{color:#79e3b5;font-weight:700}
+.desk-footnote{font-size:11px;color:#8fa6b8;line-height:1.8;margin:12px 0 0}
+.desk-two-columns{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(280px,1fr);gap:17px}
+.desk-two-columns>.desk-section{min-width:0}
+.desk-events{display:grid;max-height:485px;overflow:auto;border-top:1px solid #283d50}
+.bot-event{display:flex;align-items:center;flex-wrap:wrap;gap:9px;padding:13px 0;border-bottom:1px solid #223548;font-size:11px}
+.bot-event strong{font-size:11px;color:#d8e8f1}
+.bot-event small{font-size:10px;color:#7899ae;margin-inline-start:auto;direction:ltr}
+.bot-event-action{font-weight:700;min-width:82px;color:#9baebe}
+.bot-event-action[data-action="ENTER"]{color:#70ddaf}
+.bot-event-action[data-action="EXIT"]{color:#e6b57f}
+.bot-event-action[data-action="VETO"]{color:#e48c9a}
+.desk-demo-status{display:block;color:#c0e6da;background:#142f31;border:1px solid #29514e;padding:13px;border-radius:10px;font-size:12px;margin:21px 0}
+.desk-disclosure{border:1px solid #30485c;border-radius:13px;margin-bottom:22px;background:#0e1c2a}
+.desk-disclosure>summary{display:flex;align-items:center;justify-content:space-between;gap:10px;cursor:pointer;list-style:none;padding:15px 19px;color:#bbd6e5;font-size:12px;font-weight:700}
+.desk-disclosure>summary::-webkit-details-marker{display:none}
+.desk-disclosure[open]>summary{border-bottom:1px solid #294052}
+.desk-disclosure summary:focus-visible{outline:2px solid #78e3c8}
+.desk-disclosure .mt5-connect-panel{margin:14px;border-radius:12px;min-height:0}
+.desk-disclosure .ops-health-panel{margin:14px;min-height:0}
+.desk-advanced-inner{display:grid;gap:10px}
+.desk-advanced{margin-top:9px;margin-bottom:28px;background:#101d2c}
+.desk-advanced>summary{color:#93abbf}
+.desk-footer{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;border-top:1px solid #294052;padding:19px 0 35px;color:#75909e;font-size:10px}
+.aegis-minimal .empty-state{padding:20px;color:#8ba7b8;line-height:1.8;font-size:12px}
+@media(max-width:1060px){.desk-two-columns{grid-template-columns:1fr}.desk-nav{order:3;width:100%;justify-content:center;margin:0}.desk-connection{margin-inline-start:auto}}
+@media(max-width:680px){.desk-header{gap:11px}.desk-nav{justify-content:space-around}.desk-nav a{font-size:11px;padding:8px 5px}.desk-connection{max-width:100%;font-size:10px}.desk-hero{padding:29px 0 18px}.desk-hero h1{font-size:26px}.desk-toolbar{width:100%;justify-content:space-between}.desk-kpis{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.desk-kpis article{padding:12px 14px;min-height:85px}.desk-kpis article strong{font-size:23px}.desk-section{padding:14px;border-radius:15px}.desk-section-heading{align-items:flex-start;flex-wrap:wrap}.paper-bot-controls label{display:none}.paper-bot-controls select{flex:1;min-width:85px;font-size:10px;padding:10px 6px}.desk-table td{padding:12px 9px}.desk-header .brand-copy strong{font-size:18px}}
