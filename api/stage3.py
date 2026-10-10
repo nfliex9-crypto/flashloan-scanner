@@ -42,6 +42,13 @@ class handler(BaseHTTPRequestHandler):
         # Reuse the existing function slot. Read-only, bounded historical
         # testing cannot touch a broker or persist simulated fills in Neon.
         query=parse_qs(urlsplit(self.path).query,keep_blank_values=True)
+        if "gold_desk" in query:
+            if query != {"gold_desk": ["1"]}:
+                self._reply(400, {"ok":False,"error":"invalid_gold_desk_query"})
+                return
+            from aegis.gold_desk import get_gold_desk
+            self._reply(200,get_gold_desk(),cache="public, s-maxage=45")
+            return
         if "desk_probe" in query:
             if query != {"desk_probe": ["1"]}:
                 self._reply(400, {"ok": False, "error": "invalid_desk_probe_query"})
