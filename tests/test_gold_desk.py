@@ -5,7 +5,7 @@ import json
 from aegis import gold_desk
 from api.stage3 import handler
 
-NOW=datetime(2026,10,10,9,0,tzinfo=timezone.utc)
+NOW=datetime(2026,10,9,9,0,tzinfo=timezone.utc)
 
 
 def real_shape(updated=None):
@@ -30,6 +30,19 @@ def test_weekend_or_stale_price_is_visibly_distinct_from_live_price():
     assert x["fresh"] is False
     assert x["price"] is None
     assert x["last_known_price"]==4385.2
+
+
+def test_gold_weekend_reference_is_visible_but_never_claimed_tradeable():
+    saturday=datetime(2026,10,10,10,57,tzinfo=timezone.utc)
+    info=real_shape(saturday-timedelta(seconds=7))
+    gold=gold_desk.parse_gold_spot(info,now=saturday)
+    assert gold["state"]=="MARKET_CLOSED_WEEKEND"
+    assert gold["market_session"]=="WEEKEND_CLOSED"
+    assert gold["provider_timestamp_fresh"] is True
+    assert gold["fresh"] is False
+    assert gold["price"] is None
+    assert gold["last_known_price"]==4385.2
+    assert gold["trading_permission"] is False
 
 
 def test_unsupported_currency_and_fake_prices_are_rejected():
