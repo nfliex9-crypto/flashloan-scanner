@@ -13,6 +13,10 @@ from datetime import datetime, timezone
 from .live_lab import Candle
 
 ALLOWED_MINUTES = (1, 5, 15, 60, 240, 1440, 10080)
+# One-minute public candles remain a quote source for dashboard/mark-to-market.
+# They are never allowed to originate strategy positions or new bot accounts.
+QUOTE_ONLY_MINUTES = (1,)
+TRADING_MINUTES = (5, 15, 60, 240, 1440, 10080)
 SYMBOL_NAMES = {"BTC/USD": "BTC", "ETH/USD": "ETH"}
 
 
