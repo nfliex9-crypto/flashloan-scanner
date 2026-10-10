@@ -42,6 +42,17 @@ class handler(BaseHTTPRequestHandler):
         # Reuse the existing function slot. Read-only, bounded historical
         # testing cannot touch a broker or persist simulated fills in Neon.
         query=parse_qs(urlsplit(self.path).query,keep_blank_values=True)
+        if "desk" in query:
+            if query != {"desk": ["1"]}:
+                self._reply(400, {"ok": False, "error": "invalid_paper_desk_query"})
+                return
+            try:
+                from aegis.paper_desk import get_paper_desk
+                self._reply(200, get_paper_desk())
+            except Exception:
+                # Do not disclose Neon URLs or database account details.
+                self._reply(503, {"ok": False, "error": "paper_desk_data_unavailable"})
+            return
         if "diagnostics" in query:
             if query != {"diagnostics": ["1"]}:
                 self._reply(400, {"ok": False, "error": "invalid_diagnostics_query"})
