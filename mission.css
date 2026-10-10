@@ -73,3 +73,20 @@ a{color:inherit;text-decoration:none}button,select{font:inherit}button{cursor:po
 .mt5-pair-secret code{direction:ltr;text-align:left;overflow-wrap:anywhere;user-select:all;font:700 14px ui-monospace,monospace;color:#f7e0a6}
 .mt5-security{font-size:11px;color:#92acbd;margin:14px 0 0;line-height:1.9}
 @media(max-width:850px){.mt5-connect-steps{grid-template-columns:1fr}}
+
+
+/* Read-only operational canary dashboard — no synthetic green states */
+.ops-health-panel{margin:22px 0}
+.ops-health-panel h2{font:700 clamp(18px,2.6vw,27px) 'Cairo',sans-serif;margin:8px 0}
+.ops-health-panel p{line-height:1.8;color:#adc2d1}
+.ops-health-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:9px;margin:17px 0}
+.ops-health-tile{display:grid;align-content:center;gap:9px;min-height:95px;padding:14px;background:#0c1928;border:1px solid #30465a;border-radius:12px;min-width:0}
+.ops-health-tile>span{font-size:11px;color:#8aa9bf}
+.ops-health-tile>strong{font:700 12px 'Cairo',sans-serif;line-height:1.8;color:#e5d49f;overflow-wrap:anywhere}
+.ops-health-tile>strong[data-state="CONNECTED"],.ops-health-tile>strong[data-state="CURRENT"],.ops-health-tile>strong[data-state="ALL_VERIFIED"]{color:#6be5c4}
+.ops-health-tile>strong[data-state="SCHEMA_MISSING"],.ops-health-tile>strong[data-state="UNAVAILABLE"],.ops-health-tile>strong[data-state="READ_FAILED"],.ops-health-tile>strong[data-state="STALE"]{color:#f098a9}
+#healthExplanation{font-size:12px;color:#b5cbd5;border-top:1px solid #30465a;padding-top:10px;overflow-wrap:anywhere}
+.ops-health-footer{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.ops-health-footer small{font-size:11px;color:#849fb6}
+@media(max-width:1080px){.ops-health-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:640px){.ops-health-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
