@@ -72,7 +72,8 @@ def test_streamlined_trading_desk_is_bot_first_and_source_backed():
     assert "oos_forward_qualified" in script
     assert "micro_engine?.paper_bots" in script
     assert 'fetch("/api/stage3"' in script
-    assert all(f'<option value="{n}">' in page for n in (1,5,15,60,240,1440,10080))
+    assert all(f'<option value="{n}">' in page for n in (5,15,60,240,1440,10080))
+    assert '<option value="1">1m</option>' not in page
     assert "/city-research.html#backtestView" in page
     assert 'id="mt5CloudPanel"' in page
     assert 'id="advancedDiagnostics"' in page
