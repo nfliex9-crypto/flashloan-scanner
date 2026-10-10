@@ -118,7 +118,7 @@ def settle_intrabar_shadow(cur, *, run_id:str,now:datetime,
                 "(trade_id,position_id,agent_id,signal_key,symbol,opened_at,closed_at,"
                 "raw_entry,entry_price,exit_price,qty,gross_pnl,entry_fee,exit_fee,"
                 "slippage_cost,net_pnl,r_multiple,reason,evidence) "
-                "VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s::jsonb) "
+                "VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s::jsonb) "
                 "ON CONFLICT(position_id) DO NOTHING RETURNING trade_id",
                 (trade_id,p["position_id"],p["agent_id"],p["signal_key"],symbol,p["opened_at"],
                  at,p["raw_entry"],p["entry_price"],result["exit_price"],p["qty"],
