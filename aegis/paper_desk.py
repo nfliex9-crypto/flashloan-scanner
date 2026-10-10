@@ -11,6 +11,7 @@ from datetime import datetime, timezone, timedelta
 
 from .forward_broker import _connect, _json_safe
 from .bot_fleet import project_paper_bots
+from .stream_core import TRADING_MINUTES
 
 INTERVALS=(1,5,15,60,240,1440,10080)
 REQUIRED=("stream_status","stream_accounts","stream_positions",
@@ -119,14 +120,18 @@ def snapshot(cur,now:datetime|None=None) -> dict:
     cur.execute("SELECT agent_id,bar_start,observed_at,symbol,interval_minutes,"
                 "strategy,direction,action,reason,reference_price,"
                 "position_id,qty,net_pnl FROM aegis.stream_decisions "
-                "WHERE symbol='BTC' ORDER BY observed_at DESC LIMIT 36")
+                "WHERE symbol='BTC' AND interval_minutes > 1 "
+                "ORDER BY observed_at DESC LIMIT 36")
     decisions=list(cur.fetchall())
     cur.execute("SELECT agent_id,symbol,interval_minutes,direction,closed_at,"
                 "net_pnl,reason,qty,entry_price,exit_price,entry_fee,exit_fee,"
                 "slippage_cost,financing_cost FROM aegis.stream_trades "
-                "WHERE symbol='BTC' ORDER BY closed_at DESC LIMIT 24")
+                "WHERE symbol='BTC' AND interval_minutes > 1 "
+                "ORDER BY closed_at DESC LIMIT 24")
     last_trades=list(cur.fetchall())
-    bots=project_paper_bots(accounts,evidence,positions,fresh_intervals,[])
+    legacy_1m_positions=[p for p in positions if p.get("interval_minutes")==1]
+    trading_positions=[p for p in positions if p.get("interval_minutes") in TRADING_MINUTES]
+    bots=project_paper_bots(accounts,evidence,trading_positions,fresh_intervals,[])
     bot_by_id={b["bot_id"]:b for b in bots}
     exposure_count=0
     unrealized=0.
@@ -150,7 +155,10 @@ def snapshot(cur,now:datetime|None=None) -> dict:
         "generated_at":now,"market":market,
         "micro_engine":{
             "paper_bots":bots,
-            "open_positions":positions,
+            "open_positions":trading_positions,
+            "retiring_1m_positions":len(legacy_1m_positions),
+            "trading_intervals_minutes":[n for n in fresh_intervals if n in TRADING_MINUTES],
+            "quote_only_intervals_minutes":[n for n in fresh_intervals if n==1],
             "decision_journal":decisions,
             "recent_closed_trades":last_trades,
             "sources":sources,
