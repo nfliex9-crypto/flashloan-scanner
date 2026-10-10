@@ -63,18 +63,21 @@ def test_risk_halt_blocks_qualification_even_with_good_results_and_feed():
     assert bots[0]["oos_forward_qualified"] is False
 
 
-def test_same_strategy_long_short_and_intervals_are_separate_bots():
+def test_legacy_1m_accounts_are_excluded_while_5m_long_short_remain_independent():
     acc=[
-        account("btc-1m-long",1,direction="LONG"),
-        account("btc-1m-short",1,direction="SHORT"),
+        account("legacy-btc-1m-long",1,direction="LONG"),
+        account("legacy-btc-1m-short",1,direction="SHORT"),
         account("btc-5m-long",5,direction="LONG"),
+        account("btc-5m-short",5,direction="SHORT"),
     ]
-    trades=[closed("btc-1m-long",net=25), closed("btc-1m-short",net=-50)]
+    trades=[closed("legacy-btc-1m-long",net=25),
+            closed("legacy-btc-1m-short",net=-50),
+            closed("btc-5m-short",net=75)]
     bots=project_paper_bots(acc,trades,[],[1,5],[])
-    assert len(bots)==3
     ids={b["bot_id"] for b in bots}
-    assert ids=={"btc-1m-long","btc-1m-short","btc-5m-long"}
-    assert next(x for x in bots if x["bot_id"]=="btc-1m-short")["net_pnl_after_costs"]==-50
+    assert ids=={"btc-5m-long","btc-5m-short"}
+    assert next(x for x in bots if x["bot_id"]=="btc-5m-short")["net_pnl_after_costs"]==75
+    assert all(b["interval_minutes"]>=5 for b in bots)
 
 
 def test_open_position_is_paper_only_not_broker_position():
