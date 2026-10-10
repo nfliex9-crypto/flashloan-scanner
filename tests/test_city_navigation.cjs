@@ -138,3 +138,19 @@ test("mobile MT5 Demo onboarding uses MetaApi cloud, not Windows", () => {
   assert.match(bridge,/doc\.state === "READY_FOR_VERIFICATION"/);
   assert.doesNotMatch(bridge,/mt5PairToken|pairingCode|brokerPassword/);
 });
+
+
+test("operational diagnostics render real source receipts, never strategy order controls", () => {
+  const mission = fs.readFileSync("city.html","utf8");
+  const script = fs.readFileSync("ops-health.js","utf8");
+  assert.doesNotThrow(() => new vm.Script(script));
+  assert.match(mission, /id="opsHealthPanel"/);
+  assert.match(mission, /id="healthDatabase"/);
+  assert.match(mission, /id="healthKraken"/);
+  assert.match(mission, /id="healthForward"/);
+  assert.match(mission, /src="\/ops-health\.js"/);
+  assert.match(script, /\/api\/stage3\?diagnostics=1/);
+  assert.match(script, /missing_intervals_minutes/);
+  assert.match(script, /NO_EVIDENCE/);
+  assert.doesNotMatch(script, /order_send|createOrder|placeOrder|POST/);
+});
