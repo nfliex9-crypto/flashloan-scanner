@@ -10,6 +10,7 @@
   <script src="/mission.js" defer></script>
   <script src="/mt5-connect-ui.js" defer></script>
   <script src="/ops-health.js" defer></script>
+  <script src="/research-advisors.js" defer></script>
 </head>
 <body>
   <div class="star-noise" aria-hidden="true"></div>
@@ -104,6 +105,27 @@
         </div>
         <p id="healthExplanation" role="status">في انتظار قراءات حقيقية من endpoint التشخيص…</p>
         <div class="ops-health-footer"><small id="healthCheckedAt">لم يتم فحص المصادر بعد</small><button id="healthRefresh" class="refresh-button" type="button">↻ فحص الآن</button></div>
+      </section>
+      <section class="rail-card ops-health-panel" id="externalResearchPanel" aria-labelledby="externalResearchHeading">
+        <div class="rail-header"><span class="overline">OPEN RESEARCH SOURCES / AI CRITIC</span><span class="rail-chip">NO ORDERS</span></div>
+        <h2 id="externalResearchHeading">الأنظمة المساعدة · بحث فقط</h2>
+        <p>Grok يراجع أدلة Neon وKraken عند الطلب فقط. JEV يبقى خدمة Railway مستقلة؛ Fincept وVibe-Trading مراجع هندسية. لا نرسل كلمات مرور وسطاء ولا نسمح لنموذج AI بفتح صفقات.</p>
+        <div class="ops-health-grid">
+          <div class="ops-health-tile"><span>Grok · xAI</span><strong id="advisorGrok">جارٍ التحقق…</strong></div>
+          <div class="ops-health-tile"><span>JEV · Hyperliquid</span><strong id="advisorJev">منفصل عن AEGIS</strong></div>
+          <div class="ops-health-tile"><span>Vibe-Trading</span><strong>فحوص الأدلة مدمجة</strong></div>
+          <div class="ops-health-tile"><span>Fincept Terminal</span><strong>مرجع بحثي فقط</strong></div>
+        </div>
+        <div class="mt5-link-actions">
+          <label for="advisorOwnerKey">مفتاح مالك AEGIS (ليس مفتاح Grok ولا الوسيط)</label>
+          <input id="advisorOwnerKey" type="password" autocomplete="off" spellcheck="false" placeholder="AEGIS_CONTROL_TOKEN">
+          <div class="mt5-action-buttons">
+            <button id="advisorGrokReview" class="refresh-button" type="button" disabled>مراجعة Grok للبيانات الحالية</button>
+            <button id="advisorRefresh" class="refresh-button" type="button">فحص جاهزية النماذج</button>
+          </div>
+          <p id="advisorStatus" role="status">نستخدم بيانات تشغيل حقيقية فقط. المراجعة اختيارية وقد تستهلك رصيد xAI؛ النتائج ليست توصيات تنفيذ.</p>
+          <pre id="advisorResult" class="external-advisor-result" hidden></pre>
+        </div>
       </section>
       <section class="rail-card mt5-connect-panel" id="mt5CloudPanel" aria-labelledby="mt5ConnectHeading">
         <div class="rail-header"><span class="overline">MT5 DEMO · CLOUD CONNECTOR</span><span class="rail-chip safe">NO WINDOWS · READ ONLY</span></div>
