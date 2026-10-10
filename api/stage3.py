@@ -42,6 +42,16 @@ class handler(BaseHTTPRequestHandler):
         # Reuse the existing function slot. Read-only, bounded historical
         # testing cannot touch a broker or persist simulated fills in Neon.
         query=parse_qs(urlsplit(self.path).query,keep_blank_values=True)
+        if "desk_probe" in query:
+            if query != {"desk_probe": ["1"]}:
+                self._reply(400, {"ok": False, "error": "invalid_desk_probe_query"})
+                return
+            try:
+                from aegis.stream_probe import get_stream_storage_probe
+                self._reply(200, get_stream_storage_probe())
+            except Exception:
+                self._reply(503, {"ok": False, "error": "paper_probe_unavailable"})
+            return
         if "desk" in query:
             if query != {"desk": ["1"]}:
                 self._reply(400, {"ok": False, "error": "invalid_paper_desk_query"})
