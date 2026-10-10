@@ -42,6 +42,14 @@ class handler(BaseHTTPRequestHandler):
         # Reuse the existing function slot. Read-only, bounded historical
         # testing cannot touch a broker or persist simulated fills in Neon.
         query=parse_qs(urlsplit(self.path).query,keep_blank_values=True)
+        if "diagnostics" in query:
+            if query != {"diagnostics": ["1"]}:
+                self._reply(400, {"ok": False, "error": "invalid_diagnostics_query"})
+                return
+            # Operational canaries inspect persisted Neon receipts only.
+            from aegis.ops_health import diagnose
+            self._reply(200, diagnose())
+            return
         if "mt5_cloud" in query:
             if query != {"mt5_cloud": ["1"]}:
                 self._reply(400, {"ok": False, "error": "invalid_mt5_cloud_query"})
