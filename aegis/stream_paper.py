@@ -59,6 +59,8 @@ def fill_decision(account: dict, position: dict | None, history: list[Candle],
     direction=account.get("direction","LONG")
     if direction not in MICRO_DIRECTIONS:
         raise ValueError("Unknown research cohort direction")
+    if minutes not in TRADING_MINUTES and position is None:
+        return {"action":"WAIT","reason":"TIMEFRAME_QUOTE_ONLY_1M"}
     side=1 if direction=="LONG" else -1
     pos=position
     if pos:
