@@ -53,6 +53,27 @@
         <div class="signal-metric"><span>دخول / رفض · آخر ساعة</span><strong id="entryVetoCount">—</strong><small id="entryVetoNote">من قرارات Neon الموثّقة</small></div>
       </section>
 
+      <section class="rail-card paper-bot-panel" id="paperBotFleet" aria-labelledby="botFleetHeading">
+        <div class="rail-header"><span class="overline">STRATEGY BOTS / KRAKEN VIRTUAL PAPER</span><span class="rail-chip safe">REAL + DEMO ORDERS OFF</span></div>
+        <div class="paper-bot-header">
+          <div><h2 id="botFleetHeading">بوتات التداول الاستراتيجي</h2><p>كل بوت = استراتيجية ثابتة × فاصل × Long أو Short، وله حساب Paper مستقل. التقييم من صفقات Forward المغلقة بعد التكاليف، وليس تنبؤ نموذج AI.</p></div>
+          <strong id="botFleetCount" aria-live="polite">بانتظار سجل Neon</strong>
+        </div>
+        <div class="paper-bot-controls">
+          <label for="botFleetStrategy">الاستراتيجية</label>
+          <select id="botFleetStrategy"><option value="ALL">الكل</option><option value="EMA Cross">EMA Cross</option><option value="Channel Breakout">Channel Breakout</option></select>
+          <label for="botFleetDirection">الاتجاه</label>
+          <select id="botFleetDirection"><option value="ALL">Long + Short</option><option value="LONG">Long</option><option value="SHORT">Short</option></select>
+          <label for="botFleetPeriod">الفاصل</label>
+          <select id="botFleetPeriod"><option value="ALL">الكل</option><option value="1">1m</option><option value="5">5m</option><option value="15">15m</option><option value="60">1h</option><option value="240">4h</option><option value="1440">1d</option><option value="10080">1w</option></select>
+        </div>
+        <div class="table-scroll paper-bot-table"><table>
+          <thead><tr><th>البوت / السوق</th><th>الفاصل</th><th>حالة Paper</th><th>صفقات مغلقة</th><th>صافي بعد التكاليف</th><th>متوسط صافي الصفقة</th><th>Profit Factor</th><th>أدلة OOS + Forward</th></tr></thead>
+          <tbody id="botFleetRows"><tr><td colspan="8">بانتظار جلب حسابات Paper الحقيقية من Neon. لن نعرض بوتات وهمية.</td></tr></tbody>
+        </table></div>
+        <p id="botFleetFootnote" role="status">المقاييس تخص كل حساب ورقي مستقل. تعدد الصفقات أو نسبة الفوز لا يضمنان الربح. AI لا يملك صلاحية فتح صفقات.</p>
+      </section>
+
       <section class="operations">
         <div class="crew-zone">
           <div class="section-heading"><div><span class="overline">THE CREW / REAL WORKER STATE</span><h2>الفريق في غرفة التداول</h2><p>كل شخصية تمثّل خوارزمية حقيقية. تفاصيلها تأتي من قاعدة البيانات، وليس من رسوم متحركة وهمية.</p></div>
