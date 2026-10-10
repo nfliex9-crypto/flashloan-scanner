@@ -51,8 +51,8 @@ function renderBotFleet(d){
   }).join(""):'<tr><td colspan="8">لا توجد بوتات مطابقة لهذه الفلاتر.</td></tr>';
   const complete=all.filter(b=>b.closed_trades>0);
   $("botFleetFootnote").textContent=
-    complete.length+" بوت لديه صفقات Paper مغلقة · المقاييس من نتائج Kraken Forward بعد التكاليف · "+
-    "ربح بوت في الماضي لا يثبت أفضلية مستقبلية.";
+    complete.length+" بوت لديه صفقات Paper مغلقة · تظهر التغيّرات عند إغلاق شمعة Kraken موثقة "+
+    "أو تنفيذ صفقة افتراضية؛ ما في أرباح وهمية بين الشموع.";
 }
 function renderDecisions(d){
   const tape=d.micro_engine?.decision_journal;
@@ -73,6 +73,16 @@ function renderDecisions(d){
 }
 function renderTop(d){
   const micro=d.micro_engine||{};
+  const market=d.market||null;
+  const quote=$("btcLastClose"), mark=$("btcOpenPnl");
+  quote.textContent=market?.price_kind==="PERSISTED_CLOSED_CANDLE"&&Number.isFinite(Number(market.close))
+    ?money(market.close):"—";
+  $("btcLastCloseAt").textContent=market?.bar_end ?
+    "شمعة مغلقة مؤكدة · "+stamp(market.bar_end):
+    "لا توجد شمعة 1m حديثة موثقة";
+  const floating=d.pulse?.paper_open_unrealized_net;
+  mark.textContent=floating==null?"—":money(floating);
+  mark.dataset.sign=floating==null?"UNKNOWN":Number(floating)>=0?"POSITIVE":"NEGATIVE";
   const online=Array.isArray(micro.active_intervals_minutes)?
     micro.active_intervals_minutes.filter(n=>INTERVALS.includes(n)).length:0;
   $("globalConnection").textContent=online?
@@ -88,9 +98,10 @@ function renderTop(d){
   const gold=(d.demo_brokers?.connected_accounts||[]).find(a=>a.provider==="MT5_DEMO");
   const goldFresh=gold?.sync_status==="SYNCED_DEMO" && gold.last_synced &&
     Number.isFinite(Date.parse(gold.last_synced))&&Date.now()-Date.parse(gold.last_synced)<300000;
-  $("demoStatus").textContent=goldFresh?
+  $("demoStatus").textContent=d.demo_brokers ? (goldFresh?
     "MT5 Demo · "+esc(gold.market||"XAUUSD")+" · آخر مزامنة "+stamp(gold.last_synced):
-    "الذهب: غير متصل أو سجل قديم · Bitcoin: Paper";
+    "الذهب: غير متصل أو سجل قديم · Bitcoin: Paper") :
+    "ذهب MT5 Demo · افحص حالة الربط أدناه · Bitcoin: Paper";
   $("lastUpdated").textContent="آخر قراءة: "+new Date().toLocaleTimeString("ar-BE");
 }
 function render(d){renderTop(d);renderBotFleet(d);renderDecisions(d);}
@@ -99,7 +110,7 @@ async function refreshLedger(){
   syncing=true;
   $("refreshMain").disabled=true;
   try{
-    const res=await fetch("/api/stage3",{cache:"no-store",headers:{"Accept":"application/json"}});
+    const res=await fetch("/api/stage3?desk=1",{cache:"no-store",headers:{"Accept":"application/json"}});
     if(!res.ok)throw Error("api_not_ready");
     const d=await res.json();
     if(d.ok!==true||d.initialized!==true)throw Error("ledger_not_ready");
@@ -110,6 +121,10 @@ async function refreshLedger(){
     $("globalConnection").dataset.state="UNVERIFIED";
     $("lastUpdated").textContent="تعذّر تحديث السجل";
     // Never keep stale account metrics looking current during database errors.
+    $("btcLastClose").textContent="—";
+    $("btcOpenPnl").textContent="—";
+    $("btcOpenPnl").dataset.sign="UNKNOWN";
+    $("btcLastCloseAt").textContent="المصدر غير متاح أو الشمعة قديمة";
     $("botCount").textContent="—";
     $("openCount").textContent="—";
     $("decisionsCount").textContent="—";
