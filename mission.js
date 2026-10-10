@@ -9,7 +9,8 @@ const money = v => v == null ? "—" :
   new Intl.NumberFormat("en-US",{style:"currency",currency:"USD",maximumFractionDigits:2}).format(Number(v));
 const num = (v,n=2) => Number(v||0).toLocaleString("en-US",{maximumFractionDigits:n});
 const stamp = v => v ? new Date(v).toLocaleString("ar-BE",{timeZone:"UTC"})+" UTC" : "—";
-const INTERVALS = [1,5,15,60,240,1440,10080];
+const MARKET_FEED_INTERVALS = [1,5,15,60,240,1440,10080];
+const TRADING_INTERVALS = [5,15,60,240,1440,10080];
 let snapshot=null, syncing=false;
 const statusNames={
   HALTED_RISK:"متوقف · حدود الحساب",FEED_UNVERIFIED:"المصدر غير مؤكد",
@@ -30,8 +31,9 @@ function renderBotFleet(d){
     $("botFleetCount").textContent="بانتظار API Bot Fleet";
     return;
   }
-  const scoped=all.filter(botScope);
-  $("botFleetCount").textContent=scoped.length+" / "+all.length+" بوت Paper";
+  const trading=all.filter(b=>TRADING_INTERVALS.includes(Number(b.interval_minutes)));
+  const scoped=trading.filter(botScope);
+  $("botFleetCount").textContent=scoped.length+" / "+trading.length+" بوت Paper";
   table.innerHTML=scoped.length?scoped.map(b=>{
     const label=esc(b.strategy)+" · "+esc(b.direction);
     const net=b.net_pnl_after_costs;
@@ -49,7 +51,7 @@ function renderBotFleet(d){
       '<td>'+(b.oos_forward_qualified===true?'<span class="bot-qualified">'+q+'</span>':esc(q))+'</td>'+
       '</tr>';
   }).join(""):'<tr><td colspan="8">لا توجد بوتات مطابقة لهذه الفلاتر.</td></tr>';
-  const complete=all.filter(b=>b.closed_trades>0);
+  const complete=trading.filter(b=>b.closed_trades>0);
   $("botFleetFootnote").textContent=
     complete.length+" بوت لديه صفقات Paper مغلقة · تظهر التغيّرات عند إغلاق شمعة Kraken موثقة "+
     "أو تنفيذ صفقة افتراضية؛ ما في أرباح وهمية بين الشموع.";
@@ -60,7 +62,8 @@ function renderDecisions(d){
     $("decisionFeed").innerHTML='<div class="empty-state">سجل قرارات Paper غير متاح.</div>';
     return;
   }
-  const items=tape.slice(0,22);
+  const tradingTape=tape.filter(e=>TRADING_INTERVALS.includes(Number(e.interval_minutes)));
+  const items=tradingTape.slice(0,22);
   const act={ENTER:"فتح Paper",EXIT:"إغلاق Paper",WAIT:"انتظار",
              VETO:"رفض",MARK:"مراقبة"};
   $("decisionFeed").innerHTML=items.length?items.map(e=>
@@ -69,7 +72,7 @@ function renderDecisions(d){
     ' · '+esc(e.direction)+' · '+num(e.interval_minutes,0)+'m</strong>'+
     '<small>'+esc(stamp(e.observed_at||e.bar_start))+'</small></div>'
   ).join(""):'<div class="empty-state">لا توجد قرارات موثقة بعد.</div>';
-  $("decisionCount").textContent=tape.length+" قرارًا مسجّلًا";
+  $("decisionCount").textContent=tradingTape.length+" قرارًا مسجّلًا";
 }
 function renderTop(d){
   const micro=d.micro_engine||{};
@@ -84,7 +87,7 @@ function renderTop(d){
   mark.textContent=floating==null?"—":money(floating);
   mark.dataset.sign=floating==null?"UNKNOWN":Number(floating)>=0?"POSITIVE":"NEGATIVE";
   const online=Array.isArray(micro.active_intervals_minutes)?
-    micro.active_intervals_minutes.filter(n=>INTERVALS.includes(n)).length:0;
+    micro.active_intervals_minutes.filter(n=>MARKET_FEED_INTERVALS.includes(n)).length:0;
   $("globalConnection").textContent=online?
     "Kraken Paper · "+online+" / 7 مصادر":"المصدر غير مؤكد";
   $("globalConnection").dataset.state=online?"PARTIAL":"UNVERIFIED";
@@ -92,9 +95,9 @@ function renderTop(d){
   $("openCount").textContent=Array.isArray(micro.open_positions)?
     String(micro.open_positions.length):"—";
   $("decisionsCount").textContent=Array.isArray(micro.decision_journal)?
-    String(micro.decision_journal.length):"—";
+    String(micro.decision_journal.filter(e=>TRADING_INTERVALS.includes(Number(e.interval_minutes))).length):"—";
   $("botCount").textContent=Array.isArray(micro.paper_bots)?
-    String(micro.paper_bots.length):"—";
+    String(micro.paper_bots.filter(b=>TRADING_INTERVALS.includes(Number(b.interval_minutes))).length):"—";
   const gold=(d.demo_brokers?.connected_accounts||[]).find(a=>a.provider==="MT5_DEMO");
   const goldFresh=gold?.sync_status==="SYNCED_DEMO" && gold.last_synced &&
     Number.isFinite(Date.parse(gold.last_synced))&&Date.now()-Date.parse(gold.last_synced)<300000;
