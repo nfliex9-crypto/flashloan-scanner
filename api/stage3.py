@@ -63,6 +63,13 @@ class handler(BaseHTTPRequestHandler):
             except Exception:
                 self._reply(503, {"ok": False, "error": "metaapi_status_unavailable"})
             return
+        if "research_advisors" in query:
+            if query != {"research_advisors": ["1"]}:
+                self._reply(400, {"ok": False, "error": "invalid_research_advisors_query"})
+                return
+            from aegis.research_advisory import provider_status
+            self._reply(200, provider_status())
+            return
         if "capabilities" in query:
             if query != {"capabilities": ["1"]}:
                 self._reply(400,{"ok":False,"error":"invalid_capabilities_request"})
@@ -103,6 +110,38 @@ class handler(BaseHTTPRequestHandler):
 
     def do_POST(self):
         query=parse_qs(urlsplit(self.path).query,keep_blank_values=True)
+        if "grok_review" in query:
+            if query != {"grok_review": ["1"]}:
+                self._reply(400, {"ok": False, "error": "invalid_grok_review_query"})
+                return
+            auth=authorize_control_request(
+                expected_token=os.getenv("AEGIS_CONTROL_TOKEN", ""),
+                supplied_auth=self.headers.get("Authorization", ""),
+                origin=self.headers.get("Origin", ""),
+                host=self.headers.get("Host", ""),
+                fetch_site=self.headers.get("Sec-Fetch-Site", ""))
+            if auth:
+                self._reply(auth[0], {"ok": False, "error": auth[1]})
+                return
+            # Costed external AI call is opt-in, owner-only and capped per
+            # invocation. Input is built from Neon canaries, not request JSON.
+            try:
+                length=int(self.headers.get("Content-Length", "0"))
+                if length < 2 or length > 80 or self.headers.get("Transfer-Encoding"):
+                    self._reply(413, {"ok": False, "error": "invalid_grok_payload_size"})
+                    return
+                body=json.loads(self.rfile.read(length))
+                if body != {"action": "review"}:
+                    self._reply(400, {"ok": False, "error": "invalid_grok_action"})
+                    return
+                from aegis.research_advisory import owner_review
+                status, report=owner_review()
+                self._reply(status, report)
+            except (ValueError, TypeError, UnicodeDecodeError, json.JSONDecodeError):
+                self._reply(400, {"ok": False, "error": "invalid_grok_payload"})
+            except Exception:
+                self._reply(503, {"ok": False, "error": "grok_review_unavailable"})
+            return
         if "mt5_cloud" in query:
             if query != {"mt5_cloud": ["1"]}:
                 self._reply(400, {"ok": False, "error": "invalid_mt5_cloud_query"})
