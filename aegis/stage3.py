@@ -487,6 +487,11 @@ def get_stage3_state() -> dict:
     from .horizon_selector import rank_forward_horizons
     micro_horizon_router=rank_forward_horizons(micro_directional_evidence,side="BOTH",historical_evidence=historical_screens)
     micro_horizon_router['historical_screens']=historical_screens
+    from .bot_fleet import project_paper_bots
+    paper_bot_fleet=project_paper_bots(
+        micro_agents,micro_directional_evidence,micro_positions,
+        [n for n in ALLOWED_MINUTES if f"kraken-public-micro-{n}m" in live_feeds],
+        micro_horizon_router["candidates"])
     micro_engine={
         "mode":micro_mode,"is_connected":stream_active,
         "source":"Kraken public Spot WebSocket v2 (BTC/ETH only)",
@@ -495,6 +500,8 @@ def get_stage3_state() -> dict:
         "required_intervals_minutes":list(ALLOWED_MINUTES),
         "active_intervals_minutes":[n for n in ALLOWED_MINUTES if f"kraken-public-micro-{n}m" in live_feeds],
         "agents":micro_agents,
+        "paper_bots":paper_bot_fleet,
+        "bot_fleet_source":"Neon Kraken virtual account receipts; strictly no broker orders",
         "open_positions":micro_positions,
         "recent_closed_trades":micro_trades,
         "decision_journal":micro_decision_journal,
