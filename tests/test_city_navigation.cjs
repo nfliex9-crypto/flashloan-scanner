@@ -121,26 +121,25 @@ test("MT5 demo ledger excludes BTC exchange demo and displays real BTC paper sta
   assert.doesNotMatch(elements.demoBrokerFeed.innerHTML,/btc-deal/);
   assert.doesNotMatch(elements.demoBrokerSummary.innerHTML,/BINANCE SPOT BTC/);
   assert.match(fs.readFileSync("mission.js","utf8"),/Kraken Paper/);
-  assert.match(fs.readFileSync("city.html","utf8"),/MT5 Demo/);
+  assert.match(fs.readFileSync("city.html","utf8"),/Pepperstone Demo/);
 });
 
 
-test("mobile MT5 Demo onboarding uses MetaApi cloud, not Windows", () => {
-  const commandCenter = fs.readFileSync("city.html","utf8");
-  const bridge = fs.readFileSync("mt5-connect-ui.js","utf8");
+test("Gold market desk exposes source attribution and Pepperstone Demo TradingView steps", () => {
+  const main=fs.readFileSync("city.html","utf8");
+  const bridge=fs.readFileSync("gold-desk.js","utf8");
   assert.doesNotThrow(() => new vm.Script(bridge));
-  assert.match(commandCenter,/href="https:\/\/app\.metaapi\.cloud\/accounts"/);
-  assert.match(commandCenter,/id="mt5CloudPanel"/);
-  assert.match(commandCenter,/id="mt5CloudSync"/);
-  assert.match(commandCenter,/id="mt5CloudRefresh"/);
-  assert.match(commandCenter,/src="\/mt5-connect-ui\.js"/);
-  assert.match(commandCenter,/بيتكوين بيبقى Kraken Paper/);
-  assert.doesNotMatch(commandCenter,/mt5-connect\.cmd|mt5PairCreate/);
-  assert.match(bridge,/\/api\/stage3\?mt5_cloud=1/);
-  assert.match(bridge,/doc\.state === "READY_FOR_VERIFICATION"/);
-  assert.doesNotMatch(bridge,/mt5PairToken|pairingCode|brokerPassword/);
+  for (const id of ["goldDemo","goldSpotPrice","goldSpotTime","goldSpotSource",
+    "goldDemoPositions","goldDemoTrades","goldIntegrationNote","goldTradingViewSteps"])
+    assert.match(main,new RegExp('id="'+id+'"'));
+  assert.match(main,/href="https:\/\/www\.tradingview\.com\/chart\/"/);
+  assert.match(main,/Pepperstone/);
+  assert.match(main,/src="\/gold-desk\.js"/);
+  assert.match(bridge,/\/api\/stage3\?gold_desk=1/);
+  assert.match(bridge,/INDICATIVE|last_known_price|STALE_SOURCE_QUOTE/);
+  assert.doesNotMatch(main,/app\.metaapi\.cloud\/accounts|MT5 Demo|shadow positions/);
+  assert.doesNotMatch(bridge,/order_send|placeOrder|createOrder|innerHTML/);
 });
-
 
 test("operational diagnostics render real source receipts, never strategy order controls", () => {
   const mission = fs.readFileSync("city.html","utf8");
