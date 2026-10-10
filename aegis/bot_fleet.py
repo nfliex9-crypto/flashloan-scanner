@@ -9,9 +9,11 @@ from __future__ import annotations
 
 import math
 
+from .stream_core import TRADING_MINUTES
+
 SUPPORTED = frozenset(("EMA Cross", "Channel Breakout"))
 DIRECTIONS = frozenset(("LONG", "SHORT"))
-INTERVALS = frozenset((1, 5, 15, 60, 240, 1440, 10080))
+INTERVALS = frozenset(TRADING_MINUTES)
 MIN_FORWARD_CLOSED = 20
 
 
