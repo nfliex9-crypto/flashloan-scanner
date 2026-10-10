@@ -21,14 +21,17 @@
       const valid=m.fresh===true&&m.state==="CURRENT"&&
         m.source==="gold-api.com"&&m.unit==="USD_PER_TROY_OUNCE"&&
         Number.isFinite(Number(m.price))&&Number(m.price)>0;
-      price.textContent=valid?
+      const stale=m.state==="STALE_SOURCE_QUOTE"&&
+        Number.isFinite(Number(m.last_known_price))&&Number(m.last_known_price)>0;
+      const display=valid?m.price:stale?m.last_known_price:null;
+      price.textContent=display==null?"—":
         new Intl.NumberFormat("en-US",{style:"currency",currency:"USD",
-          minimumFractionDigits:2,maximumFractionDigits:2}).format(m.price):"—";
-      price.dataset.state=valid?"CURRENT":"UNVERIFIED";
-      when.textContent=valid?
-        "آخر تحديث المصدر: "+new Date(m.provider_updated_at).toLocaleString("ar-BE",{
-          timeZone:"UTC"})+" UTC · سعر استرشادي":m.state==="STALE_SOURCE_QUOTE"?
-        "سعر المصدر قديم، لذلك تم إخفاؤه من العرض الحالي.":
+          minimumFractionDigits:2,maximumFractionDigits:2}).format(display);
+      price.dataset.state=valid?"CURRENT":stale?"STALE":"UNVERIFIED";
+      when.textContent=(valid||stale)&&m.provider_updated_at?
+        (stale?"آخر سعر معروف (قديم؛ ليس سعرًا مباشرًا): ":"آخر تحديث المصدر: ")+
+        new Date(m.provider_updated_at).toLocaleString("ar-BE",{timeZone:"UTC"})+
+        " UTC · استرشادي":
         "سعر الذهب غير متاح حاليًا؛ ما رح نعرض رقمًا تخمينيًا.";
       const verified=data.broker?.verified===true && data.broker?.state==="CONNECTED_DEMO";
       broker.textContent=verified?"حساب Pepperstone Demo مرتبط للقراءة فقط":
