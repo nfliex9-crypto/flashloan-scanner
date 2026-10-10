@@ -14,6 +14,42 @@ broker write surfaces, cache/workspace complexity, and deploy/runtime costs.
 AEGIS retains a narrow, separately deployed Kraken-only Paper worker and
 a read-only MetaApi MT5 DEMO synchronizer.
 
+## Additional research systems (user-selected)
+
+| Provider/system | Inspected implementation | Safe AEGIS role | Actual connection |
+| --- | --- | --- | --- |
+| Fincept Terminal | https://github.com/Fincept-Corporation/FinceptTerminal | Reference for multi-source analytics and UI only; AGPL-3.0-or-later code **not copied or linked** | No account or data API keys configured |
+| TypeSafe JEV / Jev Trade | https://github.com/aowang-ai/jev-trade | Maker/taker latency, hold, fill provenance and order lifecycle research only; **no Hyperliquid order calls** | User-owned Railway `resilient-generosity/jev-trade` is a separate online deployment of this repo, not linked to AEGIS or assumed to be in real trading |
+| Grok (xAI) | https://docs.x.ai/developers/rest-api-reference/inference/responses | Manual owner-authorized **operational risk commentary** based on Neon canaries, no strategy voting or execution | Requires `XAI_API_KEY` in isolated Vercel Preview; no automatic network calls |
+| Vibe-Trading | https://github.com/HKUDS/Vibe-Trading | Evidence provenance, partial source canaries, run diagnostics | Adapted patterns, not installed as a runtime dependency |
+
+The JEV upstream is Bun/Hyperliquid and may submit genuine venue orders
+when configured with private keys; its dry-run logic is **not** equivalent
+to AEGIS Kraken Paper fills. The existing Railway JEV deployment has no
+visible `TYPESAFE_API_KEY`, `AI_GATEWAY_API_KEY` or `PRIVATE_KEY` variable
+names as of inspection. The absence of visible variables does not itself
+prove the exact model or order behavior; inspect logs and source on every
+execution before making any claims.
+
+### Grok integration controls
+
+- `GET /api/stage3?research_advisors=1` exposes only readiness flags,
+  **not** credentials or a paid API call.
+- `POST /api/stage3?grok_review=1` is owner-authenticated using the separate
+  `AEGIS_CONTROL_TOKEN`, checks same-origin, accepts only
+  `{"action":"review"}`, and calls xAI at most once per requested invocation.
+- Input is a bounded allowlisted projection of documented statuses from
+  `aegis.ops_health`. No account IDs, broker records, positions, passwords,
+  raw price history, external prompts or arbitrary user text enter the model.
+- The model allowlist is `grok-4.3` (default) or `grok-4.7`; up to 256
+  output tokens; no tools/function calls; xAI `store=false`.
+- The result is untrusted commentary rendered using `textContent`, never
+  a strategy filter, portfolio allocation or order.
+- xAI calls cost real money, require user provisioning and should never be
+  scheduled automatically at a tight cadence. Any cost budget must be
+  separately provisioned at xAI; the per-call bound is **not** a total
+  spending cap.
+
 ## Implemented in this branch
 
 - `aegis/ops_health.py`: read-only Neon canaries. Independently checks schema,
