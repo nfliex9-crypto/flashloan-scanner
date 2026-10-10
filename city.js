@@ -260,7 +260,7 @@ function renderResearchLab(d){
     $("expChannel").checked=c.strategies.includes("Channel Breakout");
     $("expLimit").value=String(c.max_candidates);
   }
-  $("labEngineStatus").textContent=c.enabled?"EXPERIMENTS ENABLED · SHADOW ONLY":"EXPERIMENTS PAUSED · NO NEW CANDIDATES";
+  $("labEngineStatus").textContent=c.enabled?"EXPERIMENTS ENABLED · VIRTUAL PAPER ONLY":"EXPERIMENTS PAUSED · NO NEW CANDIDATES";
   $("labEngineUpdated").textContent="Last saved "+utc(c.updated_at)+(experimentDirty?" · UNSAVED CHANGES":"");
   const workers=(d.workers||[]).filter(w=>EXPERIMENT_NAMES.includes(w.strategy));
   const counts={quarantined:workers.filter(w=>w.strategy_filter?.state==="QUARANTINED").length,
@@ -551,16 +551,14 @@ function paintCity(d){
   const unavailable=Object.entries(source).filter(([,v])=>v!=="CLOSED_15M_VERIFIED").map(([k])=>k);
   $("fastRiskPulse").textContent=marketPulse
     ? "15M CLOSED-BAR RISK · "+utc(marketPulse)+
-      " · "+Number(micro.quarter_positions_reviewed||0)+" shadow positions checked"+
+      " · "+Number(micro.quarter_positions_reviewed||0)+" experimental paper positions checked"+
       " · "+Number(micro.quarter_exits||0)+" costed exits"+
       (unavailable.length?" · DATA DELAYED: "+unavailable.join(", "):"")+
       " · ENTRY SIGNALS: 1H · LIVE ORDERS: OFF"
-    : "15M SHADOW RISK · Awaiting a verified monitored cycle · No live orders";
+    : "15M PAPER RESEARCH CHECK · Awaiting a verified monitored cycle · No live orders";
   $("positionsCount").textContent=String(d.positions?.length||0);
   $("tradesCount").textContent=String(workers.reduce((sum,w)=>sum+(Number(w.paper_trades)||0),0));
   $("ghostCount").textContent=String(Number(d.ghosts?.total||0))+" · "+String(Number(d.ghosts?.pending||0))+" pending";
-  $("shadowCostedCount").textContent=String(d.shadow_costed_trades||0);
-  $("shadowOpenCount").textContent=String(d.shadow_open_positions||0);
   $("drawdownValue").textContent=percent(v.drawdown);
   $("eventCount").textContent=String(d.events?.length||0);
   $("stageRefresh").textContent="SNAPSHOT: "+utc(d.generated_at);
@@ -673,12 +671,7 @@ function paintTradeTape(trades,ghosts){
     const t=trades.find(x=>x.trade_id===el.dataset.tradeid);
     if(t)showTrade(t);
   }));
-  $("cityGhostLab").innerHTML=ghosts.length?ghosts.slice(0,12).map(g=>`
-    <div class="ghost-item"><div><strong>${safe(g.symbol)} · ${safe(g.agent_id)}</strong>
-      <small>${safe(g.reason)} · ${utc(g.signal_ts)}</small></div>
-      <span class="${g.settled_at?'amount '+sign(g.forward_return):'pending'}">${g.settled_at?percent(g.forward_return):"PENDING 12H"}</span>
-    </div>`).join("")
-    :'<div class="await">No ghost signals recorded yet. Rejected signals will settle only after future market data exists.</div>';
+
 }
 function showTrade(t){
   const html=`
