@@ -18,7 +18,7 @@ import psycopg
 from psycopg.rows import dict_row
 
 from .live_lab import Candle, fetch_ohlc
-from .stream_core import ALLOWED_MINUTES, ClosedBarGate, CompletedBar, fresh_closed_history
+from .stream_core import ALLOWED_MINUTES, TRADING_MINUTES, ClosedBarGate, CompletedBar, fresh_closed_history
 from .stream_paper import persist_closed_stream_bar
 
 KRAKEN_PUBLIC_WS = "wss://ws.kraken.com/v2"
@@ -92,7 +92,7 @@ class KrakenMicroWorker:
             # Historical OOS receipts are optional research metadata. A
             # missing table, slow DB, or screening exception must NOT erase
             # valid market candles or disable all risk supervision.
-            if sym=="BTC":
+            if sym=="BTC" and minute in TRADING_MINUTES:
                 try:
                     await asyncio.to_thread(self.record_screen,sym,minute,past[-720:])
                 except Exception as exc:
