@@ -42,26 +42,26 @@ class ReadOnlyCursor:
                  "last_closed_bar":BAR,"updated_at":NOW-timedelta(seconds=15)}
                 for i in (1,5,15)]
         if "FROM aegis.stream_accounts" in sql and "JOIN" not in sql:
-            return [{"agent_id":"micro-btc-1m-ema-cross",
-                    "symbol":"BTC","interval_minutes":1,"strategy":"EMA Cross",
+            return [{"agent_id":"micro-btc-5m-ema-cross",
+                    "symbol":"BTC","interval_minutes":5,"strategy":"EMA Cross",
                     "direction":"LONG","cash":99999,"peak_equity":100000.,
                     "max_drawdown":0.,"halted":False,"updated_at":NOW}]
         if "FROM aegis.stream_positions" in sql:
             if not self.open_positions:return []
-            return [{"agent_id":"micro-btc-1m-ema-cross","position_id":"test-p1",
-                    "symbol":"BTC","interval_minutes":1,"opened_at":NOW-timedelta(hours=1),
+            return [{"agent_id":"micro-btc-5m-ema-cross","position_id":"test-p1",
+                    "symbol":"BTC","interval_minutes":5,"opened_at":NOW-timedelta(hours=1),
                     "entry_price":64000.,"qty":0.1,"stop_price":63000.,
                     "target_price":66000.,"last_mark":65000.,"direction":"LONG"}]
         if "FROM aegis.stream_trades t JOIN" in sql:
             if not self.trade_count:return []
-            return [{"agent_id":"micro-btc-1m-ema-cross","strategy":"EMA Cross",
-                    "symbol":"BTC","interval_minutes":1,"side":"LONG",
+            return [{"agent_id":"micro-btc-5m-ema-cross","strategy":"EMA Cross",
+                    "symbol":"BTC","interval_minutes":5,"side":"LONG",
                     "trades":self.trade_count,"net_pnl":120.,
                     "gross_gains":200.,"gross_losses":-80.}]
         if "FROM aegis.stream_decisions" in sql:
-            return [{"agent_id":"micro-btc-1m-ema-cross","bar_start":BAR,
+            return [{"agent_id":"micro-btc-5m-ema-cross","bar_start":BAR,
                      "observed_at":NOW-timedelta(seconds=15),"symbol":"BTC",
-                     "interval_minutes":1,"strategy":"EMA Cross","direction":"LONG",
+                     "interval_minutes":5,"strategy":"EMA Cross","direction":"LONG",
                      "action":"WAIT","reason":"NO_FRESH_CLOSED_BAR_ENTRY",
                      "reference_price":65000.,"position_id":None,"qty":None,
                      "net_pnl":None}]
