@@ -92,7 +92,7 @@ function makeScene(workers){
   });
   const active=allWorkers.filter(w=>w.status==="ACTIVE" && (effectiveRole(w)==="ACTIVE_PAPER"||effectiveRole(w)==="RESEARCH_ACTIVE")).length;
   $("activeWorkers").textContent=String(active)+" / "+allWorkers.length;
-  $("onShiftDetails").textContent="BTC + XAU shadow research · ETH available below";
+  $("onShiftDetails").textContent="BTC + XAU virtual Paper research · ETH available below";
   $("quickWorkers").innerHTML=allWorkers.map(w=>`<button class="worker-chip ${statusClass(effectiveRole(w))}" data-quickagent="${safe(w.agent_id)}">
     <strong>${symbolWorker(w)}</strong><small>${safe(effectiveRole(w))} · ${currency(w.earned)}</small></button>`).join("");
   document.querySelectorAll("[data-quickagent]").forEach(el=>el.addEventListener("click",()=>showAgent(el.dataset.quickagent)));
@@ -275,7 +275,7 @@ function renderResearchLab(d){
     return '<button class="strategy-rank-row" data-experimentagent="'+safe(w.agent_id)+'">'+
       '<strong class="strategy-rank-number">◈</strong>'+
       '<span class="strategy-rank-name"><strong>'+symbolWorker(w)+'</strong>'+
-      '<small>'+safe(filter.reason||"Waiting for forward shadow evaluation")+'</small></span>'+
+      '<small>'+safe(filter.reason||"Waiting for costed Paper research")+'</small></span>'+
       '<span class="strategy-rank-metrics"><span>'+Number(filter.trades||0)+' costed</span>'+
       '<span>PF '+fixed(filter.profit_factor||0,2)+'</span>'+
       '<span class="'+sign(filter.net_pnl)+'">'+currency(filter.net_pnl)+'</span></span>'+
@@ -719,10 +719,10 @@ function paintEvolution(workers,changes,rules){
         <div><span>NET P&L</span><strong class="${sign(life.net_pnl)}">${currency(life.net_pnl)}</strong></div>
         <div><span>PROFIT FACTOR</span><strong>${fixed(life.profit_factor,2)}</strong></div></div>
       <div class="shadow-figures">
-        <div><span>SHADOW COSTED TRADES</span><strong>${w.shadow_trades||0} / ${rules.min_costed_trades||40}</strong></div>
-        <div><span>SHADOW NET</span><strong class="${sign(w.shadow_net_pnl)}">${currency(w.shadow_net_pnl)}</strong></div>
-        <div><span>SHADOW PF</span><strong>${fixed(shadow.profit_factor,2)}</strong></div>
-        <div><span>SHADOW MAX DD</span><strong>${percent(w.shadow_max_drawdown)}</strong></div>
+        <div><span>RESEARCH PAPER TRADES</span><strong>${w.shadow_trades||0} / ${rules.min_costed_trades||40}</strong></div>
+        <div><span>RESEARCH NET</span><strong class="${sign(w.shadow_net_pnl)}">${currency(w.shadow_net_pnl)}</strong></div>
+        <div><span>RESEARCH PF</span><strong>${fixed(shadow.profit_factor,2)}</strong></div>
+        <div><span>RESEARCH MAX DD</span><strong>${percent(w.shadow_max_drawdown)}</strong></div>
       </div>
       <div class="eval-progress"><div style="width:${progress}%"></div></div>
       <p>${safe(w.reason||"First forward evaluation pending. Paper trading remains gated.")}</p>
@@ -860,17 +860,17 @@ function fillAgentDrawer(worker){
       <div><span>RISK MULTIPLIER</span><strong>${worker.risk_multiplier==null?"PENDING":fixed(worker.risk_multiplier,2)+"x"}</strong></div>
       <div><span>SURVIVAL</span><strong>${fixed(worker.survival_score,0)}/100</strong></div>
       </div></div>
-    <div class="drawer-box"><h4>INDEPENDENT COSTED SHADOW ACCOUNT</h4>
+    <div class="drawer-box"><h4>INDEPENDENT VIRTUAL PAPER ACCOUNT</h4>
        <p class="drawer-small">This separate virtual $100K account observes the same closed-bar signals even while Paper allocation is zero. It never places real orders.</p>
        <div class="drawer-pairs">
          <div><span>COSTED CLOSED TRADES</span><strong>${worker.shadow_trades||0}</strong></div>
-         <div><span>SHADOW NET P&L</span><strong class="${sign(worker.shadow_net_pnl)}">${currency(worker.shadow_net_pnl)}</strong></div>
-         <div><span>SHADOW OPEN</span><strong>${worker.shadow_open?"YES":"NO"}</strong></div>
+         <div><span>RESEARCH NET P&L</span><strong class="${sign(worker.shadow_net_pnl)}">${currency(worker.shadow_net_pnl)}</strong></div>
+         <div><span>RESEARCH POSITION</span><strong>${worker.shadow_open?"YES":"NO"}</strong></div>
          <div><span>MARKED UNREALIZED</span><strong class="${sign(worker.shadow_unrealized)}">${currency(worker.shadow_unrealized)}</strong></div>
-         <div><span>MAX SHADOW DD</span><strong>${percent(worker.shadow_max_drawdown)}</strong></div>
+         <div><span>MAX RESEARCH DD</span><strong>${percent(worker.shadow_max_drawdown)}</strong></div>
          <div><span>COSTED PF</span><strong>${fixed(shadow.profit_factor,2)}</strong></div>
-         <div><span>7D SHADOW NET</span><strong class="${sign(worker.shadow_week_pnl)}">${currency(worker.shadow_week_pnl)}</strong></div>
-         <div><span>30D SHADOW NET</span><strong class="${sign(worker.shadow_month_pnl)}">${currency(worker.shadow_month_pnl)}</strong></div>
+         <div><span>7D RESEARCH NET</span><strong class="${sign(worker.shadow_week_pnl)}">${currency(worker.shadow_week_pnl)}</strong></div>
+         <div><span>30D RESEARCH NET</span><strong class="${sign(worker.shadow_month_pnl)}">${currency(worker.shadow_month_pnl)}</strong></div>
        </div></div>
     <div class="drawer-box"><h4>ACTIVE POSITION</h4>${pos.length?pos.map(p=>`
       <div class="drawer-pairs"><div><span>ENTRY</span><strong>${currency(p.entry_price)}</strong></div>
