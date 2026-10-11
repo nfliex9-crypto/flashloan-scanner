@@ -4,10 +4,10 @@
     "btc-breakout-g1": {
       "agent_id": "btc-breakout-g1",
       "asset": "BTC",
-      "asset_qty": 0.11286826403471863,
-      "cash": 1.8189894035458565e-12,
-      "closed_trades": 4,
-      "equity": 9292.729508949866,
+      "asset_qty": 0.0,
+      "cash": 9286.190734383197,
+      "closed_trades": 5,
+      "equity": 9286.190734383197,
       "generation": 1,
       "history": [
         {
@@ -225,45 +225,54 @@
           "position": 1,
           "price": 82975.0,
           "ts": 1791671400
+        },
+        {
+          "asset_qty": 0.0,
+          "cash": 9286.190734,
+          "equity": 9286.190734,
+          "event": "GAP_EXIT_LONG_L2",
+          "position": 0,
+          "price": 82938.1,
+          "ts": 1791682200
         }
       ],
       "initial_equity": 10000.0,
       "interval_minutes": 15,
-      "last_closed_ts": 1791671400,
-      "last_event": "GAP_NO_BACKFILL",
+      "last_closed_ts": 1791682200,
+      "last_event": "GAP_EXIT_LONG_L2",
       "last_fill": {
-        "best_price": 82895.3,
-        "fee_quote": 74.8499888610977,
+        "best_price": 82938.1,
+        "fee_quote": 74.88863495470319,
         "filled_quantity": 0.11286826403471863,
         "fully_filled": true,
-        "gross_quote": 9356.248607637212,
+        "gross_quote": 9361.079369337898,
         "levels_used": 1,
-        "net_quote": -9431.098596498308,
-        "requested": 9431.09859649831,
-        "side": "BUY",
+        "net_quote": 9286.190734383195,
+        "requested": 0.11286826403471863,
+        "side": "SELL",
         "slippage_bps": 0.0,
-        "vwap": 82895.3
+        "vwap": 82938.1
       },
-      "last_price": 82975.0,
-      "last_trade_return": -0.01347810835569263,
+      "last_price": 82938.1,
+      "last_trade_return": -0.015364897379920972,
       "max_drawdown": 0.07187883126366124,
-      "missed_bar_events": 23,
-      "open_trade_start_equity": 9431.09859649831,
+      "missed_bar_events": 24,
+      "open_trade_start_equity": null,
       "peak_equity": 10000.0,
-      "position": 1,
+      "position": 0,
       "strategy": "Breakout",
-      "total_fees_usd": 693.7938025614668,
+      "total_fees_usd": 768.68243751617,
       "total_slippage_usd": 1.452785258346574,
-      "updates": 24,
+      "updates": 25,
       "winning_trades": 0
     },
     "btc-mean-reversion-g0": {
       "agent_id": "btc-mean-reversion-g0",
       "asset": "BTC",
-      "asset_qty": 0.0,
-      "cash": 8944.571058008562,
+      "asset_qty": 0.10698571217023875,
+      "cash": 0.0,
       "closed_trades": 6,
-      "equity": 8944.571058008562,
+      "equity": 8802.206160990108,
       "generation": 0,
       "history": [
         {
@@ -481,36 +490,45 @@
           "position": 0,
           "price": 82975.0,
           "ts": 1791671400
+        },
+        {
+          "asset_qty": 0.10698571217,
+          "cash": 0.0,
+          "equity": 8802.206161,
+          "event": "GAP_ENTER_LONG_L2",
+          "position": 1,
+          "price": 82938.1,
+          "ts": 1791682200
         }
       ],
       "initial_equity": 10000.0,
       "interval_minutes": 15,
-      "last_closed_ts": 1791671400,
-      "last_event": "GAP_NO_BACKFILL",
+      "last_closed_ts": 1791682200,
+      "last_event": "GAP_ENTER_LONG_L2",
       "last_fill": {
-        "best_price": 82557.4,
-        "fee_quote": 72.13363756458519,
-        "filled_quantity": 0.1092174014149325,
+        "best_price": 82938.2,
+        "fee_quote": 70.98865919054414,
+        "filled_quantity": 0.10698571217023875,
         "fully_filled": true,
-        "gross_quote": 9016.704695573148,
-        "levels_used": 1,
-        "net_quote": 8944.571058008562,
-        "requested": 0.1092174014149325,
-        "side": "SELL",
-        "slippage_bps": 0.0,
-        "vwap": 82557.4
+        "gross_quote": 8873.582398818018,
+        "levels_used": 3,
+        "net_quote": -8944.571058008562,
+        "requested": 8944.571058008562,
+        "side": "BUY",
+        "slippage_bps": 0.42826218031200014,
+        "vwap": 82941.75192943632
       },
-      "last_price": 82975.0,
+      "last_price": 82938.1,
       "last_trade_return": -0.015065334467635694,
-      "max_drawdown": 0.1064086601255676,
-      "missed_bar_events": 23,
-      "open_trade_start_equity": null,
+      "max_drawdown": 0.11977938390098919,
+      "missed_bar_events": 24,
+      "open_trade_start_equity": 8944.571058008562,
       "peak_equity": 10000.0,
-      "position": 0,
+      "position": 1,
       "strategy": "Mean Reversion",
-      "total_fees_usd": 914.3000818935488,
-      "total_slippage_usd": 0.008680415831057177,
-      "updates": 24,
+      "total_fees_usd": 985.288741084093,
+      "total_slippage_usd": 0.38868611615402227,
+      "updates": 25,
       "winning_trades": 0
     },
     "btc-momentum-g1": {
@@ -737,12 +755,21 @@
           "position": 0,
           "price": 82975.0,
           "ts": 1791671400
+        },
+        {
+          "asset_qty": 0.0,
+          "cash": 9358.108612,
+          "equity": 9358.108612,
+          "event": "GAP_NO_BACKFILL",
+          "position": 0,
+          "price": 82938.1,
+          "ts": 1791682200
         }
       ],
       "initial_equity": 10000.0,
       "interval_minutes": 15,
-      "last_closed_ts": 1791671400,
-      "last_event": "GAP_EXIT_LONG_L2",
+      "last_closed_ts": 1791682200,
+      "last_event": "GAP_NO_BACKFILL",
       "last_fill": {
         "best_price": 82996.5,
         "fee_quote": 75.46861783994439,
@@ -756,17 +783,17 @@
         "slippage_bps": 0.0,
         "vwap": 82996.5
       },
-      "last_price": 82975.0,
+      "last_price": 82938.1,
       "last_trade_return": -0.013010625985184765,
       "max_drawdown": 0.06690423225707287,
-      "missed_bar_events": 23,
+      "missed_bar_events": 24,
       "open_trade_start_equity": null,
       "peak_equity": 10000.0,
       "position": 0,
       "strategy": "Momentum",
       "total_fees_usd": 617.0994217391277,
       "total_slippage_usd": 1.4384925748929913,
-      "updates": 24,
+      "updates": 25,
       "winning_trades": 0
     },
     "btc-trend-g0": {
@@ -775,7 +802,7 @@
       "asset_qty": 0.11496550376609321,
       "cash": 0.0,
       "closed_trades": 3,
-      "equity": 9465.400557855975,
+      "equity": 9458.740284319396,
       "generation": 0,
       "history": [
         {
@@ -993,11 +1020,20 @@
           "position": 1,
           "price": 82975.0,
           "ts": 1791671400
+        },
+        {
+          "asset_qty": 0.114965503766,
+          "cash": 0.0,
+          "equity": 9458.740284,
+          "event": "GAP_NO_BACKFILL",
+          "position": 1,
+          "price": 82938.1,
+          "ts": 1791682200
         }
       ],
       "initial_equity": 10000.0,
       "interval_minutes": 15,
-      "last_closed_ts": 1791671400,
+      "last_closed_ts": 1791682200,
       "last_event": "GAP_NO_BACKFILL",
       "last_fill": {
         "best_price": 82755.8,
@@ -1012,17 +1048,17 @@
         "slippage_bps": 0.0,
         "vwap": 82755.8
       },
-      "last_price": 82975.0,
+      "last_price": 82938.1,
       "last_trade_return": -0.013022934202734815,
       "max_drawdown": 0.05620616659044442,
-      "missed_bar_events": 23,
+      "missed_bar_events": 24,
       "open_trade_start_equity": 9590.174734458586,
       "peak_equity": 10000.0,
       "position": 1,
       "strategy": "Trend",
       "total_fees_usd": 546.6050934718137,
       "total_slippage_usd": 0.7415706188577831,
-      "updates": 24,
+      "updates": 25,
       "winning_trades": 0
     },
     "eth-breakout-g1": {
@@ -1249,12 +1285,21 @@
           "position": 0,
           "price": 2504.69,
           "ts": 1791671400
+        },
+        {
+          "asset_qty": 0.0,
+          "cash": 9020.5535,
+          "equity": 9020.5535,
+          "event": "GAP_NO_BACKFILL",
+          "position": 0,
+          "price": 2507.2,
+          "ts": 1791682200
         }
       ],
       "initial_equity": 10000.0,
       "interval_minutes": 15,
-      "last_closed_ts": 1791671400,
-      "last_event": "GAP_EXIT_LONG_L2",
+      "last_closed_ts": 1791682200,
+      "last_event": "GAP_NO_BACKFILL",
       "last_fill": {
         "best_price": 2505.05,
         "fee_quote": 72.74639919444581,
@@ -1268,26 +1313,26 @@
         "slippage_bps": 0.9276857810923215,
         "vwap": 2504.8176100734076
       },
-      "last_price": 2504.69,
+      "last_price": 2507.2,
       "last_trade_return": -0.01603009435474445,
       "max_drawdown": 0.09794464998887198,
-      "missed_bar_events": 23,
+      "missed_bar_events": 24,
       "open_trade_start_equity": null,
       "peak_equity": 10000.0,
       "position": 0,
       "strategy": "Breakout",
       "total_fees_usd": 908.6402103914415,
       "total_slippage_usd": 1.7263723310993593,
-      "updates": 24,
+      "updates": 25,
       "winning_trades": 0
     },
     "eth-mean-reversion-g0": {
       "agent_id": "eth-mean-reversion-g0",
       "asset": "ETH",
-      "asset_qty": 3.5004518099772164,
-      "cash": 0.0,
-      "closed_trades": 6,
-      "equity": 8697.855523916018,
+      "asset_qty": 0.0,
+      "cash": 8705.462350593934,
+      "closed_trades": 7,
+      "equity": 8705.462350593934,
       "generation": 0,
       "history": [
         {
@@ -1505,36 +1550,45 @@
           "position": 1,
           "price": 2504.69,
           "ts": 1791671400
+        },
+        {
+          "asset_qty": 0.0,
+          "cash": 8705.462351,
+          "equity": 8705.462351,
+          "event": "GAP_EXIT_LONG_L2",
+          "position": 0,
+          "price": 2507.2,
+          "ts": 1791682200
         }
       ],
       "initial_equity": 10000.0,
       "interval_minutes": 15,
-      "last_closed_ts": 1791671400,
-      "last_event": "GAP_ENTER_LONG_L2",
+      "last_closed_ts": 1791682200,
+      "last_event": "GAP_EXIT_LONG_L2",
       "last_fill": {
-        "best_price": 2505.06,
-        "fee_quote": 70.1507344888122,
+        "best_price": 2507.01,
+        "fee_quote": 70.20534153704786,
         "filled_quantity": 3.5004518099772164,
         "fully_filled": true,
-        "gross_quote": 8768.841811101525,
+        "gross_quote": 8775.667692130983,
         "levels_used": 1,
-        "net_quote": -8838.992545590338,
-        "requested": 8838.992545590338,
-        "side": "BUY",
+        "net_quote": 8705.462350593934,
+        "requested": 3.5004518099772164,
+        "side": "SELL",
         "slippage_bps": 0.0,
-        "vwap": 2505.06
+        "vwap": 2507.01
       },
-      "last_price": 2504.69,
-      "last_trade_return": -0.01570432783982012,
+      "last_price": 2507.2,
+      "last_trade_return": -0.015106947348091149,
       "max_drawdown": 0.13021444760839818,
-      "missed_bar_events": 23,
-      "open_trade_start_equity": 8838.992545590338,
+      "missed_bar_events": 24,
+      "open_trade_start_equity": null,
       "peak_equity": 10000.0,
-      "position": 1,
+      "position": 0,
       "strategy": "Mean Reversion",
-      "total_fees_usd": 983.1745803012315,
+      "total_fees_usd": 1053.3799218382794,
       "total_slippage_usd": 4.5873371106342145,
-      "updates": 24,
+      "updates": 25,
       "winning_trades": 0
     },
     "eth-momentum-g1": {
@@ -1761,12 +1815,21 @@
           "position": 0,
           "price": 2504.69,
           "ts": 1791671400
+        },
+        {
+          "asset_qty": 0.0,
+          "cash": 9209.448262,
+          "equity": 9209.448262,
+          "event": "GAP_NO_BACKFILL",
+          "position": 0,
+          "price": 2507.2,
+          "ts": 1791682200
         }
       ],
       "initial_equity": 10000.0,
       "interval_minutes": 15,
-      "last_closed_ts": 1791671400,
-      "last_event": "GAP_EXIT_LONG_L2",
+      "last_closed_ts": 1791682200,
+      "last_event": "GAP_NO_BACKFILL",
       "last_fill": {
         "best_price": 2505.05,
         "fee_quote": 74.26974405025008,
@@ -1780,17 +1843,17 @@
         "slippage_bps": 0.9315840953031739,
         "vwap": 2504.8166335262063
       },
-      "last_price": 2504.69,
+      "last_price": 2507.2,
       "last_trade_return": -0.01050182667799282,
       "max_drawdown": 0.08411366378351026,
-      "missed_bar_events": 23,
+      "missed_bar_events": 24,
       "open_trade_start_equity": null,
       "peak_equity": 10000.0,
       "position": 0,
       "strategy": "Momentum",
       "total_fees_usd": 763.474014427274,
       "total_slippage_usd": 1.6116199202012886,
-      "updates": 24,
+      "updates": 25,
       "winning_trades": 0
     },
     "eth-trend-g0": {
@@ -1799,7 +1862,7 @@
       "asset_qty": 3.6371600511814157,
       "cash": 0.0,
       "closed_trades": 4,
-      "equity": 9037.538843626493,
+      "equity": 9045.449446953024,
       "generation": 0,
       "history": [
         {
@@ -2017,11 +2080,20 @@
           "position": 1,
           "price": 2504.69,
           "ts": 1791671400
+        },
+        {
+          "asset_qty": 3.637160051181,
+          "cash": 0.0,
+          "equity": 9045.449447,
+          "event": "GAP_NO_BACKFILL",
+          "position": 1,
+          "price": 2507.2,
+          "ts": 1791682200
         }
       ],
       "initial_equity": 10000.0,
       "interval_minutes": 15,
-      "last_closed_ts": 1791671400,
+      "last_closed_ts": 1791682200,
       "last_event": "GAP_NO_BACKFILL",
       "last_fill": {
         "best_price": 2491.22,
@@ -2036,17 +2108,17 @@
         "slippage_bps": 0.0,
         "vwap": 2491.22
       },
-      "last_price": 2504.69,
+      "last_price": 2507.2,
       "last_trade_return": -0.017766175814368568,
       "max_drawdown": 0.10121002962347447,
-      "missed_bar_events": 23,
+      "missed_bar_events": 24,
       "open_trade_start_equity": 9133.4535896058,
       "peak_equity": 10000.0,
       "position": 1,
       "strategy": "Trend",
       "total_fees_usd": 687.7651013412625,
       "total_slippage_usd": 1.7197787205927078,
-      "updates": 24,
+      "updates": 25,
       "winning_trades": 0
     }
   },
@@ -2059,19 +2131,19 @@
   },
   "initial_equity_per_agent": 10000.0,
   "interval_minutes": 15,
-  "last_run_utc": "2026-10-10T22:53:29.901794+00:00",
+  "last_run_utc": "2026-10-11T01:47:52.287614+00:00",
   "migration_note": "Paper ledger reset from v1 to v2 because the execution model changed to L2 order-book fills.",
   "mode": "FORWARD_PAPER_L2_EXECUTION",
   "source": "Kraken closed 15m OHLC + live L2 order book",
   "started_at_utc": "2026-10-05T15:34:41.488187+00:00",
   "summary": {
-    "average_equity": 9128.275733356539,
-    "best_equity": 9465.400557855975,
+    "average_equity": 9110.769918966882,
+    "best_equity": 9458.740284319396,
     "max_observed_drawdown": 0.13021444760839818,
-    "total_closed_trades": 38,
-    "total_fees_usd": 6114.852306127166,
-    "total_slippage_usd": 13.286636950455975,
-    "worst_equity": 8697.855523916018
+    "total_closed_trades": 40,
+    "total_fees_usd": 6330.934941809462,
+    "total_slippage_usd": 13.666642650778941,
+    "worst_equity": 8705.462350593934
   },
   "version": 2
 }
