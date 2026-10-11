@@ -13,8 +13,9 @@ from .chart_reader import normalize, freshness, utcnow, stamp
 
 
 def connect():
-    from .forward_broker import _connect
-    return _connect()
+    import psycopg
+    from psycopg.rows import dict_row
+    return psycopg.connect(os.environ['DATABASE_URL'],row_factory=dict_row,connect_timeout=8)
 
 
 def persist(doc, conn=None):

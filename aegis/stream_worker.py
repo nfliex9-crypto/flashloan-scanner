@@ -73,48 +73,6 @@ class KrakenMicroWorker:
         self.history: dict[tuple[str,int],deque[Candle]]={}
         self.stats={"closed_bars":0,"entries":0,"exits":0,"skipped_late":0,
                     "skipped_history":0,"duplicates":0}
-        self.chart_saved_at={}
-        self.chart_queue=asyncio.Queue(maxsize=8)
-
-    def queue_chart_observation(self, interval):
-        """Bounded queue keeps chart reads off the paper engine's hot path."""
-        from .chart_reader import INTERVALS
-        if interval not in INTERVALS:
-            return
-        now=_now()
-        for sym in self.symbols:
-            key=(sym,interval)
-            bar=self.gate.current.get(key)
-            if not bar or now.timestamp()-self.chart_saved_at.get(key,0)<5:
-                continue
-            closed=[b for b in self.history.get(key,[]) if b.ts < bar.ts][-239:]
-            if len(closed)<54:
-                continue
-            payload={"version":1,"source":"KRAKEN_WS","symbol":"KRAKEN:"+sym+"USD",
-                     "interval_minutes":interval,"observed_at":now.isoformat(),
-                     "bars":[{"time":b.ts,"open":b.open,"high":b.high,"low":b.low,
-                              "close":b.close,"volume":b.volume} for b in [*closed,bar]]}
-            try:
-                self.chart_queue.put_nowait(payload)
-                self.chart_saved_at[key]=now.timestamp()
-            except asyncio.QueueFull:
-                pass
-
-    async def chart_writer(self):
-        from .chart_reader import normalize
-        from .chart_store import persist
-        while True:
-            payload=await self.chart_queue.get()
-            try:
-                def write():
-                    doc=normalize(payload)
-                    with _connect() as conn:
-                        persist(doc,conn)
-                await asyncio.to_thread(write)
-            except Exception as exc:
-                log.warning("Chart observation unavailable (%s)",type(exc).__name__)
-            finally:
-                self.chart_queue.task_done()
 
     async def bootstrap_interval(self,minute:int)->None:
         """Resubscribe one timeframe without disturbing other WS sockets."""
@@ -238,8 +196,6 @@ class KrakenMicroWorker:
                             log.info("Kraken accepted public %dm candle stream",interval)
                             await asyncio.to_thread(_write_status,name,"CONNECTED")
                 results=await self.handle(packet)
-                if verified and packet.get("channel")=="ohlc":
-                    self.queue_chart_observation(interval)
                 for item in results:
                     if item["interval"]!=interval:
                         raise RuntimeError("Candle routed to wrong interval socket")
@@ -276,7 +232,7 @@ class KrakenMicroWorker:
                 delay=min(45,delay*2)
 
     async def forever(self)->None:
-        await asyncio.gather(self.chart_writer(),*(self.interval_forever(n) for n in ALLOWED_MINUTES))
+        await asyncio.gather(*(self.interval_forever(n) for n in ALLOWED_MINUTES))
 
 
 async def main()->None:
