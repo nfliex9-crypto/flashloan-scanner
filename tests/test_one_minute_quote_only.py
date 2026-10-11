@@ -32,12 +32,13 @@ class Cursor:
         if "SELECT 1 FROM aegis.stream_positions" in s:
             return {"?column?":1} if self.old_position else None
         if "FROM aegis.stream_accounts WHERE agent_id" in s:
-            if "ema-cross" not in self.commands[-1][1][0]:return None
+            # One legacy LONG account; a SHORT query must not return this row.
+            if self.commands[-1][1][0] != "micro-btc-1m-ema-cross":return None
             return {"agent_id":"micro-btc-1m-ema-cross","strategy":"EMA Cross",
                     "direction":"LONG","cash":100000.0,
                     "peak_equity":100000.0,"max_drawdown":0.,"halted":False}
         if "FROM aegis.stream_positions WHERE agent_id" in s:
-            if "ema-cross" not in self.commands[-1][1][0]:return None
+            if self.commands[-1][1][0] != "micro-btc-1m-ema-cross":return None
             return {"agent_id":"micro-btc-1m-ema-cross",
                     "position_id":"legacy-paper-1m","direction":"LONG",
                     "symbol":"BTC","opened_at":NOW.replace(minute=0),

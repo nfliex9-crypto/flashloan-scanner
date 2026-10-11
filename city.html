@@ -11,6 +11,8 @@
   <script src="/gold-desk.js" defer></script>
   <script src="/ops-health.js" defer></script>
   <script src="/research-advisors.js" defer></script>
+  <link rel="stylesheet" href="/chart-reader.css">
+  <script src="/chart-reader.js" defer></script>
 </head>
 <body class="aegis-minimal">
   <div class="app-shell">
@@ -20,6 +22,7 @@
         <span class="brand-copy"><strong>AEGIS <em>TRADE</em></strong><small>STRATEGY BOT TERMINAL</small></span>
       </a>
       <nav class="desk-nav" aria-label="التنقل">
+        <a href="#chartReader">قراءة الشارت</a>
         <a href="#paperBotFleet">البوتات</a>
         <a href="#paperTape">الصفقات</a>
         <a href="#goldDemo">الذهب Demo</a>
@@ -32,7 +35,7 @@
         <div class="desk-hero-intro">
           <div class="desk-eyebrow"><span class="desk-live-dot"></span> PAPER FIRST · REAL FEEDS · NO FAKE PERFORMANCE</div>
           <h1 id="deskTitle">بوتات تداول. <span>نتائج حقيقية من السجل.</span></h1>
-          <p>بيتكوين على Kraken Paper، وأسعار ذهب حقيقية مع ربط Pepperstone Demo عند تفعيله. كل بوت عنده استراتيجية وفاصل من 5m وفوق واتجاه ونتائج مستقلة. نقيّم صافي التكرار بعد التكاليف، مو عدد الصفقات لحاله.</p>
+          <p>قراءة السوق بالأرقام والصورة: شموع ومؤشرات وتحليل موثّق لكل مصدر وفاصل. بوتات Paper تختبر الاستراتيجيات من 5m وفوق، ووصلة TradingView تضيف الشارت المفتوح على اللابتوب.</p>
         </div>
         <div class="desk-market-pulse" aria-label="آخر سعر بيتكوين موثق من Kraken">
           <span class="desk-kicker">BTC / USD · LAST CLOSED 1M CANDLE</span>
@@ -50,6 +53,38 @@
         <article><span>مراكز مفتوحة</span><strong id="openCount">—</strong><small>محاكاة فقط</small></article>
         <article><span>قرارات محفوظة</span><strong id="decisionsCount">—</strong><small>قرارات المصدر</small></article>
         <article><span>Kraken</span><strong id="feedCount">—</strong><small>فواصل مؤكد اتصالها</small></article>
+      </section>
+      <section class="desk-section chart-reader" id="chartReader" aria-labelledby="chartReaderTitle">
+        <div class="desk-section-heading"><div><span class="desk-kicker">MARKET → CHART → ANALYSTS</span>
+          <h2 id="chartReaderTitle">عين على الشارت. أرقام للبوتات.</h2>
+          <p>القراءة تتحدّث أثناء تكوّن الشمعة. التحليل الرقمي يعتمد الشموع المغلقة ويعرض مصدر كل قراءة.</p></div>
+          <span id="readerState" class="reader-state" role="status">جاري التحقق…</span></div>
+        <div class="reader-toolbar">
+          <label for="readerSource">السوق والفاصل</label><select id="readerSource"><option>بانتظار المصدر…</option></select>
+          <button id="readerGold" type="button" class="refresh-button">تحميل شارت الذهب</button>
+        </div>
+        <div class="reader-layout">
+          <div class="reader-chart"><div class="reader-quote"><strong id="readerPrice">—</strong><small id="readerInstrument">—</small></div>
+            <canvas id="readerCanvas" width="1000" height="440" role="img" aria-label="شموع السعر من مصدر البيانات"></canvas>
+            <p id="readerTime" class="desk-footnote">لم تصل بيانات بعد.</p></div>
+          <aside class="reader-analysis">
+            <span class="desk-kicker">NUMERIC OBSERVERS · CLOSED BARS</span>
+            <div id="readerObservers" class="reader-observers">بانتظار سجل القراءة.</div>
+            <dl id="readerMetrics" class="reader-metrics"></dl>
+            <p id="readerQuality" class="desk-footnote"></p>
+          </aside>
+        </div>
+        <details class="reader-visual" open><summary>التحليل البصري + لقطة TradingView</summary>
+          <div class="reader-visual-grid"><div><img id="readerCapture" alt="آخر لقطة للشارت فقط من TradingView Desktop" hidden>
+            <p id="readerCaptureState">بانتظار وصلة اللابتوب. الشارت أعلاه يرسم بيانات السوق المستلمة مباشرة.</p></div>
+            <div><strong id="readerVisionState">لم يُحلّل أي شارت بصرياً بعد</strong><p id="readerVisionText"></p>
+              <small id="readerVisionTime"></small></div></div>
+          <div class="reader-vision-action"><label for="readerToken">مفتاح قارئ AEGIS</label>
+            <input id="readerToken" type="password" autocomplete="off" placeholder="يبقى في هذه الصفحة فقط" aria-label="مفتاح قارئ AEGIS">
+            <button id="readerAnalyze" class="refresh-button" type="button">تحليل الصورة والأرقام</button>
+            <small>يستخدم رصيد AI Gateway. تحليل واحد كل 5 دقائق لكل شارت.</small></div>
+          <p id="readerActionStatus" role="status"></p>
+        </details>
       </section>
       <section class="desk-section" id="paperBotFleet" aria-labelledby="botFleetHeading">
         <div class="desk-section-heading">

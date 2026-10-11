@@ -42,6 +42,20 @@ class handler(BaseHTTPRequestHandler):
         # Reuse the existing function slot. Read-only, bounded historical
         # testing cannot touch a broker or persist simulated fills in Neon.
         query=parse_qs(urlsplit(self.path).query,keep_blank_values=True)
+        if "chart" in query:
+            if set(query)-{"chart","source"} or query["chart"] not in (["1"],["gold"]) or ("source" in query and (len(query["source"])!=1 or len(query["source"][0])>100)):
+                self._reply(400,{"ok":False,"error":"invalid_chart_query"})
+                return
+            from aegis.chart_store import status, refresh_gold
+            gold = refresh_gold() if query["chart"] == ["gold"] else None
+            source_id=query.get("source",[None])[0]
+            if query["chart"]==["gold"]:
+                source_id="TWELVE_DATA_REST:TWELVEDATA:XAUUSD:5"
+            result = status(source_id) if source_id else status()
+            if gold is not None:
+                result["gold_refresh"] = gold
+            self._reply(200 if result["ok"] else 503, result, cache="no-store")
+            return
         if "gold_desk" in query:
             if query != {"gold_desk": ["1"]}:
                 self._reply(400, {"ok":False,"error":"invalid_gold_desk_query"})
@@ -138,6 +152,34 @@ class handler(BaseHTTPRequestHandler):
 
     def do_POST(self):
         query=parse_qs(urlsplit(self.path).query,keep_blank_values=True)
+        if "chart" in query:
+            if query != {"chart":["1"]}:
+                self._reply(400,{"ok":False,"error":"invalid_chart_query"})
+                return
+            try:
+                size=int(self.headers.get("Content-Length","0"))
+                if not 2 <= size <= 1_200_000 or self.headers.get("Transfer-Encoding"):
+                    self._reply(413,{"ok":False,"error":"invalid_chart_payload_size"})
+                    return
+                raw=self.rfile.read(size)
+                from aegis.chart_store import authorize, ingest
+                authorize(raw,self.headers)
+                body=json.loads(raw)
+                if body.get("action") == "analyze":
+                    if set(body) != {"action","source_id"} or not isinstance(body["source_id"],str) or len(body["source_id"])>100:
+                        raise ValueError("invalid_chart_action")
+                    from aegis.chart_vision import review
+                    code,result=review(body["source_id"])
+                    self._reply(code,result)
+                else:
+                    self._reply(200,ingest(body))
+            except PermissionError as exc:
+                self._reply(401,{"ok":False,"error":str(exc)})
+            except (ValueError,TypeError,KeyError,UnicodeDecodeError):
+                self._reply(400,{"ok":False,"error":"invalid_chart_payload"})
+            except Exception:
+                self._reply(503,{"ok":False,"error":"chart_service_unavailable"})
+            return
         if "grok_review" in query:
             if query != {"grok_review": ["1"]}:
                 self._reply(400, {"ok": False, "error": "invalid_grok_review_query"})

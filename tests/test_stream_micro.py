@@ -79,9 +79,9 @@ def make_history(n:int=160,minute:int=1,price:float=100)->list[Candle]:
 
 
 def test_causal_next_open_micro_entry_with_risk_limits():
-    candles=make_history()
+    candles=make_history(minute=5)
     closed=candles[-1]
-    event=CompletedBar("BTC",1,closed,110.1,closed.ts+60)
+    event=CompletedBar("BTC",5,closed,110.1,closed.ts+300)
     acc={"strategy":"Channel Breakout","cash":100000,
          "halted":False,"max_drawdown":0}
     result=fill_decision(acc,None,candles,event)
