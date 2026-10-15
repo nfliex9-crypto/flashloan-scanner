@@ -1,140 +1,31 @@
-# Flashloan Scanner — Stage 1
+# Funded Trader AI — clean replacement
 
-Read-only arbitrage scanner for **Arbitrum One**.
+Funded Trader AI replaces the retired AEGIS Agent City application. The legacy version is preserved on `archive/aegis-agent-city-2026-10-15`; the independent `Bot` branch is untouched.
 
-It currently:
-- connects to Arbitrum (chain ID 42161)
-- reads live WETH/USDC quotes
-- compares **Uniswap V3** and **Camelot V3**
-- checks both arbitrage directions
-- estimates price impact
-- estimates DEX fees
-- estimates gas heuristically
-- calculates estimated net PnL
-- prints `OPPORTUNITY` only when estimated net profit is above the configured threshold
+## Current functionality
+- Python prop-account risk rule engine with static, end-of-day trailing and intraday trailing drawdown policies.
+- Contract risk sizing with fees and stop/slippage allowances.
+- Daily loss checks and profit consistency calculation.
+- Seeded historical-trade bootstrap simulator for *hypothetical* evaluation passes.
+- Arabic RTL static risk-preview dashboard (manual, local inputs — no live feed).
+- Unit tests and GitHub Actions checks.
 
-It does **not**:
-- use a wallet or private key
-- send transactions
-- borrow funds
-- execute swaps
-- use real money
+**Current status:** research/demo only. NO broker connection, NO order execution, NO market feed, NO verified trading performance. The UI explicitly does not manufacture live prices or trades.
 
-## Run in GitHub Codespaces
-
-Open the terminal in your Codespace and run:
+## Test locally
 
 ```bash
-python -m pip install -r requirements.txt
-cp .env.example .env
-python scanner.py --once
+python -m unittest discover -s tests -v
+python -m http.server 8000
 ```
+Open http://localhost:8000 for the browser dashboard.
 
-For continuous scanning:
+## Layout
+- `funded_trader/rules.py`: pure Python account policy and position risk management
+- `funded_trader/simulation.py`: limited seeded resampling simulator
+- `tests/`: policy invariants and simulation tests
+- `index.html`, `app.js`, `styles.css`: standalone interactive dashboard
+- `docs/NEXT_STEPS.md`: integrations, compliance and acceptance gates
 
-```bash
-python scanner.py
-```
-
-Stop it with `Ctrl+C`.
-
-## Change the simulated trade size
-
-For example, test a 10,000 USDC route:
-
-```bash
-python scanner.py --once --size 10000
-```
-
-This is only a quote simulation. No funds are used.
-
-## Configuration
-
-Copy the example file:
-
-```bash
-cp .env.example .env
-```
-
-Important settings:
-
-```env
-ARBITRUM_RPC_URL=https://arb1.arbitrum.io/rpc
-TRADE_SIZE_USDC=1000
-POLL_SECONDS=20
-MIN_NET_PROFIT_USDC=1
-```
-
-If the public RPC becomes slow or rate-limited, replace `ARBITRUM_RPC_URL`
-with your own Arbitrum RPC endpoint.
-
-## How the route calculation works
-
-For each scan the program evaluates both directions:
-
-```text
-USDC -> WETH on Uniswap V3 -> USDC on Camelot V3
-USDC -> WETH on Camelot V3 -> USDC on Uniswap V3
-```
-
-The DEX quoters return an expected output for the requested trade size.
-That output already reflects the pool fee and current price impact.
-
-The scanner then subtracts:
-- estimated gas
-- optional future borrowing fee configured with `BORROW_FEE_BPS`
-
-Stage 1 leaves the borrowing fee at zero because no flash loan is being taken yet.
-
-## Important limitation
-
-The displayed gas value is a heuristic. Arbitrum transaction costs can include
-L1 data fees that are not fully represented by a simple `gas_price * gas_units`
-calculation.
-
-Before any live execution is added, Stage 2 should use transaction simulation
-and a more accurate execution-cost model.
-
-## Safety
-
-Never put a seed phrase or private key in this repository, Codespace, issue,
-commit, screenshot, or chat.
-
-The current scanner does not need either one.
-
-
-## Stage 3 — Arbitrum fork transaction simulation
-
-Stage 3 adds a Solidity execution contract at:
-
-```text
-contracts/FlashloanArbSimulator.sol
-```
-
-It contains the real Aave V3 `flashLoanSimple` callback flow and swap calls for:
-- Uniswap V3
-- Camelot V3 (Algebra)
-- WETH / USDC on Arbitrum
-
-The contract has a hard profitability guard. If the final USDC balance cannot repay
-the flash loan premium **and** clear the configured minimum profit, the whole
-transaction reverts.
-
-The fork test suite runs with Foundry:
-
-```bash
-forge build
-forge test -vvv
-```
-
-GitHub Actions also runs the same test suite against an Arbitrum fork.
-
-The hosted dashboard includes a **Transaction Preflight** button. It uses current
-on-chain quotes, the live Aave flash-loan premium, gas estimate, and the configured
-profit threshold to show:
-
-- `WOULD EXECUTE`
-- `WOULD REVERT`
-
-This is still simulation mode. No mainnet contract deployment, wallet connection,
-private key, or automatic transaction signing is enabled.
+## Compliance
+Default templates are **illustrative, not certified**. Confirm all prop firm rules, instruments, fees, clock reset, drawdown calculation, API policy, and payout conditions against the specific signed agreement. Never deploy automatic order execution to a provider that prohibits it.

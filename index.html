@@ -1,158 +1,51 @@
 <!doctype html>
 <html lang="ar" dir="rtl">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="theme-color" content="#05070d" />
-  <title>AEGIS Control Room</title>
-  <link rel="stylesheet" href="/styles.css" />
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#07131d">
+<title>Funded Trader AI | Research Console</title>
+<link rel="stylesheet" href="/styles.css">
 </head>
 <body>
-  <div class="bg-grid"></div>
-
-  <main class="shell">
-    <header class="topbar">
-      <div class="brand">
-        <div class="logo">A</div>
-        <div>
-          <p class="eyebrow">ZERO-TRUST QUANT LAB</p>
-          <h1>AEGIS Control Room</h1>
-          <p class="sub">كل Agent يعمل داخل غرفة حقيقية الوظيفة، ويُقيَّم على بيانات سوق حية. لا يوجد تداول حقيقي أو رأس مال متصل.</p>
-        </div>
-      </div>
-
-      <div class="live-box">
-        <span class="pulse"></span>
-        <div>
-          <small>DATA FEED</small>
-          <strong id="feedStatus">Connecting…</strong>
-        </div>
-      </div>
-    </header>
-
-    <section class="firewall">
-      <div>
-        <span>CAPITAL FIREWALL</span>
-        <strong id="firewallStatus">LOCKED</strong>
-      </div>
-      <p>Broker: OFF · Wallet: OFF · Private Key: NONE · Auto Execution: OFF</p>
-      <button id="refreshBtn">تحديث البيانات</button>
-    </section>
-
-    <section class="metrics">
-      <article class="metric">
-        <span>Agents</span>
-        <strong id="agentCount">—</strong>
-      </article>
-      <article class="metric">
-        <span>Active</span>
-        <strong id="activeCount">—</strong>
-      </article>
-      <article class="metric warning">
-        <span>Probation</span>
-        <strong id="probationCount">—</strong>
-      </article>
-      <article class="metric danger">
-        <span>Eliminated</span>
-        <strong id="eliminatedCount">—</strong>
-      </article>
-    </section>
-
-    <section class="floor">
-      <article class="room market-room">
-        <div class="room-head">
-          <div>
-            <p class="eyebrow">ROOM 01</p>
-            <h2>Market Intelligence</h2>
-          </div>
-          <span class="room-badge">LIVE</span>
-        </div>
-        <div id="markets" class="market-grid">
-          <div class="loading">جاري تحميل بيانات السوق…</div>
-        </div>
-      </article>
-
-      <article class="room strategy-room">
-        <div class="room-head">
-          <div>
-            <p class="eyebrow">ROOM 02</p>
-            <h2>Strategy Arena</h2>
-          </div>
-          <span class="room-badge good">SURVIVORS</span>
-        </div>
-        <div id="strategyAgents" class="agent-grid"></div>
-      </article>
-
-      <article class="room probation-room">
-        <div class="room-head">
-          <div>
-            <p class="eyebrow">ROOM 03</p>
-            <h2>Probation Room</h2>
-          </div>
-          <span class="room-badge warn">UNDER PRESSURE</span>
-        </div>
-        <p class="room-desc">هؤلاء لم يثبتوا المتانة الكافية. أي تدهور إضافي يبقيهم خارج رأس المال.</p>
-        <div id="probationAgents" class="agent-grid"></div>
-      </article>
-
-      <article class="room red-room">
-        <div class="room-head">
-          <div>
-            <p class="eyebrow">ROOM 04</p>
-            <h2>Red Team Chamber</h2>
-          </div>
-          <span class="room-badge danger">ATTACK MODE</span>
-        </div>
-        <p class="room-desc">اختبارات Out-of-Sample وتكاليف مضاعفة ×2 و×3. الهدف هنا تدمير الاستراتيجية لا تلميعها.</p>
-        <div id="redTeam" class="stress-grid"></div>
-      </article>
-
-      <article class="room graveyard-room">
-        <div class="room-head">
-          <div>
-            <p class="eyebrow">ROOM 05</p>
-            <h2>Elimination Vault</h2>
-          </div>
-          <span class="room-badge danger">REMOVED</span>
-        </div>
-        <div id="graveyard" class="agent-grid"></div>
-      </article>
-
-      <article class="room replacement-room">
-        <div class="room-head">
-          <div>
-            <p class="eyebrow">ROOM 06</p>
-            <h2>Replacement Lab</h2>
-          </div>
-          <span class="room-badge">QUARANTINE</span>
-        </div>
-        <p class="room-desc">أي Agent جديد يبدأ من الصفر ويحتاج Evidence جديد قبل أن يُسمح له بالصعود.</p>
-        <div id="replacements" class="replacement-grid"></div>
-      </article>
-
-      <article class="room evidence-room">
-        <div class="room-head">
-          <div>
-            <p class="eyebrow">ROOM 07</p>
-            <h2>Evidence & Method</h2>
-          </div>
-          <span class="room-badge">AUDIT</span>
-        </div>
-        <div class="evidence-grid">
-          <div><span>المصدر</span><strong id="source">—</strong></div>
-          <div><span>آخر تحديث UTC</span><strong id="updated">—</strong></div>
-          <div><span>Out-of-Sample</span><strong id="oos">—</strong></div>
-          <div><span>Cost Model</span><strong id="costModel">—</strong></div>
-        </div>
-      </article>
-    </section>
-
-    <footer>
-      <span>AEGIS · Personal Research System</span>
-      <span>النتائج أبحاث تاريخية/حالية وليست ضمانًا لأداء مستقبلي.</span>
-    </footer>
-  </main>
-
-  <script src="/app.js"></script>
-</body>
-</html>
+<div class="shell">
+<aside class="sidebar"><div class="brand"><span class="brandmark">F</span><div><b>FUNDED TRADER</b><small>RESEARCH CONSOLE</small></div></div>
+<div class="sidelabel">WORKSPACE</div>
+<nav><a class="active" href="#overview">نظرة عامة</a><a href="#calculator">محرك المخاطر</a><a href="#progress">مراحل التشغيل</a></nav>
+<div class="sidebarbottom"><span class="circle"></span> لا يوجد اتصال وسيط <small>Research-only · v0.1</small></div>
+</aside>
+<main>
+<header><div class="eyebrow">PROP ACCOUNT INTELLIGENCE / 01</div><div class="headrow"><div><h1>Funded Trader <em>AI</em></h1><p>منصة بحث وتقييم الحسابات الممولة — لا تتداول بأموال حقيقية حالياً.</p></div><div class="disconnected"><span class="circle"></span> FEED DISCONNECTED</div></div></header>
+<section id="overview" class="stats">
+<div class="stat"><span>الاتصال بالسوق</span><strong>غير متصل</strong><small>لم يتم ربط مزود بيانات</small></div>
+<div class="stat"><span>حساب التداول</span><strong>غير مربوط</strong><small>لا توجد أوامر أو صفقات</small></div>
+<div class="stat"><span>الاستراتيجية</span><strong>قيد البحث</strong><small>لا توجد نتائج أداء موثقة</small></div>
+<div class="stat"><span>التنفيذ الآلي</span><strong>متوقف</strong><small>لا يسمح هذا الإصدار بإرسال أوامر</small></div>
+</section>
+<section class="grid"><div class="panel" id="calculator"><div class="sectionbar"><span class="kicker">RULE ENGINE · SANDBOX</span><h2>حاسبة حدود الحساب</h2><p>أدخل القيم يدوياً لمعاينة الحدود التقديرية. لا تعتمد عليها دون التحقق من عقد شركتك.</p></div>
+<form id="riskForm">
+<div class="fields">
+<label>نوع الحد الأقصى للخسارة<select id="mode"><option value="eod">EOD Trailing — في نهاية اليوم</option><option value="static">Static — ثابت</option><option value="intraday">Intraday Trailing — لحظي</option></select></label>
+<label>رصيد البداية ($)<input type="number" id="initial" value="50000" min="1" step="1" required></label>
+<label>الرصيد الحالي ($)<input type="number" id="balance" value="50000" min="0" step=".01" required></label>
+<label>Equity الحالي ($)<input type="number" id="equity" value="50000" min="0" step=".01" required></label>
+<label>أعلى رصيد نهاية يوم ($)<input type="number" id="eod" value="50000" min="0" step=".01" required></label>
+<label>أعلى Equity لحظي ($)<input type="number" id="peak" value="50000" min="0" step=".01" required></label>
+<label>حد الخسارة ($)<input type="number" id="loss" value="2000" min=".01" step=".01" required></label>
+<label>حد الخسارة اليومية ($)<input type="number" id="daily" value="1200" min=".01" step=".01" required></label>
+<label>Equity بداية اليوم ($)<input type="number" id="daystart" value="50000" min="0" step=".01" required></label>
+<label>مخاطرة الصفقة ($)<input type="number" id="budget" value="75" min=".01" step=".01" required></label>
+</div><button type="submit">احسب الحدود الآن <span>←</span></button>
+</form>
+<div class="results" aria-live="polite"><div><small>حد السقوط التقديري</small><strong id="floor">—</strong></div><div><small>الهامش المتبقي</small><strong id="cushion">—</strong></div><div><small>المخاطرة المسموحة *</small><strong id="allowed">—</strong></div></div>
+<div id="riskMessage" class="hint">* تقدير بحاجز أمان 20% من المسافة المتبقية للحد الأقرب، ولا يشمل حساب عدد العقود.</div>
+</div>
+<div class="panel roadmap" id="progress"><span class="kicker">BUILD STATUS · VERIFIED</span><h2>حالة النظام</h2><div class="steps">
+<div><span class="step done">01</span><article><strong>النسخة الاحتياطية</strong><p>نسخة AEGIS القديمة مؤرشفة على GitHub.</p></article><span class="pill">مؤرشف</span></div>
+<div><span class="step done">02</span><article><strong>محرك قواعد تجريبي</strong><p>Static / EOD / Intraday ومخاطر العقود والاختبارات البرمجية.</p></article><span class="pill">ضمن الكود</span></div>
+<div><span class="step">03</span><article><strong>بيانات العقود الآجلة</strong><p>مزود مرخص وأسعار وسجل أحداث موثق.</p></article><span class="muted">غير مربوط</span></div>
+<div><span class="step">04</span><article><strong>التداول الورقي</strong><p>اختبارات أمامية ومطابقة أداء الأوامر مع الوسيط.</p></article><span class="muted">غير مفعّل</span></div>
+<div><span class="step">05</span><article><strong>الحساب الممول</strong><p>ربط مسموح ومراجعة القواعد قبل التنفيذ.</p></article><span class="muted">غير مفعّل</span></div>
+</div><div class="notice"><b>سياسة الصدق:</b> لا نعرض أرباحاً أو صفقات حية أو بيانات أداء ما لم تصل من مصدر حقيقي قابل للتحقق.</div>
+</div></section>
+<footer><span>FUNDED TRADER AI / BUILD 0.1</span><span>Research environment • No automated trading</span></footer>
+</main></div><script src="/app.js" defer></script></body></html>

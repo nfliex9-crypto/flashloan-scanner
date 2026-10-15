@@ -1,115 +1,31 @@
-const $ = (id) => document.getElementById(id);
-
-const money = (v) => new Intl.NumberFormat("en-US",{style:"currency",currency:"USD",maximumFractionDigits:2}).format(v);
-const pct = (v,d=2) => (v*100).toFixed(d)+"%";
-const num = (v,d=2) => Number(v).toFixed(d);
-
-function empty(text){ return '<div class="empty">'+text+'</div>'; }
-
-function marketCard(m){
-  const cls = m.change_24h >= 0 ? "up" : "down";
-  return `
-    <article class="market-card">
-      <div class="market-top">
-        <div><span class="symbol">${m.symbol}/USD</span><div class="delta ${cls}">${pct(m.change_24h)}</div></div>
-        <div class="price">${money(m.price)}</div>
-      </div>
-      <div class="market-meta">
-        <div><span>7D Return</span><strong>${pct(m.change_7d)}</strong></div>
-        <div><span>Annualized Vol</span><strong>${pct(m.annualized_volatility)}</strong></div>
-        <div><span>Regime</span><strong class="regime">${m.regime}</strong></div>
-        <div><span>Bars</span><strong>${m.bars}</strong></div>
-      </div>
-    </article>`;
-}
-
-function agentCard(a){
-  return `
-    <article class="agent-card">
-      <div class="agent-top">
-        <div>
-          <div class="strategy-name">${a.asset} · ${a.strategy}</div>
-          <div class="agent-id">${a.agent_id}</div>
-        </div>
-        <span class="status ${a.status}">${a.status}</span>
-      </div>
-      <div class="agent-score">${num(a.survival_score,0)}<small>/100 Survival</small></div>
-      <div class="agent-metrics">
-        <div><span>Total Return</span><strong class="${a.total_return>=0?'pass':'fail'}">${pct(a.total_return)}</strong></div>
-        <div><span>OOS Return</span><strong class="${a.oos_return>=0?'pass':'fail'}">${pct(a.oos_return)}</strong></div>
-        <div><span>Max DD</span><strong>${pct(a.max_drawdown)}</strong></div>
-        <div><span>Profit Factor</span><strong>${num(a.profit_factor)}</strong></div>
-        <div><span>Sharpe</span><strong>${num(a.sharpe)}</strong></div>
-        <div><span>Trades</span><strong>${a.trades}</strong></div>
-        <div><span>Win Rate</span><strong>${pct(a.win_rate)}</strong></div>
-        <div><span>Signal</span><strong class="signal ${a.latest_signal}">${a.latest_signal}</strong></div>
-        <div><span>Stress</span><strong>${a.stress_passes}/4</strong></div>
-      </div>
-    </article>`;
-}
-
-function stressCard(a){
-  const rows = [
-    ["Baseline",a.stress.baseline_positive],
-    ["Out-of-Sample",a.stress.oos_positive],
-    ["Costs ×2",a.stress.cost_2x_positive],
-    ["Costs ×3",a.stress.cost_3x_positive],
-  ];
-  return `
-    <article class="stress-card">
-      <h3>${a.asset} · ${a.strategy} · ${num(a.survival_score,0)}/100</h3>
-      ${rows.map(([name,ok])=>`<div class="stress-row"><span>${name}</span><strong class="${ok?'pass':'fail'}">${ok?'PASS':'FAIL'}</strong></div>`).join("")}
-    </article>`;
-}
-
-function replacementCard(r){
-  return `
-    <article class="replacement-card">
-      <strong>${r.agent_id}</strong>
-      <p>Parent: ${r.parent}<br>${r.asset} · ${r.strategy}<br>${r.note}</p>
-    </article>`;
-}
-
-function render(data){
-  $("feedStatus").textContent = "LIVE · KRAKEN 1H";
-  $("firewallStatus").textContent = data.capital_firewall;
-  $("agentCount").textContent = data.summary.agents;
-  $("activeCount").textContent = data.summary.active;
-  $("probationCount").textContent = data.summary.probation;
-  $("eliminatedCount").textContent = data.summary.eliminated;
-
-  $("markets").innerHTML = data.markets.map(marketCard).join("");
-  $("strategyAgents").innerHTML = data.rooms.strategy.length ? data.rooms.strategy.map(agentCard).join("") : empty("لا يوجد Agent اجتاز شروط Active في هذه النافذة.");
-  $("probationAgents").innerHTML = data.rooms.probation.length ? data.rooms.probation.map(agentCard).join("") : empty("لا يوجد Agents تحت Probation حاليًا.");
-  $("graveyard").innerHTML = data.rooms.graveyard.length ? data.rooms.graveyard.map(agentCard).join("") : empty("لا يوجد Agents مقصاة حاليًا.");
-  $("redTeam").innerHTML = data.rooms.red_team.length ? data.rooms.red_team.map(stressCard).join("") : empty("لا توجد بيانات Stress.");
-  $("replacements").innerHTML = data.rooms.replacement.length ? data.rooms.replacement.map(replacementCard).join("") : empty("لا يوجد Replacement مطلوب الآن.");
-
-  $("source").textContent = data.source;
-  $("updated").textContent = new Date(data.generated_at_utc).toLocaleString("en-GB",{timeZone:"UTC"})+" UTC";
-  $("oos").textContent = data.method.oos_split;
-  $("costModel").textContent = data.method.cost_model;
-}
-
-async function load(){
-  $("refreshBtn").disabled = true;
-  $("refreshBtn").textContent = "جاري التحديث…";
-  $("feedStatus").textContent = "FETCHING…";
-  try{
-    const res = await fetch("/api/aegis?t="+Date.now(),{cache:"no-store"});
-    const data = await res.json();
-    if(!res.ok || !data.ok) throw new Error(data.error || "API error");
-    render(data);
-  }catch(err){
-    console.error(err);
-    $("feedStatus").textContent = "DATA ERROR";
-    $("markets").innerHTML = empty("تعذر جلب بيانات السوق الآن.");
-  }finally{
-    $("refreshBtn").disabled = false;
-    $("refreshBtn").textContent = "تحديث البيانات";
+"use strict";
+// Local calculation only: NO API, NO data feed, NO orders.
+const form = document.getElementById("riskForm");
+const usd = n => Number.isFinite(n) ? new Intl.NumberFormat("en-US", {style:"currency",currency:"USD",maximumFractionDigits:2}).format(n) : "—";
+const num = id => Number(document.getElementById(id).value);
+const write = (id,v) => { document.getElementById(id).textContent=v; };
+function compute(e) {
+  if(e) e.preventDefault();
+  const ids=["initial","balance","equity","eod","peak","loss","daily","daystart","budget"];
+  if(ids.some(id=>!document.getElementById(id).value.trim() || !Number.isFinite(num(id)))) {
+    write("riskMessage","الرجاء إدخال قيم رقمية صحيحة لكل الحقول.");return;
   }
+  const [initial,balance,equity,eod,peak,loss,daily,daystart,budget]=ids.map(num);
+  if(initial<=0 || loss<=0 || daily<=0 || budget<=0 || balance<0 || equity<0 || eod<0 || peak<0){
+    write("riskMessage","قيم الحساب غير صالحة. استخدم أرصدة موجبة وحدوداً أكبر من الصفر.");return;
+  }
+  const mode=document.getElementById("mode").value;
+  const rawFloor=mode==="static" ? initial-loss : (mode==="eod" ? Math.max(initial,eod) : Math.max(initial,peak))-loss;
+  // Illustration only: cap trailing floor at initial balance.
+  const floor=mode==="static" ? rawFloor : Math.min(rawFloor,initial);
+  const cushion=equity-floor,dayCushion=equity-(daystart-daily);
+  const remaining=Math.min(cushion,dayCushion);
+  const allowed=Math.max(0,Math.min(budget,remaining*.2));
+  write("floor",usd(floor));write("cushion",usd(cushion));write("allowed",usd(allowed));
+  const breached=remaining<=0;
+  write("riskMessage", breached ? "تجاوزت أحد حدود الخسارة المُدخلة — يجب إيقاف فتح الصفقات." :
+    "تقدير محلي فقط، بحاجز 20% من الحد الأقرب. لا يشمل العمولات والانزلاق والتزامات الشركة الفعلية ولا ينشئ أي أمر تداول.");
+  document.getElementById("riskMessage").style.color=breached?"#f4b29d":"#8aa1ae";
 }
-
-$("refreshBtn").addEventListener("click",load);
-load();
-setInterval(load,60000);
+form.addEventListener("submit",compute);
+compute();

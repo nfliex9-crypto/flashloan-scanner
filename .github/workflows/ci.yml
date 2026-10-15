@@ -1,28 +1,19 @@
-name: Python checks
-
+name: Funded Trader AI checks
 on:
   push:
+    branches: [agent-city-v1, funded-trader-ai]
   pull_request:
-
 jobs:
-  check:
+  unit-tests:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - name: Install dependencies
-        run: python -m pip install -r requirements.txt -r requirements-aegis.txt -r requirements-stream.txt
-      - name: Compile Python
-        run: python -m compileall -q scanner.py aegis api tests
-      - name: Import scanner
-        run: python -c "import scanner; print('scanner import OK')"
-      - name: Check browser JavaScript syntax
-        run: node --check city.js && node --check mission.js && node --check mt5-connect-ui.js && node --check ops-health.js && node --check research-advisors.js && node --check gold-desk.js
-      - name: Verify Dashboard routes, deep links and hidden research evidence
-        run: node --test tests/test_city_navigation.cjs
-      - name: Verify standalone streaming worker imports
-        run: python -c "from websockets.asyncio.client import connect; from aegis.stream_worker import KrakenMicroWorker; print('micro worker runtime OK')"
-      - name: Run AEGIS tests
-        run: PYTHONPATH=. pytest -q
+      - name: Compile and test
+        run: |
+          python -m compileall -q funded_trader tests
+          python -m unittest discover -s tests -v
+      - name: Check dashboard JS
+        run: node --check app.js
