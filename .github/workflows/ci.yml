@@ -13,7 +13,11 @@ jobs:
           python-version: "3.12"
       - name: Compile and test
         run: |
-          python -m compileall -q funded_trader tests
+          python -m compileall -q funded_trader api tests
           python -m unittest discover -s tests -v
       - name: Check dashboard JS
-        run: node --check app.js
+        run: |
+          node --check app.js
+          node --check tools/live_projectx.mjs
+          node --check tools/quote_validation.mjs
+          node --test tests/test_quote_validation.cjs

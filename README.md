@@ -38,3 +38,24 @@ Default templates are **illustrative, not certified**. Confirm all prop firm rul
 - Browser: open "مختبر البيانات" and upload valid real historical bars. Nothing displays as live until authenticated real feeds exist.
 
 See [DATA_AND_RESEARCH.md](docs/DATA_AND_RESEARCH.md). Provider data is not included in the repo; results are unknown before using licensed data.
+
+## Phase 3: local authorized live quote reader (read-only)
+This only runs on the **user's own machine**, never on Railway/Vercel. No trading or order endpoints.
+
+PowerShell:
+\`\`\`powershell
+npm install
+$env:PROJECTX_USERNAME="your-platform-username"
+$env:PROJECTX_API_KEY="your-secret-keep-local"
+$env:PROJECTX_CONTRACT_ID="CON.F.US.MES.<CURRENT_ACTIVE_EXPIRY>"
+npm run feed
+\`\`\`
+
+- Quote reader validates bid/ask and event timestamps.
+- Writes only the current data snapshot to \`data/projectx-latest-quote.json\` once per second (untracked).
+- A 30-second heartbeat explicitly marks the feed STALE. It **never** invents data.
+- It is not yet connected to the hosted dashboard; no account/order reader exists.
+- Subscription/licensing, access approval, and current contract ID must be obtained from the user's own authorized account.
+
+Official SignalR market hub specification:
+https://gateway.docs.projectx.com/docs/realtime/

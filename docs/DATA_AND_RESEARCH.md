@@ -35,3 +35,24 @@ No independent historical bars or API keys are present in the repository. Result
 - avoid signal lookahead under bar completion and gap conditions
 - add authenticated API-free, local-only execution simulator and audit ledger
 - realtime quotes via ProjectX market SignalR hub from authorized user's local machine; remote Vercel is UI only
+
+## Phase 3: local authorized live quote reader (read-only)
+This only runs on the **user's own machine**, never on Railway/Vercel. No trading or order endpoints.
+
+PowerShell:
+\`\`\`powershell
+npm install
+$env:PROJECTX_USERNAME="your-platform-username"
+$env:PROJECTX_API_KEY="your-secret-keep-local"
+$env:PROJECTX_CONTRACT_ID="CON.F.US.MES.<CURRENT_ACTIVE_EXPIRY>"
+npm run feed
+\`\`\`
+
+- Quote reader validates bid/ask and event timestamps.
+- Writes only the current data snapshot to \`data/projectx-latest-quote.json\` once per second (untracked).
+- A 30-second heartbeat explicitly marks the feed STALE. It **never** invents data.
+- It is not yet connected to the hosted dashboard; no account/order reader exists.
+- Subscription/licensing, access approval, and current contract ID must be obtained from the user's own authorized account.
+
+Official SignalR market hub specification:
+https://gateway.docs.projectx.com/docs/realtime/
