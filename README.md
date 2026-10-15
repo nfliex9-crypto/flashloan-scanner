@@ -29,3 +29,12 @@ Open http://localhost:8000 for the browser dashboard.
 
 ## Compliance
 Default templates are **illustrative, not certified**. Confirm all prop firm rules, instruments, fees, clock reset, drawdown calculation, API policy, and payout conditions against the specific signed agreement. Never deploy automatic order execution to a provider that prohibits it.
+
+## Phase 2: real-data ingestion + ORB research
+- \`python -m funded_trader.cli contracts MES\` — search authorized current ProjectX contract ID.
+- \`python -m funded_trader.cli fetch ...\` — read-only historical bars, never an order.
+- \`python -m funded_trader.cli backtest ... --fee <YOUR_FEE>\` — local 5-minute ORB, two-sided trading, fee/slippage.
+- \`/api/research\` — hosted, bounded, no-storage historical simulator for uploaded bars.
+- Browser: open "مختبر البيانات" and upload valid real historical bars. Nothing displays as live until authenticated real feeds exist.
+
+See [DATA_AND_RESEARCH.md](docs/DATA_AND_RESEARCH.md). Provider data is not included in the repo; results are unknown before using licensed data.

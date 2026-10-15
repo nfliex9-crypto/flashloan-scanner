@@ -10,7 +10,7 @@
 <div class="shell">
 <aside class="sidebar"><div class="brand"><span class="brandmark">F</span><div><b>FUNDED TRADER</b><small>RESEARCH CONSOLE</small></div></div>
 <div class="sidelabel">WORKSPACE</div>
-<nav><a class="active" href="#overview">نظرة عامة</a><a href="#calculator">محرك المخاطر</a><a href="#progress">مراحل التشغيل</a></nav>
+<nav><a class="active" href="#overview">نظرة عامة</a><a href="#calculator">محرك المخاطر</a><a href="#progress">مراحل التشغيل</a><a href="#datalab">مختبر البيانات</a></nav>
 <div class="sidebarbottom"><span class="circle"></span> لا يوجد اتصال وسيط <small>Research-only · v0.1</small></div>
 </aside>
 <main>
@@ -47,5 +47,26 @@
 <div><span class="step">05</span><article><strong>الحساب الممول</strong><p>ربط مسموح ومراجعة القواعد قبل التنفيذ.</p></article><span class="muted">غير مفعّل</span></div>
 </div><div class="notice"><b>سياسة الصدق:</b> لا نعرض أرباحاً أو صفقات حية أو بيانات أداء ما لم تصل من مصدر حقيقي قابل للتحقق.</div>
 </div></section>
+<section id="datalab" class="panel lab"><div class="sectionbar">
+<span class="kicker">DATA LAB · HISTORICAL ONLY</span><h2>اختبار الاستراتيجية ببياناتك</h2>
+<p>ارفع ملف CSV حقيقي من ProjectX أو مزود مرخّص. لا توجد أرقام تداول افتراضية في هذه اللوحة.</p></div>
+<form id="datasetForm">
+<div class="fields"><label>ملف شموع 5 دقائق (UTC)
+<input type="file" id="datasetFile" accept=".csv,text/csv" required></label>
+<label>العقد<select id="instrument"><option value="MES">MES · Micro S&amp;P 500</option><option value="MNQ">MNQ · Micro Nasdaq</option></select></label>
+<label>رسوم Round-trip للعقد ($)<input type="number" id="tradeFee" value="2.5" min="0" max="100" step=".01" required></label>
+<label>هدف تقييم الحساب ($)<input type="number" id="profitTarget" value="3000" min=".01" step=".01" required></label></div>
+<button type="submit" id="analyzeBtn">شغّل Backtest تاريخي ←</button></form>
+<p id="dataLabStatus" class="hint" role="status">لم يتم رفع ملف بيانات. التحليل متوقف لحين توفر بيانات حقيقية.</p>
+<div id="dataLabResults" class="data-results" hidden>
+<div class="results">
+<div><small>الشموع</small><strong id="outBars">—</strong></div>
+<div><small>الصفقات</small><strong id="outTrades">—</strong></div>
+<div><small>صافي الربح/الخسارة</small><strong id="outPnl">—</strong></div>
+</div>
+<div id="outSummary" class="hint"></div>
+<div class="trade-table-wrap"><table class="trade-table"><thead><tr><th>الاتجاه</th><th>وقت الدخول UTC</th><th>العقود</th><th>النتيجة ($)</th><th>السبب</th></tr></thead><tbody id="outHistory"></tbody></table></div>
+</div>
+<p class="hint">النتائج تقريبية من شموع OHLCV، مع احتساب العمولة والانزلاق. تُرسل البيانات التي تختارها إلى واجهة التحليل المستضافة لمعالجتها، ولا يتم حفظها في هذا التطبيق. لا يعتبر ذلك إثباتاً للربحية أو ترخيصاً للتداول الآلي.</p></section>
 <footer><span>FUNDED TRADER AI / BUILD 0.1</span><span>Research environment • No automated trading</span></footer>
 </main></div><script src="/app.js" defer></script></body></html>
