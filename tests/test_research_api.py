@@ -11,9 +11,9 @@ def bars_fixture():
     for i in range(78):
         ts=(base+timedelta(minutes=5*i)).astimezone(timezone.utc)
         close = 6002 if i==6 else 6000
-        h,l=(6015,6001) if i==7 else (6003,5999)
+        h,l=(6015,6001) if i==7 else (6001,5999)
         rows.append({"t":ts.isoformat(),"o":6002 if i==7 else 6000,
-                     "h":h,"l":l,"c":close if i!=7 else 6002,"v":100})
+                     "h":max(h,close),"l":l,"c":close if i!=7 else 6002,"v":100})
     return rows
 class ResearchEndpointTests(unittest.TestCase):
     def test_analysis_returns_real_fixture_stats(self):
