@@ -1,997 +1,6 @@
 {
-  "cycle": 22,
+  "cycle": 23,
   "events": [
-    {
-      "best_challenger": {
-        "evaluation": {
-          "confirmations": 1,
-          "genome": {
-            "generation": 4,
-            "genome_id": "trend-g4-adc5db510e",
-            "params": {
-              "fast": 31,
-              "slow": 52
-            },
-            "parent_id": "trend-g3-b376585e02",
-            "strategy": "Trend"
-          },
-          "primary_oos_return": 0.008497069191474083,
-          "primary_profit_factor": 1.43551211663163,
-          "primary_trades": 8,
-          "score": 57.99,
-          "symbol": "BTC",
-          "timeframes": {
-            "15m": {
-              "cost_2x_positive": false,
-              "cost_3x_positive": false,
-              "max_drawdown": 0.04829511879411674,
-              "oos_return": -0.004755953734459473,
-              "profit_factor": 0.39897841950544594,
-              "return": -0.023340644382116804,
-              "score": 12.48,
-              "sharpe": -6.380027876741396,
-              "stress_passes": 0,
-              "trades": 7
-            },
-            "1h": {
-              "cost_2x_positive": true,
-              "cost_3x_positive": true,
-              "max_drawdown": 0.05553499580880805,
-              "oos_return": 0.008497069191474083,
-              "profit_factor": 1.43551211663163,
-              "return": 0.027165153717450208,
-              "score": 84.45,
-              "sharpe": 1.4585639051335815,
-              "stress_passes": 4,
-              "trades": 8
-            },
-            "4h": {
-              "cost_2x_positive": true,
-              "cost_3x_positive": true,
-              "max_drawdown": 0.08366486484040314,
-              "oos_return": -0.0021599483444074696,
-              "profit_factor": 3.0058898283732365,
-              "return": 0.14724631020747148,
-              "score": 50.57,
-              "sharpe": 1.9219875482016553,
-              "stress_passes": 3,
-              "trades": 7
-            }
-          },
-          "worst_drawdown": 0.08366486484040314
-        },
-        "genome": {
-          "generation": 4,
-          "genome_id": "trend-g4-adc5db510e",
-          "params": {
-            "fast": 31,
-            "slow": 52
-          },
-          "parent_id": "trend-g3-b376585e02",
-          "strategy": "Trend"
-        },
-        "prosecution": {
-          "checks": {
-            "confirmations": false,
-            "cost_2x": true,
-            "primary_oos": true,
-            "score_floor": true,
-            "trade_count": true,
-            "worst_drawdown": true
-          },
-          "failed": [
-            "confirmations"
-          ],
-          "passed": false
-        }
-      },
-      "cycle": 8,
-      "family": "BTC:Trend",
-      "incumbent_after": "trend-g3-b376585e02",
-      "incumbent_before": "trend-g3-b376585e02",
-      "incumbent_score": 67.88,
-      "role_trace": [
-        {
-          "event": "incumbent_loaded",
-          "genome_id": "trend-g3-b376585e02",
-          "role": "HUNTER"
-        },
-        {
-          "event": "memory_bias_loaded",
-          "memory_size": 336,
-          "parameter_votes": {
-            "fast": 211.55,
-            "slow": 111.69
-          },
-          "role": "ARCHIVIST"
-        },
-        {
-          "event": "challengers_tested",
-          "passed": 0,
-          "role": "PROSECUTOR",
-          "tested": 6
-        },
-        {
-          "event": "KEEP_INCUMBENT",
-          "reason": "challenger failed prosecutor gates",
-          "role": "JUDGE",
-          "winner": "trend-g3-b376585e02"
-        }
-      ],
-      "status": "ACTIVE",
-      "strikes": 0
-    },
-    {
-      "best_challenger": {
-        "evaluation": {
-          "confirmations": 0,
-          "genome": {
-            "generation": 2,
-            "genome_id": "momentum-g2-17bcf493c5",
-            "params": {
-              "lookback": 6,
-              "min_return": 0.0,
-              "slow": 76
-            },
-            "parent_id": "momentum-g1-ba37e3522c",
-            "strategy": "Momentum"
-          },
-          "primary_oos_return": -0.029021538012219072,
-          "primary_profit_factor": 1.7396174746792612,
-          "primary_trades": 35,
-          "score": 43.67,
-          "symbol": "BTC",
-          "timeframes": {
-            "15m": {
-              "cost_2x_positive": false,
-              "cost_3x_positive": false,
-              "max_drawdown": 0.06530870864208072,
-              "oos_return": -0.025126136427377377,
-              "profit_factor": 0.22828615972469682,
-              "return": -0.05942206699660235,
-              "score": 7.71,
-              "sharpe": -21.96197679064574,
-              "stress_passes": 0,
-              "trades": 42
-            },
-            "1h": {
-              "cost_2x_positive": true,
-              "cost_3x_positive": false,
-              "max_drawdown": 0.05185406478079324,
-              "oos_return": -0.029021538012219072,
-              "profit_factor": 1.7396174746792612,
-              "return": 0.06909490649317895,
-              "score": 53.48,
-              "sharpe": 3.754594759614551,
-              "stress_passes": 2,
-              "trades": 35
-            },
-            "4h": {
-              "cost_2x_positive": false,
-              "cost_3x_positive": false,
-              "max_drawdown": 0.0998784717996758,
-              "oos_return": 0.015205779085030846,
-              "profit_factor": 1.2789379355561263,
-              "return": 0.062261010917501025,
-              "score": 60.03,
-              "sharpe": 0.9050475138001294,
-              "stress_passes": 2,
-              "trades": 52
-            }
-          },
-          "worst_drawdown": 0.0998784717996758
-        },
-        "genome": {
-          "generation": 2,
-          "genome_id": "momentum-g2-17bcf493c5",
-          "params": {
-            "lookback": 6,
-            "min_return": 0.0,
-            "slow": 76
-          },
-          "parent_id": "momentum-g1-ba37e3522c",
-          "strategy": "Momentum"
-        },
-        "prosecution": {
-          "checks": {
-            "confirmations": false,
-            "cost_2x": false,
-            "primary_oos": false,
-            "score_floor": false,
-            "trade_count": true,
-            "worst_drawdown": true
-          },
-          "failed": [
-            "confirmations",
-            "primary_oos",
-            "cost_2x",
-            "score_floor"
-          ],
-          "passed": false
-        }
-      },
-      "cycle": 8,
-      "family": "BTC:Momentum",
-      "incumbent_after": "momentum-g1-ba37e3522c",
-      "incumbent_before": "momentum-g1-ba37e3522c",
-      "incumbent_score": 52.94,
-      "role_trace": [
-        {
-          "event": "incumbent_loaded",
-          "genome_id": "momentum-g1-ba37e3522c",
-          "role": "HUNTER"
-        },
-        {
-          "event": "memory_bias_loaded",
-          "memory_size": 342,
-          "parameter_votes": {
-            "lookback": -126.82,
-            "min_return": 37.06,
-            "slow": -5.399999999999995
-          },
-          "role": "ARCHIVIST"
-        },
-        {
-          "event": "challengers_tested",
-          "passed": 0,
-          "role": "PROSECUTOR",
-          "tested": 6
-        },
-        {
-          "event": "KEEP_INCUMBENT",
-          "reason": "challenger failed prosecutor gates",
-          "role": "JUDGE",
-          "winner": "momentum-g1-ba37e3522c"
-        }
-      ],
-      "status": "ELIMINATED",
-      "strikes": 5
-    },
-    {
-      "best_challenger": {
-        "evaluation": {
-          "confirmations": 1,
-          "genome": {
-            "generation": 1,
-            "genome_id": "mean-reversion-g1-5133cc23e3",
-            "params": {
-              "entry_z": -0.9,
-              "exit_z": 0.05,
-              "lookback": 22
-            },
-            "parent_id": "mean-reversion-g0-2326211c8f",
-            "strategy": "Mean Reversion"
-          },
-          "primary_oos_return": -0.030229246164346968,
-          "primary_profit_factor": 0.558362057193845,
-          "primary_trades": 21,
-          "score": 34.02,
-          "symbol": "BTC",
-          "timeframes": {
-            "15m": {
-              "cost_2x_positive": false,
-              "cost_3x_positive": false,
-              "max_drawdown": 0.04896453674188106,
-              "oos_return": 0.0012335167504848865,
-              "profit_factor": 0.26696578253941466,
-              "return": -0.036507012169652464,
-              "score": 38.29,
-              "sharpe": -8.94601402005903,
-              "stress_passes": 1,
-              "trades": 23
-            },
-            "1h": {
-              "cost_2x_positive": false,
-              "cost_3x_positive": false,
-              "max_drawdown": 0.06477528934887855,
-              "oos_return": -0.030229246164346968,
-              "profit_factor": 0.558362057193845,
-              "return": -0.03984905969395547,
-              "score": 7.86,
-              "sharpe": -2.4233864154393525,
-              "stress_passes": 0,
-              "trades": 21
-            },
-            "4h": {
-              "cost_2x_positive": true,
-              "cost_3x_positive": true,
-              "max_drawdown": 0.06402992221803161,
-              "oos_return": 0.0026125840452597693,
-              "profit_factor": 2.1259234657340844,
-              "return": 0.1067618344487491,
-              "score": 82.07,
-              "sharpe": 1.6175037066340556,
-              "stress_passes": 4,
-              "trades": 24
-            }
-          },
-          "worst_drawdown": 0.06477528934887855
-        },
-        "genome": {
-          "generation": 1,
-          "genome_id": "mean-reversion-g1-5133cc23e3",
-          "params": {
-            "entry_z": -0.9,
-            "exit_z": 0.05,
-            "lookback": 22
-          },
-          "parent_id": "mean-reversion-g0-2326211c8f",
-          "strategy": "Mean Reversion"
-        },
-        "prosecution": {
-          "checks": {
-            "confirmations": false,
-            "cost_2x": false,
-            "primary_oos": false,
-            "score_floor": false,
-            "trade_count": true,
-            "worst_drawdown": true
-          },
-          "failed": [
-            "confirmations",
-            "primary_oos",
-            "cost_2x",
-            "score_floor"
-          ],
-          "passed": false
-        }
-      },
-      "cycle": 8,
-      "family": "BTC:Mean Reversion",
-      "incumbent_after": "mean-reversion-g0-2326211c8f",
-      "incumbent_before": "mean-reversion-g0-2326211c8f",
-      "incumbent_score": 34.77,
-      "role_trace": [
-        {
-          "event": "incumbent_loaded",
-          "genome_id": "mean-reversion-g0-2326211c8f",
-          "role": "HUNTER"
-        },
-        {
-          "event": "memory_bias_loaded",
-          "memory_size": 348,
-          "parameter_votes": {
-            "entry_z": 56.199999999999996,
-            "exit_z": 71.86,
-            "lookback": 156.82
-          },
-          "role": "ARCHIVIST"
-        },
-        {
-          "event": "challengers_tested",
-          "passed": 0,
-          "role": "PROSECUTOR",
-          "tested": 6
-        },
-        {
-          "event": "KEEP_INCUMBENT",
-          "reason": "challenger failed prosecutor gates",
-          "role": "JUDGE",
-          "winner": "mean-reversion-g0-2326211c8f"
-        }
-      ],
-      "status": "ELIMINATED",
-      "strikes": 8
-    },
-    {
-      "best_challenger": {
-        "evaluation": {
-          "confirmations": 1,
-          "genome": {
-            "generation": 2,
-            "genome_id": "breakout-g2-e3d5eb8519",
-            "params": {
-              "entry": 48,
-              "exit": 10
-            },
-            "parent_id": "breakout-g1-445e321ae6",
-            "strategy": "Breakout"
-          },
-          "primary_oos_return": -0.0024508941263343687,
-          "primary_profit_factor": 1.7892299041704987,
-          "primary_trades": 8,
-          "score": 52.26,
-          "symbol": "BTC",
-          "timeframes": {
-            "15m": {
-              "cost_2x_positive": false,
-              "cost_3x_positive": false,
-              "max_drawdown": 0.029755226559344483,
-              "oos_return": -0.008104843431724795,
-              "profit_factor": 0.47896905417708213,
-              "return": -0.014450478311387682,
-              "score": 17.67,
-              "sharpe": -5.668182565109931,
-              "stress_passes": 0,
-              "trades": 10
-            },
-            "1h": {
-              "cost_2x_positive": true,
-              "cost_3x_positive": true,
-              "max_drawdown": 0.05850051837726933,
-              "oos_return": -0.0024508941263343687,
-              "profit_factor": 1.7892299041704987,
-              "return": 0.03349229902955453,
-              "score": 57.62,
-              "sharpe": 2.2878037355507734,
-              "stress_passes": 3,
-              "trades": 8
-            },
-            "4h": {
-              "cost_2x_positive": true,
-              "cost_3x_positive": true,
-              "max_drawdown": 0.08521471267808123,
-              "oos_return": 0.00304486470058829,
-              "profit_factor": 1.902568528538725,
-              "return": 0.08615296206418299,
-              "score": 76.14,
-              "sharpe": 1.2933127244346772,
-              "stress_passes": 4,
-              "trades": 13
-            }
-          },
-          "worst_drawdown": 0.08521471267808123
-        },
-        "genome": {
-          "generation": 2,
-          "genome_id": "breakout-g2-e3d5eb8519",
-          "params": {
-            "entry": 48,
-            "exit": 10
-          },
-          "parent_id": "breakout-g1-445e321ae6",
-          "strategy": "Breakout"
-        },
-        "prosecution": {
-          "checks": {
-            "confirmations": false,
-            "cost_2x": true,
-            "primary_oos": false,
-            "score_floor": false,
-            "trade_count": true,
-            "worst_drawdown": true
-          },
-          "failed": [
-            "confirmations",
-            "primary_oos",
-            "score_floor"
-          ],
-          "passed": false
-        }
-      },
-      "cycle": 8,
-      "family": "BTC:Breakout",
-      "incumbent_after": "breakout-g1-445e321ae6",
-      "incumbent_before": "breakout-g1-445e321ae6",
-      "incumbent_score": 51.44,
-      "role_trace": [
-        {
-          "event": "incumbent_loaded",
-          "genome_id": "breakout-g1-445e321ae6",
-          "role": "HUNTER"
-        },
-        {
-          "event": "memory_bias_loaded",
-          "memory_size": 354,
-          "parameter_votes": {
-            "entry": 271.21,
-            "exit": -68.49
-          },
-          "role": "ARCHIVIST"
-        },
-        {
-          "event": "challengers_tested",
-          "passed": 0,
-          "role": "PROSECUTOR",
-          "tested": 6
-        },
-        {
-          "event": "KEEP_INCUMBENT",
-          "reason": "challenger failed prosecutor gates",
-          "role": "JUDGE",
-          "winner": "breakout-g1-445e321ae6"
-        }
-      ],
-      "status": "PROBATION",
-      "strikes": 2
-    },
-    {
-      "best_challenger": {
-        "evaluation": {
-          "confirmations": 0,
-          "genome": {
-            "generation": 1,
-            "genome_id": "trend-g1-2d52fab112",
-            "params": {
-              "fast": 15,
-              "slow": 65
-            },
-            "parent_id": "trend-g0-c0b9781be1",
-            "strategy": "Trend"
-          },
-          "primary_oos_return": -0.019629456099232057,
-          "primary_profit_factor": 0.9813851346520471,
-          "primary_trades": 8,
-          "score": 26.79,
-          "symbol": "ETH",
-          "timeframes": {
-            "15m": {
-              "cost_2x_positive": false,
-              "cost_3x_positive": false,
-              "max_drawdown": 0.038034900914273306,
-              "oos_return": 0.003218513389015021,
-              "profit_factor": 0.3506207239881898,
-              "return": -0.016079317306442742,
-              "score": 41.35,
-              "sharpe": -4.495150597476593,
-              "stress_passes": 1,
-              "trades": 7
-            },
-            "1h": {
-              "cost_2x_positive": false,
-              "cost_3x_positive": false,
-              "max_drawdown": 0.09830386980514594,
-              "oos_return": -0.019629456099232057,
-              "profit_factor": 0.9813851346520471,
-              "return": -0.009222133164212498,
-              "score": 12.57,
-              "sharpe": -0.28050471177845504,
-              "stress_passes": 0,
-              "trades": 8
-            },
-            "4h": {
-              "cost_2x_positive": true,
-              "cost_3x_positive": true,
-              "max_drawdown": 0.11898506015445809,
-              "oos_return": -0.029754530420520342,
-              "profit_factor": 2.8458123542823017,
-              "return": 0.2388944867365319,
-              "score": 40.68,
-              "sharpe": 1.9265156654461584,
-              "stress_passes": 3,
-              "trades": 8
-            }
-          },
-          "worst_drawdown": 0.11898506015445809
-        },
-        "genome": {
-          "generation": 1,
-          "genome_id": "trend-g1-2d52fab112",
-          "params": {
-            "fast": 15,
-            "slow": 65
-          },
-          "parent_id": "trend-g0-c0b9781be1",
-          "strategy": "Trend"
-        },
-        "prosecution": {
-          "checks": {
-            "confirmations": false,
-            "cost_2x": false,
-            "primary_oos": false,
-            "score_floor": false,
-            "trade_count": true,
-            "worst_drawdown": true
-          },
-          "failed": [
-            "confirmations",
-            "primary_oos",
-            "cost_2x",
-            "score_floor"
-          ],
-          "passed": false
-        }
-      },
-      "cycle": 8,
-      "family": "ETH:Trend",
-      "incumbent_after": "trend-g0-c0b9781be1",
-      "incumbent_before": "trend-g0-c0b9781be1",
-      "incumbent_score": 22.65,
-      "role_trace": [
-        {
-          "event": "incumbent_loaded",
-          "genome_id": "trend-g0-c0b9781be1",
-          "role": "HUNTER"
-        },
-        {
-          "event": "memory_bias_loaded",
-          "memory_size": 360,
-          "parameter_votes": {
-            "fast": 166.46000000000004,
-            "slow": 119.1
-          },
-          "role": "ARCHIVIST"
-        },
-        {
-          "event": "challengers_tested",
-          "passed": 0,
-          "role": "PROSECUTOR",
-          "tested": 6
-        },
-        {
-          "event": "KEEP_INCUMBENT",
-          "reason": "challenger failed prosecutor gates",
-          "role": "JUDGE",
-          "winner": "trend-g0-c0b9781be1"
-        }
-      ],
-      "status": "ELIMINATED",
-      "strikes": 8
-    },
-    {
-      "best_challenger": {
-        "evaluation": {
-          "confirmations": 0,
-          "genome": {
-            "generation": 1,
-            "genome_id": "momentum-g1-abb81cfa2c",
-            "params": {
-              "lookback": 30,
-              "min_return": 0.004,
-              "slow": 48
-            },
-            "parent_id": "momentum-g0-42ed5f7974",
-            "strategy": "Momentum"
-          },
-          "primary_oos_return": -0.016930328470563194,
-          "primary_profit_factor": 1.322627094990839,
-          "primary_trades": 25,
-          "score": 26.91,
-          "symbol": "ETH",
-          "timeframes": {
-            "15m": {
-              "cost_2x_positive": false,
-              "cost_3x_positive": false,
-              "max_drawdown": 0.054269316275617596,
-              "oos_return": -0.01549190293618996,
-              "profit_factor": 0.11055528557440673,
-              "return": -0.05111900358585586,
-              "score": 10.8,
-              "sharpe": -20.995390686771657,
-              "stress_passes": 0,
-              "trades": 23
-            },
-            "1h": {
-              "cost_2x_positive": false,
-              "cost_3x_positive": false,
-              "max_drawdown": 0.08953631750546376,
-              "oos_return": -0.016930328470563194,
-              "profit_factor": 1.322627094990839,
-              "return": 0.018453254809400077,
-              "score": 36.93,
-              "sharpe": 1.06835230540704,
-              "stress_passes": 1,
-              "trades": 25
-            },
-            "4h": {
-              "cost_2x_positive": true,
-              "cost_3x_positive": false,
-              "max_drawdown": 0.1699813837171673,
-              "oos_return": -0.029564050165295064,
-              "profit_factor": 1.2558404587530758,
-              "return": 0.05519210489543469,
-              "score": 23.0,
-              "sharpe": 0.6355955652108698,
-              "stress_passes": 2,
-              "trades": 41
-            }
-          },
-          "worst_drawdown": 0.1699813837171673
-        },
-        "genome": {
-          "generation": 1,
-          "genome_id": "momentum-g1-abb81cfa2c",
-          "params": {
-            "lookback": 30,
-            "min_return": 0.004,
-            "slow": 48
-          },
-          "parent_id": "momentum-g0-42ed5f7974",
-          "strategy": "Momentum"
-        },
-        "prosecution": {
-          "checks": {
-            "confirmations": false,
-            "cost_2x": false,
-            "primary_oos": false,
-            "score_floor": false,
-            "trade_count": true,
-            "worst_drawdown": true
-          },
-          "failed": [
-            "confirmations",
-            "primary_oos",
-            "cost_2x",
-            "score_floor"
-          ],
-          "passed": false
-        }
-      },
-      "cycle": 8,
-      "family": "ETH:Momentum",
-      "incumbent_after": "momentum-g0-42ed5f7974",
-      "incumbent_before": "momentum-g0-42ed5f7974",
-      "incumbent_score": 3.37,
-      "role_trace": [
-        {
-          "event": "incumbent_loaded",
-          "genome_id": "momentum-g0-42ed5f7974",
-          "role": "HUNTER"
-        },
-        {
-          "event": "memory_bias_loaded",
-          "memory_size": 366,
-          "parameter_votes": {
-            "lookback": -124.99000000000001,
-            "min_return": 38.88999999999999,
-            "slow": -7.229999999999993
-          },
-          "role": "ARCHIVIST"
-        },
-        {
-          "event": "challengers_tested",
-          "passed": 0,
-          "role": "PROSECUTOR",
-          "tested": 6
-        },
-        {
-          "event": "KEEP_INCUMBENT",
-          "reason": "challenger failed prosecutor gates",
-          "role": "JUDGE",
-          "winner": "momentum-g0-42ed5f7974"
-        }
-      ],
-      "status": "ELIMINATED",
-      "strikes": 8
-    },
-    {
-      "best_challenger": {
-        "evaluation": {
-          "confirmations": 1,
-          "genome": {
-            "generation": 1,
-            "genome_id": "mean-reversion-g1-f063b79e2e",
-            "params": {
-              "entry_z": -0.9,
-              "exit_z": -0.25,
-              "lookback": 28
-            },
-            "parent_id": "mean-reversion-g0-2326211c8f",
-            "strategy": "Mean Reversion"
-          },
-          "primary_oos_return": -0.06714081854858056,
-          "primary_profit_factor": 0.43340608354759774,
-          "primary_trades": 17,
-          "score": 26.01,
-          "symbol": "ETH",
-          "timeframes": {
-            "15m": {
-              "cost_2x_positive": false,
-              "cost_3x_positive": false,
-              "max_drawdown": 0.0880243022768813,
-              "oos_return": 0.0018982216303382593,
-              "profit_factor": 0.2644301229768104,
-              "return": -0.06445173351806466,
-              "score": 27.35,
-              "sharpe": -10.9026710556589,
-              "stress_passes": 1,
-              "trades": 24
-            },
-            "1h": {
-              "cost_2x_positive": false,
-              "cost_3x_positive": false,
-              "max_drawdown": 0.11588180192071107,
-              "oos_return": -0.06714081854858056,
-              "profit_factor": 0.43340608354759774,
-              "return": -0.07612463117330281,
-              "score": 0.0,
-              "sharpe": -3.457407652019547,
-              "stress_passes": 0,
-              "trades": 17
-            },
-            "4h": {
-              "cost_2x_positive": true,
-              "cost_3x_positive": true,
-              "max_drawdown": 0.08331148834565016,
-              "oos_return": 0.023503328878173413,
-              "profit_factor": 4.376270283136705,
-              "return": 0.2007512854048672,
-              "score": 76.67,
-              "sharpe": 2.332985636942587,
-              "stress_passes": 4,
-              "trades": 20
-            }
-          },
-          "worst_drawdown": 0.11588180192071107
-        },
-        "genome": {
-          "generation": 1,
-          "genome_id": "mean-reversion-g1-f063b79e2e",
-          "params": {
-            "entry_z": -0.9,
-            "exit_z": -0.25,
-            "lookback": 28
-          },
-          "parent_id": "mean-reversion-g0-2326211c8f",
-          "strategy": "Mean Reversion"
-        },
-        "prosecution": {
-          "checks": {
-            "confirmations": false,
-            "cost_2x": false,
-            "primary_oos": false,
-            "score_floor": false,
-            "trade_count": true,
-            "worst_drawdown": true
-          },
-          "failed": [
-            "confirmations",
-            "primary_oos",
-            "cost_2x",
-            "score_floor"
-          ],
-          "passed": false
-        }
-      },
-      "cycle": 8,
-      "family": "ETH:Mean Reversion",
-      "incumbent_after": "mean-reversion-g0-2326211c8f",
-      "incumbent_before": "mean-reversion-g0-2326211c8f",
-      "incumbent_score": 25.4,
-      "role_trace": [
-        {
-          "event": "incumbent_loaded",
-          "genome_id": "mean-reversion-g0-2326211c8f",
-          "role": "HUNTER"
-        },
-        {
-          "event": "memory_bias_loaded",
-          "memory_size": 372,
-          "parameter_votes": {
-            "entry_z": 34.24999999999999,
-            "exit_z": 75.43,
-            "lookback": 134.86999999999995
-          },
-          "role": "ARCHIVIST"
-        },
-        {
-          "event": "challengers_tested",
-          "passed": 0,
-          "role": "PROSECUTOR",
-          "tested": 6
-        },
-        {
-          "event": "KEEP_INCUMBENT",
-          "reason": "challenger failed prosecutor gates",
-          "role": "JUDGE",
-          "winner": "mean-reversion-g0-2326211c8f"
-        }
-      ],
-      "status": "ELIMINATED",
-      "strikes": 8
-    },
-    {
-      "best_challenger": {
-        "evaluation": {
-          "confirmations": 0,
-          "genome": {
-            "generation": 1,
-            "genome_id": "breakout-g1-760f6c6843",
-            "params": {
-              "entry": 32,
-              "exit": 13
-            },
-            "parent_id": "breakout-g0-56f0cf29e4",
-            "strategy": "Breakout"
-          },
-          "primary_oos_return": -0.004600184991684353,
-          "primary_profit_factor": 1.8568033290416848,
-          "primary_trades": 9,
-          "score": 50.58,
-          "symbol": "ETH",
-          "timeframes": {
-            "15m": {
-              "cost_2x_positive": false,
-              "cost_3x_positive": false,
-              "max_drawdown": 0.026773032117852757,
-              "oos_return": 0.0011191090779070212,
-              "profit_factor": 0.3375307872981439,
-              "return": -0.017372640720761057,
-              "score": 44.5,
-              "sharpe": -6.261853642259124,
-              "stress_passes": 1,
-              "trades": 9
-            },
-            "1h": {
-              "cost_2x_positive": true,
-              "cost_3x_positive": true,
-              "max_drawdown": 0.05684354951370707,
-              "oos_return": -0.004600184991684353,
-              "profit_factor": 1.8568033290416848,
-              "return": 0.041078449692157015,
-              "score": 58.08,
-              "sharpe": 2.3876284029199444,
-              "stress_passes": 3,
-              "trades": 9
-            },
-            "4h": {
-              "cost_2x_positive": true,
-              "cost_3x_positive": true,
-              "max_drawdown": 0.11551505375842241,
-              "oos_return": -0.031702015401452566,
-              "profit_factor": 2.2479192428579675,
-              "return": 0.18150522706294225,
-              "score": 41.66,
-              "sharpe": 1.729203333391076,
-              "stress_passes": 3,
-              "trades": 11
-            }
-          },
-          "worst_drawdown": 0.11551505375842241
-        },
-        "genome": {
-          "generation": 1,
-          "genome_id": "breakout-g1-760f6c6843",
-          "params": {
-            "entry": 32,
-            "exit": 13
-          },
-          "parent_id": "breakout-g0-56f0cf29e4",
-          "strategy": "Breakout"
-        },
-        "prosecution": {
-          "checks": {
-            "confirmations": false,
-            "cost_2x": true,
-            "primary_oos": false,
-            "score_floor": false,
-            "trade_count": true,
-            "worst_drawdown": true
-          },
-          "failed": [
-            "confirmations",
-            "primary_oos",
-            "score_floor"
-          ],
-          "passed": false
-        }
-      },
-      "cycle": 8,
-      "family": "ETH:Breakout",
-      "incumbent_after": "breakout-g0-56f0cf29e4",
-      "incumbent_before": "breakout-g0-56f0cf29e4",
-      "incumbent_score": 30.59,
-      "role_trace": [
-        {
-          "event": "incumbent_loaded",
-          "genome_id": "breakout-g0-56f0cf29e4",
-          "role": "HUNTER"
-        },
-        {
-          "event": "memory_bias_loaded",
-          "memory_size": 378,
-          "parameter_votes": {
-            "entry": 276.59,
-            "exit": -83.69
-          },
-          "role": "ARCHIVIST"
-        },
-        {
-          "event": "challengers_tested",
-          "passed": 0,
-          "role": "PROSECUTOR",
-          "tested": 6
-        },
-        {
-          "event": "KEEP_INCUMBENT",
-          "reason": "challenger failed prosecutor gates",
-          "role": "JUDGE",
-          "winner": "breakout-g0-56f0cf29e4"
-        }
-      ],
-      "status": "ELIMINATED",
-      "strikes": 8
-    },
     {
       "best_challenger": {
         "evaluation": {
@@ -14863,26 +13872,1002 @@
       ],
       "status": "ELIMINATED",
       "strikes": 9
+    },
+    {
+      "best_challenger": {
+        "evaluation": {
+          "confirmations": 0,
+          "genome": {
+            "generation": 4,
+            "genome_id": "trend-g4-8e696d3efe",
+            "params": {
+              "fast": 29,
+              "slow": 62
+            },
+            "parent_id": "trend-g3-b376585e02",
+            "strategy": "Trend"
+          },
+          "primary_oos_return": -0.007128427784065083,
+          "primary_profit_factor": 0.5218179777233583,
+          "primary_trades": 6,
+          "score": 18.96,
+          "symbol": "BTC",
+          "timeframes": {
+            "15m": {
+              "cost_2x_positive": false,
+              "cost_3x_positive": false,
+              "max_drawdown": 0.039763831603406796,
+              "oos_return": -0.014496720358894932,
+              "profit_factor": 0.25675415797402795,
+              "return": -0.014831467769165108,
+              "score": 14.87,
+              "sharpe": -4.2146654212416825,
+              "stress_passes": 0,
+              "trades": 5
+            },
+            "1h": {
+              "cost_2x_positive": false,
+              "cost_3x_positive": false,
+              "max_drawdown": 0.06863159110693184,
+              "oos_return": -0.007128427784065083,
+              "profit_factor": 0.5218179777233583,
+              "return": -0.024158853427390214,
+              "score": 6.78,
+              "sharpe": -1.2993753733726656,
+              "stress_passes": 0,
+              "trades": 6
+            },
+            "4h": {
+              "cost_2x_positive": true,
+              "cost_3x_positive": true,
+              "max_drawdown": 0.09494553763852209,
+              "oos_return": -0.04150371441290435,
+              "profit_factor": 2.182118689702516,
+              "return": 0.10319074256534577,
+              "score": 47.42,
+              "sharpe": 1.421558041319869,
+              "stress_passes": 3,
+              "trades": 7
+            }
+          },
+          "worst_drawdown": 0.09494553763852209
+        },
+        "genome": {
+          "generation": 4,
+          "genome_id": "trend-g4-8e696d3efe",
+          "params": {
+            "fast": 29,
+            "slow": 62
+          },
+          "parent_id": "trend-g3-b376585e02",
+          "strategy": "Trend"
+        },
+        "prosecution": {
+          "checks": {
+            "confirmations": false,
+            "cost_2x": false,
+            "primary_oos": false,
+            "score_floor": false,
+            "trade_count": true,
+            "worst_drawdown": true
+          },
+          "failed": [
+            "confirmations",
+            "primary_oos",
+            "cost_2x",
+            "score_floor"
+          ],
+          "passed": false
+        }
+      },
+      "cycle": 23,
+      "family": "BTC:Trend",
+      "incumbent_after": "trend-g3-b376585e02",
+      "incumbent_before": "trend-g3-b376585e02",
+      "incumbent_score": 15.6,
+      "role_trace": [
+        {
+          "event": "incumbent_loaded",
+          "genome_id": "trend-g3-b376585e02",
+          "role": "HUNTER"
+        },
+        {
+          "event": "memory_bias_loaded",
+          "memory_size": 500,
+          "parameter_votes": {
+            "fast": 11.46,
+            "slow": 17.860000000000003
+          },
+          "role": "ARCHIVIST"
+        },
+        {
+          "event": "challengers_tested",
+          "passed": 0,
+          "role": "PROSECUTOR",
+          "tested": 6
+        },
+        {
+          "event": "KEEP_INCUMBENT",
+          "reason": "challenger failed prosecutor gates",
+          "role": "JUDGE",
+          "winner": "trend-g3-b376585e02"
+        }
+      ],
+      "status": "ELIMINATED",
+      "strikes": 14
+    },
+    {
+      "best_challenger": {
+        "evaluation": {
+          "confirmations": 0,
+          "genome": {
+            "generation": 2,
+            "genome_id": "momentum-g2-1cbe3c399f",
+            "params": {
+              "lookback": 11,
+              "min_return": 0.002,
+              "slow": 56
+            },
+            "parent_id": "momentum-g1-ba37e3522c",
+            "strategy": "Momentum"
+          },
+          "primary_oos_return": 0.014071986775525014,
+          "primary_profit_factor": 0.3440970301939579,
+          "primary_trades": 36,
+          "score": 28.07,
+          "symbol": "BTC",
+          "timeframes": {
+            "15m": {
+              "cost_2x_positive": false,
+              "cost_3x_positive": false,
+              "max_drawdown": 0.028346159530966197,
+              "oos_return": -0.00466704691739106,
+              "profit_factor": 0.5720849459181377,
+              "return": -0.01520827329777108,
+              "score": 18.06,
+              "sharpe": -4.524914296013994,
+              "stress_passes": 0,
+              "trades": 19
+            },
+            "1h": {
+              "cost_2x_positive": false,
+              "cost_3x_positive": false,
+              "max_drawdown": 0.08931480103125178,
+              "oos_return": 0.014071986775525014,
+              "profit_factor": 0.3440970301939579,
+              "return": -0.07106832272954122,
+              "score": 26.99,
+              "sharpe": -5.119098795125143,
+              "stress_passes": 1,
+              "trades": 36
+            },
+            "4h": {
+              "cost_2x_positive": true,
+              "cost_3x_positive": true,
+              "max_drawdown": 0.12058442249007317,
+              "oos_return": -0.010778056789427226,
+              "profit_factor": 1.545925378237121,
+              "return": 0.10230984567941004,
+              "score": 40.24,
+              "sharpe": 1.4102058012405938,
+              "stress_passes": 3,
+              "trades": 36
+            }
+          },
+          "worst_drawdown": 0.12058442249007317
+        },
+        "genome": {
+          "generation": 2,
+          "genome_id": "momentum-g2-1cbe3c399f",
+          "params": {
+            "lookback": 11,
+            "min_return": 0.002,
+            "slow": 56
+          },
+          "parent_id": "momentum-g1-ba37e3522c",
+          "strategy": "Momentum"
+        },
+        "prosecution": {
+          "checks": {
+            "confirmations": false,
+            "cost_2x": false,
+            "primary_oos": true,
+            "score_floor": false,
+            "trade_count": true,
+            "worst_drawdown": true
+          },
+          "failed": [
+            "confirmations",
+            "cost_2x",
+            "score_floor"
+          ],
+          "passed": false
+        }
+      },
+      "cycle": 23,
+      "family": "BTC:Momentum",
+      "incumbent_after": "momentum-g1-ba37e3522c",
+      "incumbent_before": "momentum-g1-ba37e3522c",
+      "incumbent_score": 29.32,
+      "role_trace": [
+        {
+          "event": "incumbent_loaded",
+          "genome_id": "momentum-g1-ba37e3522c",
+          "role": "HUNTER"
+        },
+        {
+          "event": "memory_bias_loaded",
+          "memory_size": 506,
+          "parameter_votes": {
+            "lookback": -51.309999999999995,
+            "min_return": 36.029999999999994,
+            "slow": -99.27
+          },
+          "role": "ARCHIVIST"
+        },
+        {
+          "event": "challengers_tested",
+          "passed": 0,
+          "role": "PROSECUTOR",
+          "tested": 6
+        },
+        {
+          "event": "KEEP_INCUMBENT",
+          "reason": "challenger failed prosecutor gates",
+          "role": "JUDGE",
+          "winner": "momentum-g1-ba37e3522c"
+        }
+      ],
+      "status": "ELIMINATED",
+      "strikes": 20
+    },
+    {
+      "best_challenger": {
+        "evaluation": {
+          "confirmations": 1,
+          "genome": {
+            "generation": 1,
+            "genome_id": "mean-reversion-g1-04ce252d9c",
+            "params": {
+              "entry_z": -1.0,
+              "exit_z": 0.15,
+              "lookback": 28
+            },
+            "parent_id": "mean-reversion-g0-2326211c8f",
+            "strategy": "Mean Reversion"
+          },
+          "primary_oos_return": -0.009613542745068093,
+          "primary_profit_factor": 1.014219976691453,
+          "primary_trades": 17,
+          "score": 39.05,
+          "symbol": "BTC",
+          "timeframes": {
+            "15m": {
+              "cost_2x_positive": false,
+              "cost_3x_positive": false,
+              "max_drawdown": 0.049279901949103255,
+              "oos_return": -0.009360100648048153,
+              "profit_factor": 0.2852421740542354,
+              "return": -0.039618891849107385,
+              "score": 12.2,
+              "sharpe": -9.330530031191385,
+              "stress_passes": 0,
+              "trades": 17
+            },
+            "1h": {
+              "cost_2x_positive": false,
+              "cost_3x_positive": false,
+              "max_drawdown": 0.04946929882023143,
+              "oos_return": -0.009613542745068093,
+              "profit_factor": 1.014219976691453,
+              "return": -0.0027096481692586716,
+              "score": 27.4,
+              "sharpe": -0.05516004061692941,
+              "stress_passes": 0,
+              "trades": 17
+            },
+            "4h": {
+              "cost_2x_positive": true,
+              "cost_3x_positive": true,
+              "max_drawdown": 0.03857728400797522,
+              "oos_return": 0.0148801751576626,
+              "profit_factor": 5.869371738787867,
+              "return": 0.21412165205497558,
+              "score": 89.2,
+              "sharpe": 3.4293544466559287,
+              "stress_passes": 4,
+              "trades": 19
+            }
+          },
+          "worst_drawdown": 0.04946929882023143
+        },
+        "genome": {
+          "generation": 1,
+          "genome_id": "mean-reversion-g1-04ce252d9c",
+          "params": {
+            "entry_z": -1.0,
+            "exit_z": 0.15,
+            "lookback": 28
+          },
+          "parent_id": "mean-reversion-g0-2326211c8f",
+          "strategy": "Mean Reversion"
+        },
+        "prosecution": {
+          "checks": {
+            "confirmations": false,
+            "cost_2x": false,
+            "primary_oos": false,
+            "score_floor": false,
+            "trade_count": true,
+            "worst_drawdown": true
+          },
+          "failed": [
+            "confirmations",
+            "primary_oos",
+            "cost_2x",
+            "score_floor"
+          ],
+          "passed": false
+        }
+      },
+      "cycle": 23,
+      "family": "BTC:Mean Reversion",
+      "incumbent_after": "mean-reversion-g0-2326211c8f",
+      "incumbent_before": "mean-reversion-g0-2326211c8f",
+      "incumbent_score": 29.27,
+      "role_trace": [
+        {
+          "event": "incumbent_loaded",
+          "genome_id": "mean-reversion-g0-2326211c8f",
+          "role": "HUNTER"
+        },
+        {
+          "event": "memory_bias_loaded",
+          "memory_size": 512,
+          "parameter_votes": {
+            "entry_z": -82.92,
+            "exit_z": 43.17999999999999,
+            "lookback": 132.98000000000002
+          },
+          "role": "ARCHIVIST"
+        },
+        {
+          "event": "challengers_tested",
+          "passed": 0,
+          "role": "PROSECUTOR",
+          "tested": 6
+        },
+        {
+          "event": "KEEP_INCUMBENT",
+          "reason": "challenger failed prosecutor gates",
+          "role": "JUDGE",
+          "winner": "mean-reversion-g0-2326211c8f"
+        }
+      ],
+      "status": "ELIMINATED",
+      "strikes": 23
+    },
+    {
+      "best_challenger": {
+        "evaluation": {
+          "confirmations": 0,
+          "genome": {
+            "generation": 2,
+            "genome_id": "breakout-g2-66b2de98b4",
+            "params": {
+              "entry": 40,
+              "exit": 10
+            },
+            "parent_id": "breakout-g1-445e321ae6",
+            "strategy": "Breakout"
+          },
+          "primary_oos_return": 0.00015783233164889943,
+          "primary_profit_factor": 0.11233419736314437,
+          "primary_trades": 8,
+          "score": 37.06,
+          "symbol": "BTC",
+          "timeframes": {
+            "15m": {
+              "cost_2x_positive": false,
+              "cost_3x_positive": false,
+              "max_drawdown": 0.02508469898060517,
+              "oos_return": -0.0059502296476360295,
+              "profit_factor": 0.5134696973709829,
+              "return": -0.0159103366708242,
+              "score": 18.98,
+              "sharpe": -4.764274974321989,
+              "stress_passes": 0,
+              "trades": 9
+            },
+            "1h": {
+              "cost_2x_positive": false,
+              "cost_3x_positive": false,
+              "max_drawdown": 0.04552005630318956,
+              "oos_return": 0.00015783233164889943,
+              "profit_factor": 0.11233419736314437,
+              "return": -0.035581369550613307,
+              "score": 39.25,
+              "sharpe": -2.9839378993509436,
+              "stress_passes": 1,
+              "trades": 8
+            },
+            "4h": {
+              "cost_2x_positive": true,
+              "cost_3x_positive": true,
+              "max_drawdown": 0.0829550340111892,
+              "oos_return": -0.029045148816655764,
+              "profit_factor": 1.4677713248488446,
+              "return": 0.05061416672656982,
+              "score": 50.77,
+              "sharpe": 0.8116977676360776,
+              "stress_passes": 3,
+              "trades": 14
+            }
+          },
+          "worst_drawdown": 0.0829550340111892
+        },
+        "genome": {
+          "generation": 2,
+          "genome_id": "breakout-g2-66b2de98b4",
+          "params": {
+            "entry": 40,
+            "exit": 10
+          },
+          "parent_id": "breakout-g1-445e321ae6",
+          "strategy": "Breakout"
+        },
+        "prosecution": {
+          "checks": {
+            "confirmations": false,
+            "cost_2x": false,
+            "primary_oos": true,
+            "score_floor": false,
+            "trade_count": true,
+            "worst_drawdown": true
+          },
+          "failed": [
+            "confirmations",
+            "cost_2x",
+            "score_floor"
+          ],
+          "passed": false
+        }
+      },
+      "cycle": 23,
+      "family": "BTC:Breakout",
+      "incumbent_after": "breakout-g1-445e321ae6",
+      "incumbent_before": "breakout-g1-445e321ae6",
+      "incumbent_score": 25.55,
+      "role_trace": [
+        {
+          "event": "incumbent_loaded",
+          "genome_id": "breakout-g1-445e321ae6",
+          "role": "HUNTER"
+        },
+        {
+          "event": "memory_bias_loaded",
+          "memory_size": 518,
+          "parameter_votes": {
+            "entry": 17.14,
+            "exit": 14.240000000000002
+          },
+          "role": "ARCHIVIST"
+        },
+        {
+          "event": "challengers_tested",
+          "passed": 0,
+          "role": "PROSECUTOR",
+          "tested": 6
+        },
+        {
+          "event": "KEEP_INCUMBENT",
+          "reason": "challenger failed prosecutor gates",
+          "role": "JUDGE",
+          "winner": "breakout-g1-445e321ae6"
+        }
+      ],
+      "status": "ELIMINATED",
+      "strikes": 11
+    },
+    {
+      "best_challenger": {
+        "evaluation": {
+          "confirmations": 0,
+          "genome": {
+            "generation": 1,
+            "genome_id": "trend-g1-51d2070c9d",
+            "params": {
+              "fast": 14,
+              "slow": 65
+            },
+            "parent_id": "trend-g0-c0b9781be1",
+            "strategy": "Trend"
+          },
+          "primary_oos_return": -0.021542029986365896,
+          "primary_profit_factor": 0.0,
+          "primary_trades": 9,
+          "score": 12.76,
+          "symbol": "ETH",
+          "timeframes": {
+            "15m": {
+              "cost_2x_positive": false,
+              "cost_3x_positive": false,
+              "max_drawdown": 0.05574400454478412,
+              "oos_return": -0.023422928271930044,
+              "profit_factor": 0.0718907080354801,
+              "return": -0.05402578151661597,
+              "score": 10.39,
+              "sharpe": -10.450815841493517,
+              "stress_passes": 0,
+              "trades": 7
+            },
+            "1h": {
+              "cost_2x_positive": false,
+              "cost_3x_positive": false,
+              "max_drawdown": 0.14740198233222612,
+              "oos_return": -0.021542029986365896,
+              "profit_factor": 0.0,
+              "return": -0.14078574924733112,
+              "score": 0.0,
+              "sharpe": -7.891507053538643,
+              "stress_passes": 0,
+              "trades": 9
+            },
+            "4h": {
+              "cost_2x_positive": true,
+              "cost_3x_positive": true,
+              "max_drawdown": 0.11915835290134091,
+              "oos_return": -0.060798118817085856,
+              "profit_factor": 2.460862232628049,
+              "return": 0.19863725006637356,
+              "score": 40.64,
+              "sharpe": 1.698884488900613,
+              "stress_passes": 3,
+              "trades": 11
+            }
+          },
+          "worst_drawdown": 0.14740198233222612
+        },
+        "genome": {
+          "generation": 1,
+          "genome_id": "trend-g1-51d2070c9d",
+          "params": {
+            "fast": 14,
+            "slow": 65
+          },
+          "parent_id": "trend-g0-c0b9781be1",
+          "strategy": "Trend"
+        },
+        "prosecution": {
+          "checks": {
+            "confirmations": false,
+            "cost_2x": false,
+            "primary_oos": false,
+            "score_floor": false,
+            "trade_count": true,
+            "worst_drawdown": true
+          },
+          "failed": [
+            "confirmations",
+            "primary_oos",
+            "cost_2x",
+            "score_floor"
+          ],
+          "passed": false
+        }
+      },
+      "cycle": 23,
+      "family": "ETH:Trend",
+      "incumbent_after": "trend-g0-c0b9781be1",
+      "incumbent_before": "trend-g0-c0b9781be1",
+      "incumbent_score": 13.16,
+      "role_trace": [
+        {
+          "event": "incumbent_loaded",
+          "genome_id": "trend-g0-c0b9781be1",
+          "role": "HUNTER"
+        },
+        {
+          "event": "memory_bias_loaded",
+          "memory_size": 524,
+          "parameter_votes": {
+            "fast": 14.560000000000004,
+            "slow": 22.699999999999996
+          },
+          "role": "ARCHIVIST"
+        },
+        {
+          "event": "challengers_tested",
+          "passed": 0,
+          "role": "PROSECUTOR",
+          "tested": 6
+        },
+        {
+          "event": "KEEP_INCUMBENT",
+          "reason": "challenger failed prosecutor gates",
+          "role": "JUDGE",
+          "winner": "trend-g0-c0b9781be1"
+        }
+      ],
+      "status": "ELIMINATED",
+      "strikes": 23
+    },
+    {
+      "best_challenger": {
+        "evaluation": {
+          "confirmations": 0,
+          "genome": {
+            "generation": 1,
+            "genome_id": "momentum-g1-88b2023a43",
+            "params": {
+              "lookback": 19,
+              "min_return": -0.004,
+              "slow": 68
+            },
+            "parent_id": "momentum-g0-42ed5f7974",
+            "strategy": "Momentum"
+          },
+          "primary_oos_return": 0.006246260846572538,
+          "primary_profit_factor": 0.19123464744612997,
+          "primary_trades": 23,
+          "score": 19.26,
+          "symbol": "ETH",
+          "timeframes": {
+            "15m": {
+              "cost_2x_positive": false,
+              "cost_3x_positive": false,
+              "max_drawdown": 0.060294733460234284,
+              "oos_return": -0.01109724860264405,
+              "profit_factor": 0.4358071286500991,
+              "return": -0.038666292905362165,
+              "score": 9.12,
+              "sharpe": -6.755428479604634,
+              "stress_passes": 0,
+              "trades": 24
+            },
+            "1h": {
+              "cost_2x_positive": false,
+              "cost_3x_positive": false,
+              "max_drawdown": 0.10899504039539776,
+              "oos_return": 0.006246260846572538,
+              "profit_factor": 0.19123464744612997,
+              "return": -0.09370256544033517,
+              "score": 21.48,
+              "sharpe": -5.1256015174311615,
+              "stress_passes": 1,
+              "trades": 23
+            },
+            "4h": {
+              "cost_2x_positive": true,
+              "cost_3x_positive": false,
+              "max_drawdown": 0.15366090937893018,
+              "oos_return": -0.06234662239838973,
+              "profit_factor": 1.2693718098090698,
+              "return": 0.04555228765913277,
+              "score": 24.97,
+              "sharpe": 0.5640610150055249,
+              "stress_passes": 2,
+              "trades": 37
+            }
+          },
+          "worst_drawdown": 0.15366090937893018
+        },
+        "genome": {
+          "generation": 1,
+          "genome_id": "momentum-g1-88b2023a43",
+          "params": {
+            "lookback": 19,
+            "min_return": -0.004,
+            "slow": 68
+          },
+          "parent_id": "momentum-g0-42ed5f7974",
+          "strategy": "Momentum"
+        },
+        "prosecution": {
+          "checks": {
+            "confirmations": false,
+            "cost_2x": false,
+            "primary_oos": true,
+            "score_floor": false,
+            "trade_count": true,
+            "worst_drawdown": true
+          },
+          "failed": [
+            "confirmations",
+            "cost_2x",
+            "score_floor"
+          ],
+          "passed": false
+        }
+      },
+      "cycle": 23,
+      "family": "ETH:Momentum",
+      "incumbent_after": "momentum-g0-42ed5f7974",
+      "incumbent_before": "momentum-g0-42ed5f7974",
+      "incumbent_score": 14.96,
+      "role_trace": [
+        {
+          "event": "incumbent_loaded",
+          "genome_id": "momentum-g0-42ed5f7974",
+          "role": "HUNTER"
+        },
+        {
+          "event": "memory_bias_loaded",
+          "memory_size": 530,
+          "parameter_votes": {
+            "lookback": -53.57,
+            "min_return": 33.77,
+            "slow": -99.75
+          },
+          "role": "ARCHIVIST"
+        },
+        {
+          "event": "challengers_tested",
+          "passed": 0,
+          "role": "PROSECUTOR",
+          "tested": 6
+        },
+        {
+          "event": "KEEP_INCUMBENT",
+          "reason": "challenger failed prosecutor gates",
+          "role": "JUDGE",
+          "winner": "momentum-g0-42ed5f7974"
+        }
+      ],
+      "status": "ELIMINATED",
+      "strikes": 23
+    },
+    {
+      "best_challenger": {
+        "evaluation": {
+          "confirmations": 1,
+          "genome": {
+            "generation": 1,
+            "genome_id": "mean-reversion-g1-eec4d5c622",
+            "params": {
+              "entry_z": -1.3,
+              "exit_z": -0.15,
+              "lookback": 28
+            },
+            "parent_id": "mean-reversion-g0-2326211c8f",
+            "strategy": "Mean Reversion"
+          },
+          "primary_oos_return": -0.005751810217024533,
+          "primary_profit_factor": 0.49614412440682915,
+          "primary_trades": 15,
+          "score": 21.99,
+          "symbol": "ETH",
+          "timeframes": {
+            "15m": {
+              "cost_2x_positive": false,
+              "cost_3x_positive": false,
+              "max_drawdown": 0.06653046372449212,
+              "oos_return": -0.024769729821530473,
+              "profit_factor": 0.2826090746388372,
+              "return": -0.05454736307703156,
+              "score": 7.37,
+              "sharpe": -9.547721462565356,
+              "stress_passes": 0,
+              "trades": 15
+            },
+            "1h": {
+              "cost_2x_positive": false,
+              "cost_3x_positive": false,
+              "max_drawdown": 0.13330052526202651,
+              "oos_return": -0.005751810217024533,
+              "profit_factor": 0.49614412440682915,
+              "return": -0.063331356216757,
+              "score": 0.0,
+              "sharpe": -2.413561546370431,
+              "stress_passes": 0,
+              "trades": 15
+            },
+            "4h": {
+              "cost_2x_positive": true,
+              "cost_3x_positive": true,
+              "max_drawdown": 0.06928474466091805,
+              "oos_return": 0.0298444580627355,
+              "profit_factor": 9.918152082461733,
+              "return": 0.2756565601737131,
+              "score": 80.6,
+              "sharpe": 3.4116461564943545,
+              "stress_passes": 4,
+              "trades": 16
+            }
+          },
+          "worst_drawdown": 0.13330052526202651
+        },
+        "genome": {
+          "generation": 1,
+          "genome_id": "mean-reversion-g1-eec4d5c622",
+          "params": {
+            "entry_z": -1.3,
+            "exit_z": -0.15,
+            "lookback": 28
+          },
+          "parent_id": "mean-reversion-g0-2326211c8f",
+          "strategy": "Mean Reversion"
+        },
+        "prosecution": {
+          "checks": {
+            "confirmations": false,
+            "cost_2x": false,
+            "primary_oos": false,
+            "score_floor": false,
+            "trade_count": true,
+            "worst_drawdown": true
+          },
+          "failed": [
+            "confirmations",
+            "primary_oos",
+            "cost_2x",
+            "score_floor"
+          ],
+          "passed": false
+        }
+      },
+      "cycle": 23,
+      "family": "ETH:Mean Reversion",
+      "incumbent_after": "mean-reversion-g0-2326211c8f",
+      "incumbent_before": "mean-reversion-g0-2326211c8f",
+      "incumbent_score": 21.7,
+      "role_trace": [
+        {
+          "event": "incumbent_loaded",
+          "genome_id": "mean-reversion-g0-2326211c8f",
+          "role": "HUNTER"
+        },
+        {
+          "event": "memory_bias_loaded",
+          "memory_size": 536,
+          "parameter_votes": {
+            "entry_z": -67.29,
+            "exit_z": 28.889999999999997,
+            "lookback": 145.95000000000002
+          },
+          "role": "ARCHIVIST"
+        },
+        {
+          "event": "challengers_tested",
+          "passed": 0,
+          "role": "PROSECUTOR",
+          "tested": 6
+        },
+        {
+          "event": "KEEP_INCUMBENT",
+          "reason": "challenger failed prosecutor gates",
+          "role": "JUDGE",
+          "winner": "mean-reversion-g0-2326211c8f"
+        }
+      ],
+      "status": "ELIMINATED",
+      "strikes": 23
+    },
+    {
+      "best_challenger": {
+        "evaluation": {
+          "confirmations": 0,
+          "genome": {
+            "generation": 2,
+            "genome_id": "breakout-g2-257fc6f307",
+            "params": {
+              "entry": 16,
+              "exit": 22
+            },
+            "parent_id": "breakout-g1-79f4f2d842",
+            "strategy": "Breakout"
+          },
+          "primary_oos_return": -0.05047567554151078,
+          "primary_profit_factor": 0.08662228431460038,
+          "primary_trades": 12,
+          "score": 27.99,
+          "symbol": "ETH",
+          "timeframes": {
+            "15m": {
+              "cost_2x_positive": false,
+              "cost_3x_positive": false,
+              "max_drawdown": 0.03201769521571929,
+              "oos_return": 0.0005029891053385249,
+              "profit_factor": 1.227587007001363,
+              "return": 0.0055775740465393575,
+              "score": 79.04,
+              "sharpe": 0.9622945395533747,
+              "stress_passes": 2,
+              "trades": 9
+            },
+            "1h": {
+              "cost_2x_positive": false,
+              "cost_3x_positive": false,
+              "max_drawdown": 0.11014888600053885,
+              "oos_return": -0.05047567554151078,
+              "profit_factor": 0.08662228431460038,
+              "return": -0.09976090822245953,
+              "score": 0.0,
+              "sharpe": -4.838456595326776,
+              "stress_passes": 0,
+              "trades": 12
+            },
+            "4h": {
+              "cost_2x_positive": true,
+              "cost_3x_positive": true,
+              "max_drawdown": 0.14670736946957963,
+              "oos_return": -0.12897735133121302,
+              "profit_factor": 2.1266051688514773,
+              "return": 0.21850232421349358,
+              "score": 32.92,
+              "sharpe": 1.773845305633747,
+              "stress_passes": 3,
+              "trades": 11
+            }
+          },
+          "worst_drawdown": 0.14670736946957963
+        },
+        "genome": {
+          "generation": 2,
+          "genome_id": "breakout-g2-257fc6f307",
+          "params": {
+            "entry": 16,
+            "exit": 22
+          },
+          "parent_id": "breakout-g1-79f4f2d842",
+          "strategy": "Breakout"
+        },
+        "prosecution": {
+          "checks": {
+            "confirmations": false,
+            "cost_2x": false,
+            "primary_oos": false,
+            "score_floor": false,
+            "trade_count": true,
+            "worst_drawdown": true
+          },
+          "failed": [
+            "confirmations",
+            "primary_oos",
+            "cost_2x",
+            "score_floor"
+          ],
+          "passed": false
+        }
+      },
+      "cycle": 23,
+      "family": "ETH:Breakout",
+      "incumbent_after": "breakout-g1-79f4f2d842",
+      "incumbent_before": "breakout-g1-79f4f2d842",
+      "incumbent_score": 16.73,
+      "role_trace": [
+        {
+          "event": "incumbent_loaded",
+          "genome_id": "breakout-g1-79f4f2d842",
+          "role": "HUNTER"
+        },
+        {
+          "event": "memory_bias_loaded",
+          "memory_size": 542,
+          "parameter_votes": {
+            "entry": 26.309999999999995,
+            "exit": 28.090000000000003
+          },
+          "role": "ARCHIVIST"
+        },
+        {
+          "event": "challengers_tested",
+          "passed": 0,
+          "role": "PROSECUTOR",
+          "tested": 6
+        },
+        {
+          "event": "KEEP_INCUMBENT",
+          "reason": "challenger failed prosecutor gates",
+          "role": "JUDGE",
+          "winner": "breakout-g1-79f4f2d842"
+        }
+      ],
+      "status": "ELIMINATED",
+      "strikes": 10
     }
   ],
   "hall_of_fame": [
-    {
-      "confirmations": 0,
-      "family": "BTC:Breakout",
-      "genome": {
-        "generation": 1,
-        "genome_id": "breakout-g1-445e321ae6",
-        "params": {
-          "entry": 36,
-          "exit": 7
-        },
-        "parent_id": "breakout-g0-56f0cf29e4",
-        "strategy": "Breakout"
-      },
-      "score": 33.3,
-      "status": "ELIMINATED",
-      "worst_drawdown": 0.08396431865599063
-    },
     {
       "confirmations": 0,
       "family": "BTC:Momentum",
@@ -14897,9 +14882,9 @@
         "parent_id": "momentum-g0-42ed5f7974",
         "strategy": "Momentum"
       },
-      "score": 31.65,
+      "score": 29.32,
       "status": "ELIMINATED",
-      "worst_drawdown": 0.09449091107297858
+      "worst_drawdown": 0.09449091107297869
     },
     {
       "confirmations": 1,
@@ -14915,9 +14900,26 @@
         "parent_id": null,
         "strategy": "Mean Reversion"
       },
-      "score": 29.09,
+      "score": 29.27,
       "status": "ELIMINATED",
       "worst_drawdown": 0.06459151002791008
+    },
+    {
+      "confirmations": 0,
+      "family": "BTC:Breakout",
+      "genome": {
+        "generation": 1,
+        "genome_id": "breakout-g1-445e321ae6",
+        "params": {
+          "entry": 36,
+          "exit": 7
+        },
+        "parent_id": "breakout-g0-56f0cf29e4",
+        "strategy": "Breakout"
+      },
+      "score": 25.55,
+      "status": "ELIMINATED",
+      "worst_drawdown": 0.08396431865599041
     },
     {
       "confirmations": 1,
@@ -14933,9 +14935,9 @@
         "parent_id": null,
         "strategy": "Mean Reversion"
       },
-      "score": 20.77,
+      "score": 21.7,
       "status": "ELIMINATED",
-      "worst_drawdown": 0.14385708510751338
+      "worst_drawdown": 0.14385708510751138
     },
     {
       "confirmations": 0,
@@ -14950,9 +14952,9 @@
         "parent_id": "breakout-g0-56f0cf29e4",
         "strategy": "Breakout"
       },
-      "score": 17.94,
+      "score": 16.73,
       "status": "ELIMINATED",
-      "worst_drawdown": 0.13903085664306092
+      "worst_drawdown": 0.13903085664306192
     },
     {
       "confirmations": 0,
@@ -14967,26 +14969,9 @@
         "parent_id": "trend-g2-1216cb7b79",
         "strategy": "Trend"
       },
-      "score": 16.39,
+      "score": 15.6,
       "status": "ELIMINATED",
-      "worst_drawdown": 0.10741688161587104
-    },
-    {
-      "confirmations": 0,
-      "family": "ETH:Trend",
-      "genome": {
-        "generation": 0,
-        "genome_id": "trend-g0-c0b9781be1",
-        "params": {
-          "fast": 18,
-          "slow": 55
-        },
-        "parent_id": null,
-        "strategy": "Trend"
-      },
-      "score": 13.81,
-      "status": "ELIMINATED",
-      "worst_drawdown": 0.1149561806104199
+      "worst_drawdown": 0.10741688161587237
     },
     {
       "confirmations": 0,
@@ -15002,9 +14987,26 @@
         "parent_id": null,
         "strategy": "Momentum"
       },
-      "score": 6.1,
+      "score": 14.96,
       "status": "ELIMINATED",
-      "worst_drawdown": 0.20297278507112182
+      "worst_drawdown": 0.20297278507112082
+    },
+    {
+      "confirmations": 0,
+      "family": "ETH:Trend",
+      "genome": {
+        "generation": 0,
+        "genome_id": "trend-g0-c0b9781be1",
+        "params": {
+          "fast": 18,
+          "slow": 55
+        },
+        "parent_id": null,
+        "strategy": "Trend"
+      },
+      "score": 13.16,
+      "status": "ELIMINATED",
+      "worst_drawdown": 0.11082360920636791
     }
   ],
   "incumbents": {
@@ -15021,50 +15023,50 @@
           "parent_id": "breakout-g0-56f0cf29e4",
           "strategy": "Breakout"
         },
-        "primary_oos_return": -0.006668097954698915,
-        "primary_profit_factor": 0.40475313118155487,
-        "primary_trades": 11,
-        "score": 33.3,
+        "primary_oos_return": -0.0004008498546776984,
+        "primary_profit_factor": 0.40980648227014843,
+        "primary_trades": 10,
+        "score": 25.55,
         "symbol": "BTC",
         "timeframes": {
           "15m": {
             "cost_2x_positive": false,
             "cost_3x_positive": false,
-            "max_drawdown": 0.016567973866519536,
-            "oos_return": -0.006214367041436741,
-            "profit_factor": 1.3053015835597153,
-            "return": 0.00667132504768464,
-            "score": 57.36,
-            "sharpe": 1.96695792948564,
-            "stress_passes": 1,
+            "max_drawdown": 0.018246297486249285,
+            "oos_return": -0.002063741400271213,
+            "profit_factor": 0.708881018130432,
+            "return": -0.008008546077898915,
+            "score": 25.45,
+            "sharpe": -2.343007222974763,
+            "stress_passes": 0,
             "trades": 10
           },
           "1h": {
             "cost_2x_positive": false,
             "cost_3x_positive": false,
-            "max_drawdown": 0.04755771391231067,
-            "oos_return": -0.006668097954698915,
-            "profit_factor": 0.40475313118155487,
-            "return": -0.03349173762016433,
-            "score": 12.68,
-            "sharpe": -2.870262529514156,
+            "max_drawdown": 0.04592025588399007,
+            "oos_return": -0.0004008498546776984,
+            "profit_factor": 0.40980648227014843,
+            "return": -0.03281836496374879,
+            "score": 13.14,
+            "sharpe": -2.869062549664263,
             "stress_passes": 0,
-            "trades": 11
+            "trades": 10
           },
           "4h": {
             "cost_2x_positive": true,
             "cost_3x_positive": true,
-            "max_drawdown": 0.08396431865599063,
+            "max_drawdown": 0.08396431865599041,
             "oos_return": -0.02767993976200067,
-            "profit_factor": 1.9329353583956113,
-            "return": 0.09917082966727953,
+            "profit_factor": 1.7250289478277194,
+            "return": 0.07814200667167182,
             "score": 50.49,
-            "sharpe": 1.4573607573358835,
+            "sharpe": 1.1854211898272229,
             "stress_passes": 3,
             "trades": 15
           }
         },
-        "worst_drawdown": 0.08396431865599063
+        "worst_drawdown": 0.08396431865599041
       },
       "family": "BTC:Breakout",
       "genome": {
@@ -15077,10 +15079,10 @@
         "parent_id": "breakout-g0-56f0cf29e4",
         "strategy": "Breakout"
       },
-      "last_cycle": 22,
+      "last_cycle": 23,
       "status": "ELIMINATED",
       "strategy": "Breakout",
-      "strikes": 10,
+      "strikes": 11,
       "symbol": "BTC"
     },
     "BTC:Mean Reversion": {
@@ -15097,21 +15099,21 @@
           "parent_id": null,
           "strategy": "Mean Reversion"
         },
-        "primary_oos_return": -0.007196883496582318,
+        "primary_oos_return": -0.01567485037849814,
         "primary_profit_factor": 0.5447714215040844,
         "primary_trades": 20,
-        "score": 29.09,
+        "score": 29.27,
         "symbol": "BTC",
         "timeframes": {
           "15m": {
             "cost_2x_positive": false,
             "cost_3x_positive": false,
-            "max_drawdown": 0.05235133738904696,
-            "oos_return": -0.007483406744856369,
-            "profit_factor": 0.3068832442868432,
-            "return": -0.04324370348314266,
-            "score": 11.34,
-            "sharpe": -11.236049212757665,
+            "max_drawdown": 0.04985816560021017,
+            "oos_return": -0.015351804512922063,
+            "profit_factor": 0.25001869421907263,
+            "return": -0.04545108416667143,
+            "score": 12.04,
+            "sharpe": -11.334763059674401,
             "stress_passes": 0,
             "trades": 24
           },
@@ -15119,23 +15121,23 @@
             "cost_2x_positive": false,
             "cost_3x_positive": false,
             "max_drawdown": 0.06459151002791008,
-            "oos_return": -0.007196883496582318,
+            "oos_return": -0.01567485037849814,
             "profit_factor": 0.5447714215040844,
-            "return": -0.040241697906838625,
+            "return": -0.042991093672617775,
             "score": 7.91,
-            "sharpe": -2.3301761263843135,
+            "sharpe": -2.4633894851616094,
             "stress_passes": 0,
             "trades": 20
           },
           "4h": {
             "cost_2x_positive": true,
             "cost_3x_positive": true,
-            "max_drawdown": 0.038577284007975,
-            "oos_return": 0.0455728683540737,
-            "profit_factor": 3.8814878328583515,
-            "return": 0.16507888997906206,
+            "max_drawdown": 0.038577284007974555,
+            "oos_return": 0.02926433949502827,
+            "profit_factor": 4.0488551560551285,
+            "return": 0.15756155851516307,
             "score": 89.2,
-            "sharpe": 2.916331724542525,
+            "sharpe": 2.853674212435095,
             "stress_passes": 4,
             "trades": 24
           }
@@ -15154,10 +15156,10 @@
         "parent_id": null,
         "strategy": "Mean Reversion"
       },
-      "last_cycle": 22,
+      "last_cycle": 23,
       "status": "ELIMINATED",
       "strategy": "Mean Reversion",
-      "strikes": 22,
+      "strikes": 23,
       "symbol": "BTC"
     },
     "BTC:Momentum": {
@@ -15174,29 +15176,29 @@
           "parent_id": "momentum-g0-42ed5f7974",
           "strategy": "Momentum"
         },
-        "primary_oos_return": 0.008696278512629663,
+        "primary_oos_return": 0.007649750466304006,
         "primary_profit_factor": 0.3921597470715356,
         "primary_trades": 27,
-        "score": 31.65,
+        "score": 29.32,
         "symbol": "BTC",
         "timeframes": {
           "15m": {
             "cost_2x_positive": false,
             "cost_3x_positive": false,
-            "max_drawdown": 0.03417599290137663,
-            "oos_return": -0.0062374285238561145,
-            "profit_factor": 0.7521987502816254,
-            "return": -0.012048261425253504,
-            "score": 22.51,
-            "sharpe": -2.88341153639635,
+            "max_drawdown": 0.04567624559259553,
+            "oos_return": -0.018280887147688052,
+            "profit_factor": 0.48896282753803927,
+            "return": -0.028799522514550646,
+            "score": 13.21,
+            "sharpe": -7.64587101596825,
             "stress_passes": 0,
-            "trades": 22
+            "trades": 26
           },
           "1h": {
             "cost_2x_positive": false,
             "cost_3x_positive": false,
             "max_drawdown": 0.08475452581459642,
-            "oos_return": 0.008696278512629663,
+            "oos_return": 0.007649750466304006,
             "profit_factor": 0.3921597470715356,
             "return": -0.056140267074890726,
             "score": 28.27,
@@ -15207,17 +15209,17 @@
           "4h": {
             "cost_2x_positive": true,
             "cost_3x_positive": true,
-            "max_drawdown": 0.09449091107297858,
-            "oos_return": -0.05730934578423552,
-            "profit_factor": 1.571440347959352,
-            "return": 0.10089099703339355,
+            "max_drawdown": 0.09449091107297869,
+            "oos_return": -0.041697998343936726,
+            "profit_factor": 1.6988362151868648,
+            "return": 0.118495566232377,
             "score": 47.54,
-            "sharpe": 1.3437000880801808,
+            "sharpe": 1.5517557356808658,
             "stress_passes": 3,
-            "trades": 25
+            "trades": 24
           }
         },
-        "worst_drawdown": 0.09449091107297858
+        "worst_drawdown": 0.09449091107297869
       },
       "family": "BTC:Momentum",
       "genome": {
@@ -15231,10 +15233,10 @@
         "parent_id": "momentum-g0-42ed5f7974",
         "strategy": "Momentum"
       },
-      "last_cycle": 22,
+      "last_cycle": 23,
       "status": "ELIMINATED",
       "strategy": "Momentum",
-      "strikes": 19,
+      "strikes": 20,
       "symbol": "BTC"
     },
     "BTC:Trend": {
@@ -15250,50 +15252,50 @@
           "parent_id": "trend-g2-1216cb7b79",
           "strategy": "Trend"
         },
-        "primary_oos_return": -0.018953463076673116,
-        "primary_profit_factor": 0.22559327544986435,
-        "primary_trades": 8,
-        "score": 16.39,
+        "primary_oos_return": -0.02333078170847691,
+        "primary_profit_factor": 0.3040815647987366,
+        "primary_trades": 7,
+        "score": 15.6,
         "symbol": "BTC",
         "timeframes": {
           "15m": {
             "cost_2x_positive": false,
             "cost_3x_positive": false,
-            "max_drawdown": 0.03174397059595768,
-            "oos_return": -0.000964408174025988,
-            "profit_factor": 0.25265525079279627,
-            "return": -0.021381645325993515,
-            "score": 17.11,
-            "sharpe": -5.874207268515022,
+            "max_drawdown": 0.043080348718378736,
+            "oos_return": -0.013967604563504321,
+            "profit_factor": 0.21933065215060868,
+            "return": -0.02449319087021884,
+            "score": 13.94,
+            "sharpe": -6.971470964994342,
             "stress_passes": 0,
-            "trades": 5
+            "trades": 6
           },
           "1h": {
             "cost_2x_positive": false,
             "cost_3x_positive": false,
-            "max_drawdown": 0.08476563378837842,
-            "oos_return": -0.018953463076673116,
-            "profit_factor": 0.22559327544986435,
-            "return": -0.06673841976725847,
+            "max_drawdown": 0.08476563378837587,
+            "oos_return": -0.02333078170847691,
+            "profit_factor": 0.3040815647987366,
+            "return": -0.04506899282995902,
             "score": 2.27,
-            "sharpe": -3.9645861465551886,
+            "sharpe": -2.6758772259286094,
             "stress_passes": 0,
-            "trades": 8
+            "trades": 7
           },
           "4h": {
             "cost_2x_positive": true,
             "cost_3x_positive": true,
-            "max_drawdown": 0.10741688161587104,
-            "oos_return": -0.05512821078960639,
-            "profit_factor": 2.4962647408026117,
-            "return": 0.0668027949245884,
+            "max_drawdown": 0.10741688161587237,
+            "oos_return": -0.06920636469797337,
+            "profit_factor": 1.5524598599345962,
+            "return": 0.05621187121188331,
             "score": 43.92,
-            "sharpe": 0.96770200379732,
+            "sharpe": 0.8414462249709508,
             "stress_passes": 3,
-            "trades": 6
+            "trades": 7
           }
         },
-        "worst_drawdown": 0.10741688161587104
+        "worst_drawdown": 0.10741688161587237
       },
       "family": "BTC:Trend",
       "genome": {
@@ -15306,10 +15308,10 @@
         "parent_id": "trend-g2-1216cb7b79",
         "strategy": "Trend"
       },
-      "last_cycle": 22,
+      "last_cycle": 23,
       "status": "ELIMINATED",
       "strategy": "Trend",
-      "strikes": 13,
+      "strikes": 14,
       "symbol": "BTC"
     },
     "ETH:Breakout": {
@@ -15326,49 +15328,49 @@
           "strategy": "Breakout"
         },
         "primary_oos_return": -0.023685346529929263,
-        "primary_profit_factor": 0.0841806691166783,
-        "primary_trades": 8,
-        "score": 17.94,
+        "primary_profit_factor": 0.09025975547664844,
+        "primary_trades": 7,
+        "score": 16.73,
         "symbol": "ETH",
         "timeframes": {
           "15m": {
             "cost_2x_positive": false,
             "cost_3x_positive": false,
-            "max_drawdown": 0.031153118016409187,
-            "oos_return": -0.013338464477274825,
-            "profit_factor": 0.7124679641329627,
-            "return": -0.013341368985047453,
-            "score": 21.96,
-            "sharpe": -2.1075680777720893,
+            "max_drawdown": 0.031696896648802375,
+            "oos_return": -0.005564178132958508,
+            "profit_factor": 0.42405479898626347,
+            "return": -0.02582322332254061,
+            "score": 17.12,
+            "sharpe": -4.466400838494376,
             "stress_passes": 0,
             "trades": 10
           },
           "1h": {
             "cost_2x_positive": false,
             "cost_3x_positive": false,
-            "max_drawdown": 0.06657115789193946,
+            "max_drawdown": 0.06657115789194012,
             "oos_return": -0.023685346529929263,
-            "profit_factor": 0.0841806691166783,
-            "return": -0.052362901304192855,
+            "profit_factor": 0.09025975547664844,
+            "return": -0.04862280886958126,
             "score": 7.36,
-            "sharpe": -3.128505188414607,
+            "sharpe": -2.951827390641411,
             "stress_passes": 0,
-            "trades": 8
+            "trades": 7
           },
           "4h": {
             "cost_2x_positive": true,
             "cost_3x_positive": true,
-            "max_drawdown": 0.13903085664306092,
+            "max_drawdown": 0.13903085664306192,
             "oos_return": -0.05485443016986957,
-            "profit_factor": 1.6238507504790785,
-            "return": 0.1090847641446051,
+            "profit_factor": 1.4428256753726245,
+            "return": 0.0661261273014897,
             "score": 35.07,
-            "sharpe": 1.0858087359072335,
+            "sharpe": 0.7440336642292645,
             "stress_passes": 3,
             "trades": 12
           }
         },
-        "worst_drawdown": 0.13903085664306092
+        "worst_drawdown": 0.13903085664306192
       },
       "family": "ETH:Breakout",
       "genome": {
@@ -15381,10 +15383,10 @@
         "parent_id": "breakout-g0-56f0cf29e4",
         "strategy": "Breakout"
       },
-      "last_cycle": 22,
+      "last_cycle": 23,
       "status": "ELIMINATED",
       "strategy": "Breakout",
-      "strikes": 9,
+      "strikes": 10,
       "symbol": "ETH"
     },
     "ETH:Mean Reversion": {
@@ -15401,50 +15403,50 @@
           "parent_id": null,
           "strategy": "Mean Reversion"
         },
-        "primary_oos_return": -0.01926261716019184,
-        "primary_profit_factor": 0.24100064798000084,
-        "primary_trades": 22,
-        "score": 20.77,
+        "primary_oos_return": -0.025305058264600833,
+        "primary_profit_factor": 0.23027452964081246,
+        "primary_trades": 20,
+        "score": 21.7,
         "symbol": "ETH",
         "timeframes": {
           "15m": {
             "cost_2x_positive": false,
             "cost_3x_positive": false,
-            "max_drawdown": 0.08405014146934953,
-            "oos_return": -0.015985422580218067,
-            "profit_factor": 0.2660623480235663,
-            "return": -0.06642710868458868,
-            "score": 2.47,
-            "sharpe": -11.40767672868596,
+            "max_drawdown": 0.0707134930415152,
+            "oos_return": -0.02680379781163378,
+            "profit_factor": 0.24838158675926042,
+            "return": -0.0601391388211201,
+            "score": 6.2,
+            "sharpe": -10.49569166731363,
             "stress_passes": 0,
-            "trades": 17
+            "trades": 18
           },
           "1h": {
             "cost_2x_positive": false,
             "cost_3x_positive": false,
-            "max_drawdown": 0.14385708510751338,
-            "oos_return": -0.01926261716019184,
-            "profit_factor": 0.24100064798000084,
-            "return": -0.1201417221804505,
+            "max_drawdown": 0.14385708510751138,
+            "oos_return": -0.025305058264600833,
+            "profit_factor": 0.23027452964081246,
+            "return": -0.12576409464934923,
             "score": 0.0,
-            "sharpe": -4.789995946832835,
+            "sharpe": -5.001595917803734,
             "stress_passes": 0,
-            "trades": 22
+            "trades": 20
           },
           "4h": {
             "cost_2x_positive": true,
             "cost_3x_positive": true,
             "max_drawdown": 0.06928474466091805,
-            "oos_return": 0.07269935969871422,
-            "profit_factor": 6.3453775722002534,
-            "return": 0.31141733114164416,
+            "oos_return": 0.045568309318854805,
+            "profit_factor": 6.0106094138536825,
+            "return": 0.25569451778353147,
             "score": 80.6,
-            "sharpe": 3.6219111239378172,
+            "sharpe": 3.0603074688272534,
             "stress_passes": 4,
-            "trades": 22
+            "trades": 21
           }
         },
-        "worst_drawdown": 0.14385708510751338
+        "worst_drawdown": 0.14385708510751138
       },
       "family": "ETH:Mean Reversion",
       "genome": {
@@ -15458,10 +15460,10 @@
         "parent_id": null,
         "strategy": "Mean Reversion"
       },
-      "last_cycle": 22,
+      "last_cycle": 23,
       "status": "ELIMINATED",
       "strategy": "Mean Reversion",
-      "strikes": 22,
+      "strikes": 23,
       "symbol": "ETH"
     },
     "ETH:Momentum": {
@@ -15478,50 +15480,50 @@
           "parent_id": null,
           "strategy": "Momentum"
         },
-        "primary_oos_return": -0.007124700928417882,
-        "primary_profit_factor": 0.20168167847722543,
-        "primary_trades": 24,
-        "score": 6.1,
+        "primary_oos_return": 0.005017885568839864,
+        "primary_profit_factor": 0.22043777898172423,
+        "primary_trades": 22,
+        "score": 14.96,
         "symbol": "ETH",
         "timeframes": {
           "15m": {
             "cost_2x_positive": false,
             "cost_3x_positive": false,
-            "max_drawdown": 0.03495377044760062,
-            "oos_return": -0.00829834379160077,
-            "profit_factor": 0.8126748593015969,
-            "return": -0.009838205993160876,
-            "score": 24.41,
-            "sharpe": -1.4580838180664364,
+            "max_drawdown": 0.04403373049125281,
+            "oos_return": -0.011040798378881389,
+            "profit_factor": 0.562698667490847,
+            "return": -0.021687765440890017,
+            "score": 13.67,
+            "sharpe": -3.680460181957217,
             "stress_passes": 0,
-            "trades": 21
+            "trades": 22
           },
           "1h": {
             "cost_2x_positive": false,
             "cost_3x_positive": false,
-            "max_drawdown": 0.11423405258911778,
-            "oos_return": -0.007124700928417882,
-            "profit_factor": 0.20168167847722543,
-            "return": -0.10978938042423514,
-            "score": 0.0,
-            "sharpe": -6.257859270469785,
-            "stress_passes": 0,
-            "trades": 24
+            "max_drawdown": 0.10324488844916091,
+            "oos_return": 0.005017885568839864,
+            "profit_factor": 0.22043777898172423,
+            "return": -0.09874507391612675,
+            "score": 23.09,
+            "sharpe": -5.63565143136816,
+            "stress_passes": 1,
+            "trades": 22
           },
           "4h": {
             "cost_2x_positive": false,
             "cost_3x_positive": false,
-            "max_drawdown": 0.20297278507112182,
-            "oos_return": -0.09974243359939694,
-            "profit_factor": 0.9965820335975448,
-            "return": -0.044677578699518716,
+            "max_drawdown": 0.20297278507112082,
+            "oos_return": -0.07674779124317765,
+            "profit_factor": 1.0291657734698292,
+            "return": -0.03243874521126,
             "score": 0.0,
-            "sharpe": -0.24183352538204117,
+            "sharpe": -0.13023058080763222,
             "stress_passes": 0,
-            "trades": 36
+            "trades": 35
           }
         },
-        "worst_drawdown": 0.20297278507112182
+        "worst_drawdown": 0.20297278507112082
       },
       "family": "ETH:Momentum",
       "genome": {
@@ -15535,10 +15537,10 @@
         "parent_id": null,
         "strategy": "Momentum"
       },
-      "last_cycle": 22,
+      "last_cycle": 23,
       "status": "ELIMINATED",
       "strategy": "Momentum",
-      "strikes": 22,
+      "strikes": 23,
       "symbol": "ETH"
     },
     "ETH:Trend": {
@@ -15556,48 +15558,48 @@
         },
         "primary_oos_return": -0.02347003644853951,
         "primary_profit_factor": 0.0,
-        "primary_trades": 10,
-        "score": 13.81,
+        "primary_trades": 9,
+        "score": 13.16,
         "symbol": "ETH",
         "timeframes": {
           "15m": {
             "cost_2x_positive": false,
             "cost_3x_positive": false,
-            "max_drawdown": 0.04895983653873437,
-            "oos_return": -0.01026420135275563,
-            "profit_factor": 0.15791564662553054,
-            "return": -0.04532447660685546,
-            "score": 12.29,
-            "sharpe": -9.032644457753973,
+            "max_drawdown": 0.058234636364421055,
+            "oos_return": -0.0224428801732649,
+            "profit_factor": 0.11560680974163269,
+            "return": -0.05690989196356033,
+            "score": 9.69,
+            "sharpe": -11.749144055543097,
             "stress_passes": 0,
-            "trades": 7
+            "trades": 8
           },
           "1h": {
             "cost_2x_positive": false,
             "cost_3x_positive": false,
-            "max_drawdown": 0.1149561806104199,
+            "max_drawdown": 0.10399814176988698,
             "oos_return": -0.02347003644853951,
             "profit_factor": 0.0,
-            "return": -0.1149561806104199,
+            "return": -0.09500923697985886,
             "score": 0.0,
-            "sharpe": -6.495475529820499,
+            "sharpe": -5.421044092528569,
             "stress_passes": 0,
-            "trades": 10
+            "trades": 9
           },
           "4h": {
             "cost_2x_positive": true,
             "cost_3x_positive": true,
-            "max_drawdown": 0.11082360920636658,
-            "oos_return": -0.07263530851780342,
-            "profit_factor": 2.21283028682731,
-            "return": 0.18448983297713828,
+            "max_drawdown": 0.11082360920636791,
+            "oos_return": -0.06803286402092834,
+            "profit_factor": 2.2164123142100065,
+            "return": 0.18517453425516406,
             "score": 42.97,
-            "sharpe": 1.5855253699498357,
+            "sharpe": 1.5986540793342519,
             "stress_passes": 3,
             "trades": 9
           }
         },
-        "worst_drawdown": 0.1149561806104199
+        "worst_drawdown": 0.11082360920636791
       },
       "family": "ETH:Trend",
       "genome": {
@@ -15610,975 +15612,15 @@
         "parent_id": null,
         "strategy": "Trend"
       },
-      "last_cycle": 22,
+      "last_cycle": 23,
       "status": "ELIMINATED",
       "strategy": "Trend",
-      "strikes": 22,
+      "strikes": 23,
       "symbol": "ETH"
     }
   },
-  "last_run_utc": "2026-10-25T07:33:18.340765+00:00",
+  "last_run_utc": "2026-10-26T07:45:09.550499+00:00",
   "memory": [
-    {
-      "changed": {
-        "fast": {
-          "from": 18,
-          "to": 14
-        },
-        "slow": {
-          "from": 55,
-          "to": 45
-        }
-      },
-      "child": "trend-g1-d3166085f3",
-      "drawdown_delta": -0.022224,
-      "parent": "trend-g0-c0b9781be1",
-      "promoted": false,
-      "score_delta": -5.87,
-      "strategy": "Trend"
-    },
-    {
-      "changed": {
-        "fast": {
-          "from": 18,
-          "to": 20
-        },
-        "slow": {
-          "from": 55,
-          "to": 62
-        }
-      },
-      "child": "trend-g1-a033667d64",
-      "drawdown_delta": -0.008311,
-      "parent": "trend-g0-c0b9781be1",
-      "promoted": false,
-      "score_delta": -9.29,
-      "strategy": "Trend"
-    },
-    {
-      "changed": {
-        "lookback": {
-          "from": 22,
-          "to": 25
-        },
-        "min_return": {
-          "from": 0.0,
-          "to": -0.004
-        },
-        "slow": {
-          "from": 60,
-          "to": 64
-        }
-      },
-      "child": "momentum-g1-165e023e7f",
-      "drawdown_delta": -0.023605,
-      "parent": "momentum-g0-42ed5f7974",
-      "promoted": false,
-      "score_delta": 2.51,
-      "strategy": "Momentum"
-    },
-    {
-      "changed": {
-        "lookback": {
-          "from": 22,
-          "to": 27
-        },
-        "min_return": {
-          "from": 0.0,
-          "to": 0.004
-        },
-        "slow": {
-          "from": 60,
-          "to": 64
-        }
-      },
-      "child": "momentum-g1-0e15169936",
-      "drawdown_delta": -0.019083,
-      "parent": "momentum-g0-42ed5f7974",
-      "promoted": false,
-      "score_delta": -1.57,
-      "strategy": "Momentum"
-    },
-    {
-      "changed": {
-        "lookback": {
-          "from": 22,
-          "to": 25
-        },
-        "min_return": {
-          "from": 0.0,
-          "to": 0.002
-        },
-        "slow": {
-          "from": 60,
-          "to": 52
-        }
-      },
-      "child": "momentum-g1-00f3289ca4",
-      "drawdown_delta": -0.029277,
-      "parent": "momentum-g0-42ed5f7974",
-      "promoted": false,
-      "score_delta": -2.79,
-      "strategy": "Momentum"
-    },
-    {
-      "changed": {
-        "lookback": {
-          "from": 22,
-          "to": 17
-        },
-        "min_return": {
-          "from": 0.0,
-          "to": 0.004
-        },
-        "slow": {
-          "from": 60,
-          "to": 64
-        }
-      },
-      "child": "momentum-g1-d7f0e17d26",
-      "drawdown_delta": -0.044235,
-      "parent": "momentum-g0-42ed5f7974",
-      "promoted": false,
-      "score_delta": -3.09,
-      "strategy": "Momentum"
-    },
-    {
-      "changed": {
-        "lookback": {
-          "from": 22,
-          "to": 25
-        },
-        "min_return": {
-          "from": 0.0,
-          "to": 0.004
-        },
-        "slow": {
-          "from": 60,
-          "to": 64
-        }
-      },
-      "child": "momentum-g1-1c07740c57",
-      "drawdown_delta": -0.018013,
-      "parent": "momentum-g0-42ed5f7974",
-      "promoted": false,
-      "score_delta": -7.38,
-      "strategy": "Momentum"
-    },
-    {
-      "changed": {
-        "lookback": {
-          "from": 22,
-          "to": 25
-        },
-        "min_return": {
-          "from": 0.0,
-          "to": 0.002
-        },
-        "slow": {
-          "from": 60,
-          "to": 72
-        }
-      },
-      "child": "momentum-g1-4b07c518c3",
-      "drawdown_delta": -0.018522,
-      "parent": "momentum-g0-42ed5f7974",
-      "promoted": false,
-      "score_delta": -12.5,
-      "strategy": "Momentum"
-    },
-    {
-      "changed": {
-        "entry_z": {
-          "from": -1.15,
-          "to": -1.4
-        },
-        "exit_z": {
-          "from": -0.05,
-          "to": 0.05
-        },
-        "lookback": {
-          "from": 20,
-          "to": 22
-        }
-      },
-      "child": "mean-reversion-g1-cfb8cf257a",
-      "drawdown_delta": 0.00128,
-      "parent": "mean-reversion-g0-2326211c8f",
-      "promoted": false,
-      "score_delta": 0.0,
-      "strategy": "Mean Reversion"
-    },
-    {
-      "changed": {
-        "entry_z": {
-          "from": -1.15,
-          "to": -1.4
-        },
-        "exit_z": {
-          "from": -0.05,
-          "to": 0.05
-        },
-        "lookback": {
-          "from": 20,
-          "to": 28
-        }
-      },
-      "child": "mean-reversion-g1-6ffa7f7b36",
-      "drawdown_delta": -0.00383,
-      "parent": "mean-reversion-g0-2326211c8f",
-      "promoted": false,
-      "score_delta": -5.89,
-      "strategy": "Mean Reversion"
-    },
-    {
-      "changed": {
-        "entry_z": {
-          "from": -1.15,
-          "to": -1.4
-        },
-        "exit_z": {
-          "from": -0.05,
-          "to": -0.15
-        },
-        "lookback": {
-          "from": 20,
-          "to": 24
-        }
-      },
-      "child": "mean-reversion-g1-31f3a988cc",
-      "drawdown_delta": -0.000342,
-      "parent": "mean-reversion-g0-2326211c8f",
-      "promoted": false,
-      "score_delta": -6.5,
-      "strategy": "Mean Reversion"
-    },
-    {
-      "changed": {
-        "entry_z": {
-          "from": -1.15,
-          "to": -0.9
-        },
-        "exit_z": {
-          "from": -0.05,
-          "to": -0.25
-        },
-        "lookback": {
-          "from": 20,
-          "to": 12
-        }
-      },
-      "child": "mean-reversion-g1-2b9f80c53e",
-      "drawdown_delta": 0.036881,
-      "parent": "mean-reversion-g0-2326211c8f",
-      "promoted": false,
-      "score_delta": -7.54,
-      "strategy": "Mean Reversion"
-    },
-    {
-      "changed": {
-        "entry_z": {
-          "from": -1.15,
-          "to": -0.9
-        },
-        "exit_z": {
-          "from": -0.05,
-          "to": -0.25
-        },
-        "lookback": {
-          "from": 20,
-          "to": 16
-        }
-      },
-      "child": "mean-reversion-g1-3aff490b92",
-      "drawdown_delta": 0.019579,
-      "parent": "mean-reversion-g0-2326211c8f",
-      "promoted": false,
-      "score_delta": -7.54,
-      "strategy": "Mean Reversion"
-    },
-    {
-      "changed": {
-        "entry_z": {
-          "from": -1.15,
-          "to": -1.4
-        },
-        "exit_z": {
-          "from": -0.05,
-          "to": 0.05
-        },
-        "lookback": {
-          "from": 20,
-          "to": 12
-        }
-      },
-      "child": "mean-reversion-g1-0115c233e5",
-      "drawdown_delta": 0.030254,
-      "parent": "mean-reversion-g0-2326211c8f",
-      "promoted": false,
-      "score_delta": -7.54,
-      "strategy": "Mean Reversion"
-    },
-    {
-      "changed": {
-        "entry": {
-          "from": 24,
-          "to": 36
-        },
-        "exit": {
-          "from": 10,
-          "to": 7
-        }
-      },
-      "child": "breakout-g1-445e321ae6",
-      "drawdown_delta": 0.017395,
-      "parent": "breakout-g0-56f0cf29e4",
-      "promoted": false,
-      "score_delta": 20.93,
-      "strategy": "Breakout"
-    },
-    {
-      "changed": {
-        "entry": {
-          "from": 24,
-          "to": 28
-        },
-        "exit": {
-          "from": 10,
-          "to": 13
-        }
-      },
-      "child": "breakout-g1-c1de17abb3",
-      "drawdown_delta": -0.024794,
-      "parent": "breakout-g0-56f0cf29e4",
-      "promoted": false,
-      "score_delta": 12.43,
-      "strategy": "Breakout"
-    },
-    {
-      "changed": {
-        "entry": {
-          "from": 24,
-          "to": 28
-        },
-        "exit": {
-          "from": 10,
-          "to": 13
-        }
-      },
-      "child": "breakout-g1-c1de17abb3",
-      "drawdown_delta": -0.024794,
-      "parent": "breakout-g0-56f0cf29e4",
-      "promoted": false,
-      "score_delta": 12.43,
-      "strategy": "Breakout"
-    },
-    {
-      "changed": {
-        "entry": {
-          "from": 24,
-          "to": 28
-        },
-        "exit": {
-          "from": 10,
-          "to": 7
-        }
-      },
-      "child": "breakout-g1-94e081b141",
-      "drawdown_delta": 0.012289,
-      "parent": "breakout-g0-56f0cf29e4",
-      "promoted": false,
-      "score_delta": 12.1,
-      "strategy": "Breakout"
-    },
-    {
-      "changed": {
-        "entry": {
-          "from": 24,
-          "to": 36
-        },
-        "exit": {
-          "from": 10,
-          "to": 4
-        }
-      },
-      "child": "breakout-g1-be4753c9e8",
-      "drawdown_delta": -0.022523,
-      "parent": "breakout-g0-56f0cf29e4",
-      "promoted": false,
-      "score_delta": -0.16,
-      "strategy": "Breakout"
-    },
-    {
-      "changed": {
-        "entry": {
-          "from": 24,
-          "to": 28
-        },
-        "exit": {
-          "from": 10,
-          "to": 4
-        }
-      },
-      "child": "breakout-g1-b454bdcf1a",
-      "drawdown_delta": -0.02575,
-      "parent": "breakout-g0-56f0cf29e4",
-      "promoted": false,
-      "score_delta": -8.15,
-      "strategy": "Breakout"
-    },
-    {
-      "changed": {
-        "fast": {
-          "from": 27,
-          "to": 31
-        },
-        "slow": {
-          "from": 57,
-          "to": 50
-        }
-      },
-      "child": "trend-g4-60318ffcd2",
-      "drawdown_delta": 0.007876,
-      "parent": "trend-g3-b376585e02",
-      "promoted": false,
-      "score_delta": 16.94,
-      "strategy": "Trend"
-    },
-    {
-      "changed": {
-        "fast": {
-          "from": 27,
-          "to": 24
-        },
-        "slow": {
-          "from": 57,
-          "to": 47
-        }
-      },
-      "child": "trend-g4-b02983bbab",
-      "drawdown_delta": 0.020509,
-      "parent": "trend-g3-b376585e02",
-      "promoted": false,
-      "score_delta": 3.13,
-      "strategy": "Trend"
-    },
-    {
-      "changed": {
-        "fast": {
-          "from": 27,
-          "to": 29
-        },
-        "slow": {
-          "from": 57,
-          "to": 50
-        }
-      },
-      "child": "trend-g4-eaab485ac4",
-      "drawdown_delta": 0.008917,
-      "parent": "trend-g3-b376585e02",
-      "promoted": false,
-      "score_delta": -0.67,
-      "strategy": "Trend"
-    },
-    {
-      "changed": {
-        "fast": {
-          "from": 27,
-          "to": 30
-        },
-        "slow": {
-          "from": 57,
-          "to": 64
-        }
-      },
-      "child": "trend-g4-43f9d4c95a",
-      "drawdown_delta": 0.023965,
-      "parent": "trend-g3-b376585e02",
-      "promoted": false,
-      "score_delta": -1.91,
-      "strategy": "Trend"
-    },
-    {
-      "changed": {
-        "fast": {
-          "from": 27,
-          "to": 25
-        },
-        "slow": {
-          "from": 57,
-          "to": 64
-        }
-      },
-      "child": "trend-g4-f5a19e7e0a",
-      "drawdown_delta": 0.021116,
-      "parent": "trend-g3-b376585e02",
-      "promoted": false,
-      "score_delta": -2.89,
-      "strategy": "Trend"
-    },
-    {
-      "changed": {
-        "fast": {
-          "from": 27,
-          "to": 29
-        },
-        "slow": {
-          "from": 57,
-          "to": 67
-        }
-      },
-      "child": "trend-g4-ad8ee913ce",
-      "drawdown_delta": 0.015541,
-      "parent": "trend-g3-b376585e02",
-      "promoted": false,
-      "score_delta": -4.06,
-      "strategy": "Trend"
-    },
-    {
-      "changed": {
-        "lookback": {
-          "from": 14,
-          "to": 9
-        },
-        "min_return": {
-          "from": -0.002,
-          "to": -0.006
-        },
-        "slow": {
-          "from": 64,
-          "to": 52
-        }
-      },
-      "child": "momentum-g2-c6e97c49fb",
-      "drawdown_delta": 0.035585,
-      "parent": "momentum-g1-ba37e3522c",
-      "promoted": false,
-      "score_delta": 7.91,
-      "strategy": "Momentum"
-    },
-    {
-      "changed": {
-        "lookback": {
-          "from": 14,
-          "to": 19
-        },
-        "min_return": {
-          "from": -0.002,
-          "to": 0.002
-        },
-        "slow": {
-          "from": 64,
-          "to": 56
-        }
-      },
-      "child": "momentum-g2-8fdf048ea2",
-      "drawdown_delta": 0.037892,
-      "parent": "momentum-g1-ba37e3522c",
-      "promoted": false,
-      "score_delta": 7.02,
-      "strategy": "Momentum"
-    },
-    {
-      "changed": {
-        "lookback": {
-          "from": 14,
-          "to": 22
-        },
-        "min_return": {
-          "from": -0.002,
-          "to": -0.004
-        },
-        "slow": {
-          "from": 64,
-          "to": 56
-        }
-      },
-      "child": "momentum-g2-b8cfa56f28",
-      "drawdown_delta": 0.020068,
-      "parent": "momentum-g1-ba37e3522c",
-      "promoted": false,
-      "score_delta": -1.08,
-      "strategy": "Momentum"
-    },
-    {
-      "changed": {
-        "lookback": {
-          "from": 14,
-          "to": 22
-        },
-        "min_return": {
-          "from": -0.002,
-          "to": -0.006
-        },
-        "slow": {
-          "from": 64,
-          "to": 56
-        }
-      },
-      "child": "momentum-g2-747b137d87",
-      "drawdown_delta": 0.022121,
-      "parent": "momentum-g1-ba37e3522c",
-      "promoted": false,
-      "score_delta": -2.29,
-      "strategy": "Momentum"
-    },
-    {
-      "changed": {
-        "lookback": {
-          "from": 14,
-          "to": 17
-        },
-        "min_return": {
-          "from": -0.002,
-          "to": 0.002
-        },
-        "slow": {
-          "from": 64,
-          "to": 72
-        }
-      },
-      "child": "momentum-g2-da0cd7503c",
-      "drawdown_delta": 0.003183,
-      "parent": "momentum-g1-ba37e3522c",
-      "promoted": false,
-      "score_delta": -3.23,
-      "strategy": "Momentum"
-    },
-    {
-      "changed": {
-        "lookback": {
-          "from": 14,
-          "to": 6
-        },
-        "min_return": {
-          "from": -0.002,
-          "to": 0.002
-        },
-        "slow": {
-          "from": 64,
-          "to": 56
-        }
-      },
-      "child": "momentum-g2-4cd7467085",
-      "drawdown_delta": 0.035234,
-      "parent": "momentum-g1-ba37e3522c",
-      "promoted": false,
-      "score_delta": -10.49,
-      "strategy": "Momentum"
-    },
-    {
-      "changed": {
-        "entry_z": {
-          "from": -1.15,
-          "to": -1.3
-        },
-        "exit_z": {
-          "from": -0.05,
-          "to": 0.15
-        },
-        "lookback": {
-          "from": 20,
-          "to": 24
-        }
-      },
-      "child": "mean-reversion-g1-1e8a940940",
-      "drawdown_delta": -0.003229,
-      "parent": "mean-reversion-g0-2326211c8f",
-      "promoted": false,
-      "score_delta": 2.84,
-      "strategy": "Mean Reversion"
-    },
-    {
-      "changed": {
-        "entry_z": {
-          "from": -1.15,
-          "to": -1.4
-        },
-        "exit_z": {
-          "from": -0.05,
-          "to": 0.15
-        },
-        "lookback": {
-          "from": 20,
-          "to": 28
-        }
-      },
-      "child": "mean-reversion-g1-51e1d5e03f",
-      "drawdown_delta": -0.006273,
-      "parent": "mean-reversion-g0-2326211c8f",
-      "promoted": false,
-      "score_delta": 1.47,
-      "strategy": "Mean Reversion"
-    },
-    {
-      "changed": {
-        "entry_z": {
-          "from": -1.15,
-          "to": -1.4
-        },
-        "exit_z": {
-          "from": -0.05,
-          "to": 0.15
-        },
-        "lookback": {
-          "from": 20,
-          "to": 16
-        }
-      },
-      "child": "mean-reversion-g1-647b9fec5e",
-      "drawdown_delta": -0.002424,
-      "parent": "mean-reversion-g0-2326211c8f",
-      "promoted": false,
-      "score_delta": 1.39,
-      "strategy": "Mean Reversion"
-    },
-    {
-      "changed": {
-        "entry_z": {
-          "from": -1.15,
-          "to": -1.0
-        },
-        "exit_z": {
-          "from": -0.05,
-          "to": 0.15
-        },
-        "lookback": {
-          "from": 20,
-          "to": 24
-        }
-      },
-      "child": "mean-reversion-g1-cd27f65549",
-      "drawdown_delta": -0.002169,
-      "parent": "mean-reversion-g0-2326211c8f",
-      "promoted": false,
-      "score_delta": -2.15,
-      "strategy": "Mean Reversion"
-    },
-    {
-      "changed": {
-        "entry_z": {
-          "from": -1.15,
-          "to": -1.0
-        },
-        "exit_z": {
-          "from": -0.05,
-          "to": 0.05
-        },
-        "lookback": {
-          "from": 20,
-          "to": 24
-        }
-      },
-      "child": "mean-reversion-g1-f2e7c38aa6",
-      "drawdown_delta": -0.002169,
-      "parent": "mean-reversion-g0-2326211c8f",
-      "promoted": false,
-      "score_delta": -4.01,
-      "strategy": "Mean Reversion"
-    },
-    {
-      "changed": {
-        "entry_z": {
-          "from": -1.15,
-          "to": -0.9
-        },
-        "exit_z": {
-          "from": -0.05,
-          "to": 0.05
-        },
-        "lookback": {
-          "from": 20,
-          "to": 22
-        }
-      },
-      "child": "mean-reversion-g1-5133cc23e3",
-      "drawdown_delta": -0.000507,
-      "parent": "mean-reversion-g0-2326211c8f",
-      "promoted": false,
-      "score_delta": -11.97,
-      "strategy": "Mean Reversion"
-    },
-    {
-      "changed": {
-        "entry": {
-          "from": 36,
-          "to": 40
-        },
-        "exit": {
-          "from": 7,
-          "to": 10
-        }
-      },
-      "child": "breakout-g2-66b2de98b4",
-      "drawdown_delta": -0.001563,
-      "parent": "breakout-g1-445e321ae6",
-      "promoted": false,
-      "score_delta": -0.16,
-      "strategy": "Breakout"
-    },
-    {
-      "changed": {
-        "entry": {
-          "from": 36,
-          "to": 40
-        },
-        "exit": {
-          "from": 7,
-          "to": 13
-        }
-      },
-      "child": "breakout-g2-d680c93f3b",
-      "drawdown_delta": -0.005905,
-      "parent": "breakout-g1-445e321ae6",
-      "promoted": false,
-      "score_delta": -4.35,
-      "strategy": "Breakout"
-    },
-    {
-      "changed": {
-        "entry": {
-          "from": 36,
-          "to": 40
-        },
-        "exit": {
-          "from": 7,
-          "to": 13
-        }
-      },
-      "child": "breakout-g2-d680c93f3b",
-      "drawdown_delta": -0.005905,
-      "parent": "breakout-g1-445e321ae6",
-      "promoted": false,
-      "score_delta": -4.35,
-      "strategy": "Breakout"
-    },
-    {
-      "changed": {
-        "entry": {
-          "from": 36,
-          "to": 32
-        },
-        "exit": {
-          "from": 7,
-          "to": 10
-        }
-      },
-      "child": "breakout-g2-f023abfd11",
-      "drawdown_delta": 0.013528,
-      "parent": "breakout-g1-445e321ae6",
-      "promoted": false,
-      "score_delta": -29.5,
-      "strategy": "Breakout"
-    },
-    {
-      "changed": {
-        "entry": {
-          "from": 36,
-          "to": 40
-        },
-        "exit": {
-          "from": 7,
-          "to": 4
-        }
-      },
-      "child": "breakout-g2-c1aa90b913",
-      "drawdown_delta": 0.004646,
-      "parent": "breakout-g1-445e321ae6",
-      "promoted": false,
-      "score_delta": -40.76,
-      "strategy": "Breakout"
-    },
-    {
-      "changed": {
-        "entry": {
-          "from": 36,
-          "to": 44
-        },
-        "exit": {
-          "from": 7,
-          "to": 4
-        }
-      },
-      "child": "breakout-g2-e5ce00fa46",
-      "drawdown_delta": 0.004646,
-      "parent": "breakout-g1-445e321ae6",
-      "promoted": false,
-      "score_delta": -44.08,
-      "strategy": "Breakout"
-    },
-    {
-      "changed": {
-        "fast": {
-          "from": 18,
-          "to": 21
-        },
-        "slow": {
-          "from": 55,
-          "to": 45
-        }
-      },
-      "child": "trend-g1-3ba72822a8",
-      "drawdown_delta": -0.002511,
-      "parent": "trend-g0-c0b9781be1",
-      "promoted": false,
-      "score_delta": 0.99,
-      "strategy": "Trend"
-    },
-    {
-      "changed": {
-        "fast": {
-          "from": 18,
-          "to": 21
-        },
-        "slow": {
-          "from": 55,
-          "to": 48
-        }
-      },
-      "child": "trend-g1-5456e6ee15",
-      "drawdown_delta": 0.001417,
-      "parent": "trend-g0-c0b9781be1",
-      "promoted": false,
-      "score_delta": -2.17,
-      "strategy": "Trend"
-    },
-    {
-      "changed": {
-        "fast": {
-          "from": 18,
-          "to": 22
-        },
-        "slow": {
-          "from": 55,
-          "to": 48
-        }
-      },
-      "child": "trend-g1-bf30c905da",
-      "drawdown_delta": 0.006542,
-      "parent": "trend-g0-c0b9781be1",
-      "promoted": false,
-      "score_delta": -3.06,
-      "strategy": "Trend"
-    },
-    {
-      "changed": {
-        "fast": {
-          "from": 18,
-          "to": 22
-        },
-        "slow": {
-          "from": 55,
-          "to": 48
-        }
-      },
-      "child": "trend-g1-bf30c905da",
-      "drawdown_delta": 0.006542,
-      "parent": "trend-g0-c0b9781be1",
-      "promoted": false,
-      "score_delta": -3.06,
-      "strategy": "Trend"
-    },
     {
       "changed": {
         "fast": {
@@ -25625,6 +24667,966 @@
       "parent": "breakout-g1-79f4f2d842",
       "promoted": false,
       "score_delta": -3.08,
+      "strategy": "Breakout"
+    },
+    {
+      "changed": {
+        "fast": {
+          "from": 27,
+          "to": 29
+        },
+        "slow": {
+          "from": 57,
+          "to": 62
+        }
+      },
+      "child": "trend-g4-8e696d3efe",
+      "drawdown_delta": -0.012471,
+      "parent": "trend-g3-b376585e02",
+      "promoted": false,
+      "score_delta": 3.36,
+      "strategy": "Trend"
+    },
+    {
+      "changed": {
+        "fast": {
+          "from": 27,
+          "to": 29
+        },
+        "slow": {
+          "from": 57,
+          "to": 67
+        }
+      },
+      "child": "trend-g4-ad8ee913ce",
+      "drawdown_delta": -0.012066,
+      "parent": "trend-g3-b376585e02",
+      "promoted": false,
+      "score_delta": 0.72,
+      "strategy": "Trend"
+    },
+    {
+      "changed": {
+        "fast": {
+          "from": 27,
+          "to": 24
+        },
+        "slow": {
+          "from": 57,
+          "to": 67
+        }
+      },
+      "child": "trend-g4-aa95ed3808",
+      "drawdown_delta": -0.005124,
+      "parent": "trend-g3-b376585e02",
+      "promoted": false,
+      "score_delta": 0.29,
+      "strategy": "Trend"
+    },
+    {
+      "changed": {
+        "fast": {
+          "from": 27,
+          "to": 24
+        },
+        "slow": {
+          "from": 57,
+          "to": 67
+        }
+      },
+      "child": "trend-g4-aa95ed3808",
+      "drawdown_delta": -0.005124,
+      "parent": "trend-g3-b376585e02",
+      "promoted": false,
+      "score_delta": 0.29,
+      "strategy": "Trend"
+    },
+    {
+      "changed": {
+        "fast": {
+          "from": 27,
+          "to": 24
+        },
+        "slow": {
+          "from": 57,
+          "to": 67
+        }
+      },
+      "child": "trend-g4-aa95ed3808",
+      "drawdown_delta": -0.005124,
+      "parent": "trend-g3-b376585e02",
+      "promoted": false,
+      "score_delta": 0.29,
+      "strategy": "Trend"
+    },
+    {
+      "changed": {
+        "fast": {
+          "from": 27,
+          "to": 29
+        },
+        "slow": {
+          "from": 57,
+          "to": 52
+        }
+      },
+      "child": "trend-g4-3c30212859",
+      "drawdown_delta": 0.027568,
+      "parent": "trend-g3-b376585e02",
+      "promoted": false,
+      "score_delta": -0.84,
+      "strategy": "Trend"
+    },
+    {
+      "changed": {
+        "lookback": {
+          "from": 14,
+          "to": 11
+        },
+        "min_return": {
+          "from": -0.002,
+          "to": 0.002
+        },
+        "slow": {
+          "from": 64,
+          "to": 56
+        }
+      },
+      "child": "momentum-g2-1cbe3c399f",
+      "drawdown_delta": 0.026094,
+      "parent": "momentum-g1-ba37e3522c",
+      "promoted": false,
+      "score_delta": -1.25,
+      "strategy": "Momentum"
+    },
+    {
+      "changed": {
+        "lookback": {
+          "from": 14,
+          "to": 6
+        },
+        "min_return": {
+          "from": -0.002,
+          "to": -0.006
+        },
+        "slow": {
+          "from": 64,
+          "to": 60
+        }
+      },
+      "child": "momentum-g2-1cca150d1a",
+      "drawdown_delta": -0.00273,
+      "parent": "momentum-g1-ba37e3522c",
+      "promoted": false,
+      "score_delta": -1.36,
+      "strategy": "Momentum"
+    },
+    {
+      "changed": {
+        "lookback": {
+          "from": 14,
+          "to": 11
+        },
+        "min_return": {
+          "from": -0.002,
+          "to": 0.0
+        },
+        "slow": {
+          "from": 64,
+          "to": 56
+        }
+      },
+      "child": "momentum-g2-e8c2ea670b",
+      "drawdown_delta": 0.020475,
+      "parent": "momentum-g1-ba37e3522c",
+      "promoted": false,
+      "score_delta": -4.2,
+      "strategy": "Momentum"
+    },
+    {
+      "changed": {
+        "lookback": {
+          "from": 14,
+          "to": 17
+        },
+        "min_return": {
+          "from": -0.002,
+          "to": 0.0
+        },
+        "slow": {
+          "from": 64,
+          "to": 52
+        }
+      },
+      "child": "momentum-g2-2dfab27d50",
+      "drawdown_delta": 0.010003,
+      "parent": "momentum-g1-ba37e3522c",
+      "promoted": false,
+      "score_delta": -12.59,
+      "strategy": "Momentum"
+    },
+    {
+      "changed": {
+        "lookback": {
+          "from": 14,
+          "to": 22
+        },
+        "min_return": {
+          "from": -0.002,
+          "to": -0.004
+        },
+        "slow": {
+          "from": 64,
+          "to": 56
+        }
+      },
+      "child": "momentum-g2-b8cfa56f28",
+      "drawdown_delta": 0.002967,
+      "parent": "momentum-g1-ba37e3522c",
+      "promoted": false,
+      "score_delta": -15.78,
+      "strategy": "Momentum"
+    },
+    {
+      "changed": {
+        "lookback": {
+          "from": 14,
+          "to": 9
+        },
+        "min_return": {
+          "from": -0.002,
+          "to": 0.0
+        },
+        "slow": {
+          "from": 64,
+          "to": 52
+        }
+      },
+      "child": "momentum-g2-9743a4f45e",
+      "drawdown_delta": 0.007831,
+      "parent": "momentum-g1-ba37e3522c",
+      "promoted": false,
+      "score_delta": -21.74,
+      "strategy": "Momentum"
+    },
+    {
+      "changed": {
+        "entry_z": {
+          "from": -1.15,
+          "to": -1.0
+        },
+        "exit_z": {
+          "from": -0.05,
+          "to": 0.15
+        },
+        "lookback": {
+          "from": 20,
+          "to": 28
+        }
+      },
+      "child": "mean-reversion-g1-04ce252d9c",
+      "drawdown_delta": -0.015122,
+      "parent": "mean-reversion-g0-2326211c8f",
+      "promoted": false,
+      "score_delta": 9.78,
+      "strategy": "Mean Reversion"
+    },
+    {
+      "changed": {
+        "entry_z": {
+          "from": -1.15,
+          "to": -1.3
+        },
+        "exit_z": {
+          "from": -0.05,
+          "to": -0.15
+        },
+        "lookback": {
+          "from": 20,
+          "to": 28
+        }
+      },
+      "child": "mean-reversion-g1-eec4d5c622",
+      "drawdown_delta": -0.013673,
+      "parent": "mean-reversion-g0-2326211c8f",
+      "promoted": false,
+      "score_delta": 3.63,
+      "strategy": "Mean Reversion"
+    },
+    {
+      "changed": {
+        "entry_z": {
+          "from": -1.15,
+          "to": -1.3
+        },
+        "exit_z": {
+          "from": -0.05,
+          "to": -0.15
+        },
+        "lookback": {
+          "from": 20,
+          "to": 24
+        }
+      },
+      "child": "mean-reversion-g1-479ddff857",
+      "drawdown_delta": -0.005721,
+      "parent": "mean-reversion-g0-2326211c8f",
+      "promoted": false,
+      "score_delta": 2.53,
+      "strategy": "Mean Reversion"
+    },
+    {
+      "changed": {
+        "entry_z": {
+          "from": -1.15,
+          "to": -1.3
+        },
+        "exit_z": {
+          "from": -0.05,
+          "to": 0.05
+        },
+        "lookback": {
+          "from": 20,
+          "to": 16
+        }
+      },
+      "child": "mean-reversion-g1-01c0abae97",
+      "drawdown_delta": -0.001299,
+      "parent": "mean-reversion-g0-2326211c8f",
+      "promoted": false,
+      "score_delta": 0.34,
+      "strategy": "Mean Reversion"
+    },
+    {
+      "changed": {
+        "entry_z": {
+          "from": -1.15,
+          "to": -1.3
+        },
+        "exit_z": {
+          "from": -0.05,
+          "to": 0.15
+        },
+        "lookback": {
+          "from": 20,
+          "to": 22
+        }
+      },
+      "child": "mean-reversion-g1-cf5cfd387c",
+      "drawdown_delta": -0.004374,
+      "parent": "mean-reversion-g0-2326211c8f",
+      "promoted": false,
+      "score_delta": 0.34,
+      "strategy": "Mean Reversion"
+    },
+    {
+      "changed": {
+        "entry_z": {
+          "from": -1.15,
+          "to": -1.0
+        },
+        "exit_z": {
+          "from": -0.05,
+          "to": -0.25
+        },
+        "lookback": {
+          "from": 20,
+          "to": 12
+        }
+      },
+      "child": "mean-reversion-g1-5bdd0800c7",
+      "drawdown_delta": -0.012792,
+      "parent": "mean-reversion-g0-2326211c8f",
+      "promoted": false,
+      "score_delta": -2.44,
+      "strategy": "Mean Reversion"
+    },
+    {
+      "changed": {
+        "entry": {
+          "from": 36,
+          "to": 40
+        },
+        "exit": {
+          "from": 7,
+          "to": 10
+        }
+      },
+      "child": "breakout-g2-66b2de98b4",
+      "drawdown_delta": -0.001009,
+      "parent": "breakout-g1-445e321ae6",
+      "promoted": false,
+      "score_delta": 11.51,
+      "strategy": "Breakout"
+    },
+    {
+      "changed": {
+        "entry": {
+          "from": 36,
+          "to": 48
+        },
+        "exit": {
+          "from": 7,
+          "to": 4
+        }
+      },
+      "child": "breakout-g2-70e6a3160f",
+      "drawdown_delta": -0.012068,
+      "parent": "breakout-g1-445e321ae6",
+      "promoted": false,
+      "score_delta": -1.71,
+      "strategy": "Breakout"
+    },
+    {
+      "changed": {
+        "entry": {
+          "from": 36,
+          "to": 48
+        },
+        "exit": {
+          "from": 7,
+          "to": 13
+        }
+      },
+      "child": "breakout-g2-6b5d094003",
+      "drawdown_delta": -7.7e-05,
+      "parent": "breakout-g1-445e321ae6",
+      "promoted": false,
+      "score_delta": -2.2,
+      "strategy": "Breakout"
+    },
+    {
+      "changed": {
+        "entry": {
+          "from": 36,
+          "to": 40
+        },
+        "exit": {
+          "from": 7,
+          "to": 13
+        }
+      },
+      "child": "breakout-g2-d680c93f3b",
+      "drawdown_delta": -0.012886,
+      "parent": "breakout-g1-445e321ae6",
+      "promoted": false,
+      "score_delta": -2.59,
+      "strategy": "Breakout"
+    },
+    {
+      "changed": {
+        "entry": {
+          "from": 36,
+          "to": 40
+        },
+        "exit": {
+          "from": 7,
+          "to": 4
+        }
+      },
+      "child": "breakout-g2-c1aa90b913",
+      "drawdown_delta": -0.005463,
+      "parent": "breakout-g1-445e321ae6",
+      "promoted": false,
+      "score_delta": -4.48,
+      "strategy": "Breakout"
+    },
+    {
+      "changed": {
+        "entry": {
+          "from": 36,
+          "to": 32
+        },
+        "exit": {
+          "from": 7,
+          "to": 4
+        }
+      },
+      "child": "breakout-g2-5d989237af",
+      "drawdown_delta": 0.00028,
+      "parent": "breakout-g1-445e321ae6",
+      "promoted": false,
+      "score_delta": -8.22,
+      "strategy": "Breakout"
+    },
+    {
+      "changed": {
+        "fast": {
+          "from": 18,
+          "to": 14
+        },
+        "slow": {
+          "from": 55,
+          "to": 65
+        }
+      },
+      "child": "trend-g1-51d2070c9d",
+      "drawdown_delta": 0.036578,
+      "parent": "trend-g0-c0b9781be1",
+      "promoted": false,
+      "score_delta": -0.4,
+      "strategy": "Trend"
+    },
+    {
+      "changed": {
+        "fast": {
+          "from": 18,
+          "to": 14
+        },
+        "slow": {
+          "from": 55,
+          "to": 62
+        }
+      },
+      "child": "trend-g1-7d82a95e1c",
+      "drawdown_delta": 0.022141,
+      "parent": "trend-g0-c0b9781be1",
+      "promoted": false,
+      "score_delta": -0.81,
+      "strategy": "Trend"
+    },
+    {
+      "changed": {
+        "fast": {
+          "from": 18,
+          "to": 16
+        },
+        "slow": {
+          "from": 55,
+          "to": 60
+        }
+      },
+      "child": "trend-g1-9dd41b0e5b",
+      "drawdown_delta": 0.018231,
+      "parent": "trend-g0-c0b9781be1",
+      "promoted": false,
+      "score_delta": -1.53,
+      "strategy": "Trend"
+    },
+    {
+      "changed": {
+        "fast": {
+          "from": 18,
+          "to": 21
+        },
+        "slow": {
+          "from": 55,
+          "to": 50
+        }
+      },
+      "child": "trend-g1-f3d7a426af",
+      "drawdown_delta": 0.069824,
+      "parent": "trend-g0-c0b9781be1",
+      "promoted": false,
+      "score_delta": -1.57,
+      "strategy": "Trend"
+    },
+    {
+      "changed": {
+        "fast": {
+          "from": 18,
+          "to": 20
+        },
+        "slow": {
+          "from": 55,
+          "to": 48
+        }
+      },
+      "child": "trend-g1-6e963e6d20",
+      "drawdown_delta": 0.067489,
+      "parent": "trend-g0-c0b9781be1",
+      "promoted": false,
+      "score_delta": -2.09,
+      "strategy": "Trend"
+    },
+    {
+      "changed": {
+        "fast": {
+          "from": 18,
+          "to": 21
+        },
+        "slow": {
+          "from": 55,
+          "to": 60
+        }
+      },
+      "child": "trend-g1-816a70d1c0",
+      "drawdown_delta": 0.040151,
+      "parent": "trend-g0-c0b9781be1",
+      "promoted": false,
+      "score_delta": -3.18,
+      "strategy": "Trend"
+    },
+    {
+      "changed": {
+        "lookback": {
+          "from": 22,
+          "to": 19
+        },
+        "min_return": {
+          "from": 0.0,
+          "to": -0.004
+        },
+        "slow": {
+          "from": 60,
+          "to": 68
+        }
+      },
+      "child": "momentum-g1-88b2023a43",
+      "drawdown_delta": -0.049312,
+      "parent": "momentum-g0-42ed5f7974",
+      "promoted": false,
+      "score_delta": 4.3,
+      "strategy": "Momentum"
+    },
+    {
+      "changed": {
+        "lookback": {
+          "from": 22,
+          "to": 14
+        },
+        "min_return": {
+          "from": 0.0,
+          "to": -0.004
+        },
+        "slow": {
+          "from": 60,
+          "to": 64
+        }
+      },
+      "child": "momentum-g1-8542afdda8",
+      "drawdown_delta": 0.053664,
+      "parent": "momentum-g0-42ed5f7974",
+      "promoted": false,
+      "score_delta": -3.17,
+      "strategy": "Momentum"
+    },
+    {
+      "changed": {
+        "lookback": {
+          "from": 22,
+          "to": 19
+        },
+        "min_return": {
+          "from": 0.0,
+          "to": 0.004
+        },
+        "slow": {
+          "from": 60,
+          "to": 48
+        }
+      },
+      "child": "momentum-g1-98301fcdce",
+      "drawdown_delta": -0.073417,
+      "parent": "momentum-g0-42ed5f7974",
+      "promoted": false,
+      "score_delta": -3.34,
+      "strategy": "Momentum"
+    },
+    {
+      "changed": {
+        "lookback": {
+          "from": 22,
+          "to": 19
+        },
+        "min_return": {
+          "from": 0.0,
+          "to": 0.002
+        },
+        "slow": {
+          "from": 60,
+          "to": 56
+        }
+      },
+      "child": "momentum-g1-40cc24b6c8",
+      "drawdown_delta": -0.070741,
+      "parent": "momentum-g0-42ed5f7974",
+      "promoted": false,
+      "score_delta": -3.56,
+      "strategy": "Momentum"
+    },
+    {
+      "changed": {
+        "lookback": {
+          "from": 22,
+          "to": 19
+        },
+        "min_return": {
+          "from": 0.0,
+          "to": -0.004
+        },
+        "slow": {
+          "from": 60,
+          "to": 52
+        }
+      },
+      "child": "momentum-g1-62a7c1eacb",
+      "drawdown_delta": -0.064887,
+      "parent": "momentum-g0-42ed5f7974",
+      "promoted": false,
+      "score_delta": -5.29,
+      "strategy": "Momentum"
+    },
+    {
+      "changed": {
+        "lookback": {
+          "from": 22,
+          "to": 25
+        },
+        "min_return": {
+          "from": 0.0,
+          "to": 0.004
+        },
+        "slow": {
+          "from": 60,
+          "to": 72
+        }
+      },
+      "child": "momentum-g1-2afe767888",
+      "drawdown_delta": -0.013622,
+      "parent": "momentum-g0-42ed5f7974",
+      "promoted": false,
+      "score_delta": -11.73,
+      "strategy": "Momentum"
+    },
+    {
+      "changed": {
+        "entry_z": {
+          "from": -1.15,
+          "to": -1.3
+        },
+        "exit_z": {
+          "from": -0.05,
+          "to": -0.15
+        },
+        "lookback": {
+          "from": 20,
+          "to": 28
+        }
+      },
+      "child": "mean-reversion-g1-eec4d5c622",
+      "drawdown_delta": -0.010557,
+      "parent": "mean-reversion-g0-2326211c8f",
+      "promoted": false,
+      "score_delta": 0.29,
+      "strategy": "Mean Reversion"
+    },
+    {
+      "changed": {
+        "entry_z": {
+          "from": -1.15,
+          "to": -1.0
+        },
+        "exit_z": {
+          "from": -0.05,
+          "to": 0.15
+        },
+        "lookback": {
+          "from": 20,
+          "to": 28
+        }
+      },
+      "child": "mean-reversion-g1-04ce252d9c",
+      "drawdown_delta": -0.01747,
+      "parent": "mean-reversion-g0-2326211c8f",
+      "promoted": false,
+      "score_delta": -0.36,
+      "strategy": "Mean Reversion"
+    },
+    {
+      "changed": {
+        "entry_z": {
+          "from": -1.15,
+          "to": -1.3
+        },
+        "exit_z": {
+          "from": -0.05,
+          "to": 0.15
+        },
+        "lookback": {
+          "from": 20,
+          "to": 22
+        }
+      },
+      "child": "mean-reversion-g1-cf5cfd387c",
+      "drawdown_delta": -0.018298,
+      "parent": "mean-reversion-g0-2326211c8f",
+      "promoted": false,
+      "score_delta": -0.72,
+      "strategy": "Mean Reversion"
+    },
+    {
+      "changed": {
+        "entry_z": {
+          "from": -1.15,
+          "to": -1.3
+        },
+        "exit_z": {
+          "from": -0.05,
+          "to": 0.05
+        },
+        "lookback": {
+          "from": 20,
+          "to": 16
+        }
+      },
+      "child": "mean-reversion-g1-01c0abae97",
+      "drawdown_delta": 0.011295,
+      "parent": "mean-reversion-g0-2326211c8f",
+      "promoted": false,
+      "score_delta": -4.82,
+      "strategy": "Mean Reversion"
+    },
+    {
+      "changed": {
+        "entry_z": {
+          "from": -1.15,
+          "to": -1.3
+        },
+        "exit_z": {
+          "from": -0.05,
+          "to": -0.15
+        },
+        "lookback": {
+          "from": 20,
+          "to": 24
+        }
+      },
+      "child": "mean-reversion-g1-479ddff857",
+      "drawdown_delta": -0.010644,
+      "parent": "mean-reversion-g0-2326211c8f",
+      "promoted": false,
+      "score_delta": -7.32,
+      "strategy": "Mean Reversion"
+    },
+    {
+      "changed": {
+        "entry_z": {
+          "from": -1.15,
+          "to": -1.0
+        },
+        "exit_z": {
+          "from": -0.05,
+          "to": -0.25
+        },
+        "lookback": {
+          "from": 20,
+          "to": 12
+        }
+      },
+      "child": "mean-reversion-g1-5bdd0800c7",
+      "drawdown_delta": 0.035421,
+      "parent": "mean-reversion-g0-2326211c8f",
+      "promoted": false,
+      "score_delta": -10.02,
+      "strategy": "Mean Reversion"
+    },
+    {
+      "changed": {
+        "entry": {
+          "from": 28,
+          "to": 16
+        },
+        "exit": {
+          "from": 16,
+          "to": 22
+        }
+      },
+      "child": "breakout-g2-257fc6f307",
+      "drawdown_delta": 0.007677,
+      "parent": "breakout-g1-79f4f2d842",
+      "promoted": false,
+      "score_delta": 11.26,
+      "strategy": "Breakout"
+    },
+    {
+      "changed": {
+        "entry": {
+          "from": 28,
+          "to": 32
+        },
+        "exit": {
+          "from": 16,
+          "to": 13
+        }
+      },
+      "child": "breakout-g2-b83d61947a",
+      "drawdown_delta": -0.005755,
+      "parent": "breakout-g1-79f4f2d842",
+      "promoted": false,
+      "score_delta": -0.29,
+      "strategy": "Breakout"
+    },
+    {
+      "changed": {
+        "entry": {
+          "from": 28,
+          "to": 24
+        },
+        "exit": {
+          "from": 16,
+          "to": 22
+        }
+      },
+      "child": "breakout-g2-482c0ace7b",
+      "drawdown_delta": -0.005324,
+      "parent": "breakout-g1-79f4f2d842",
+      "promoted": false,
+      "score_delta": -0.36,
+      "strategy": "Breakout"
+    },
+    {
+      "changed": {
+        "entry": {
+          "from": 28,
+          "to": 40
+        },
+        "exit": {
+          "from": 16,
+          "to": 19
+        }
+      },
+      "child": "breakout-g2-29dc48821a",
+      "drawdown_delta": 0.001605,
+      "parent": "breakout-g1-79f4f2d842",
+      "promoted": false,
+      "score_delta": -9.41,
+      "strategy": "Breakout"
+    },
+    {
+      "changed": {
+        "entry": {
+          "from": 28,
+          "to": 40
+        },
+        "exit": {
+          "from": 16,
+          "to": 19
+        }
+      },
+      "child": "breakout-g2-29dc48821a",
+      "drawdown_delta": 0.001605,
+      "parent": "breakout-g1-79f4f2d842",
+      "promoted": false,
+      "score_delta": -9.41,
+      "strategy": "Breakout"
+    },
+    {
+      "changed": {
+        "entry": {
+          "from": 28,
+          "to": 40
+        },
+        "exit": {
+          "from": 16,
+          "to": 10
+        }
+      },
+      "child": "breakout-g2-66b2de98b4",
+      "drawdown_delta": 0.033512,
+      "parent": "breakout-g1-79f4f2d842",
+      "promoted": false,
+      "score_delta": -11.61,
       "strategy": "Breakout"
     }
   ],
